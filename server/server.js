@@ -250,6 +250,8 @@ app.get('/api/leaderboard', (req, res) => {
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
+app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', 'psychic-test.html')));
+
 // ── Start ─────────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
