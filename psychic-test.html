@@ -1914,9 +1914,9 @@ async function fetchAndRenderLb() {
       limit: 50,
     });
     const data = await api.get('/api/leaderboard?' + params);
-    if(data && Array.isArray(data.entries)) { renderLbFromEntries(data.entries); return; }
+    if(data && Array.isArray(data.entries) && data.entries.length > 0) { renderLbFromEntries(data.entries); return; }
   } catch {}
-  renderLbList(); // offline fallback
+  renderLbList(); // fallback to demo players when API is empty or unreachable
 }
 function renderLbFromEntries(entries) {
   const list = document.getElementById('leaderboard-list');
