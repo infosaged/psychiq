@@ -1,0 +1,2107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0d0d1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Psychic Test">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="manifest" href="manifest.json">
+<title>Psychic Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d1a;
+  --bg2: #13132a;
+  --bg3: #1c1c38;
+  --surface: #1e1e3a;
+  --surface2: #252545;
+  --border: rgba(150,130,255,0.15);
+  --border2: rgba(150,130,255,0.3);
+  --accent: #8b6fff;
+  --accent2: #b39dff;
+  --gold: #d4a843;
+  --gold2: #f0c85a;
+  --text: #f0eeff;
+  --text2: #a89ec0;
+  --text3: #6b6385;
+  --success: #4ade80;
+  --error: #f87171;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: 'Raleway', sans-serif; color: var(--text); }
+
+/* Stars background */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 50% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 30%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 50%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 90%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.3) 0%, transparent 100%);
+  pointer-events: none; z-index: 0;
+}
+
+#app { position: relative; z-index: 1; height: 100%; overflow: hidden; }
+
+/* SCREENS */
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  overflow-y: auto; overflow-x: hidden;
+  padding: 0 0 env(safe-area-inset-bottom, 16px);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.screen.active { opacity: 1; pointer-events: all; }
+
+/* TYPOGRAPHY */
+.display { font-family: 'Cinzel', serif; }
+
+/* TOP NAV */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 8px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+}
+.topbar-title { font-family: 'Cinzel', serif; font-size: 18px; color: var(--accent2); letter-spacing: 0.05em; }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; color: var(--text2);
+  transition: background 0.2s;
+}
+.icon-btn:hover { background: var(--surface2); }
+
+/* CARDS / SURFACES */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+  margin: 0 16px 12px;
+}
+.card-title { font-family: 'Cinzel', serif; font-size: 14px; color: var(--accent2); margin-bottom: 12px; letter-spacing: 0.05em; }
+
+/* BUTTONS */
+.btn {
+  width: 100%; padding: 14px 20px;
+  border-radius: var(--radius); border: none; cursor: pointer;
+  font-family: 'Raleway', sans-serif; font-size: 14px; font-weight: 600;
+  letter-spacing: 0.05em; transition: all 0.2s; display: block;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #6b48ff, #9b6fff);
+  color: #fff;
+}
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary {
+  background: var(--surface2); color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.btn-secondary:hover { background: var(--bg3); color: var(--text); }
+.btn-gold {
+  background: linear-gradient(135deg, #b8860b, #d4a843);
+  color: #fff;
+}
+.btn-ghost {
+  background: transparent; color: var(--accent2);
+  border: 1px solid var(--border2);
+}
+
+/* INPUTS */
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: var(--text3); text-transform: uppercase; margin-bottom: 6px; }
+.field input, .field select {
+  width: 100%; padding: 12px 14px;
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: 'Raleway', sans-serif; font-size: 14px;
+  outline: none; transition: border-color 0.2s;
+}
+.field input:focus, .field select:focus { border-color: var(--accent); }
+.field input::placeholder { color: var(--text3); }
+.field select option { background: var(--bg2); }
+
+/* PILLS / BADGES */
+.pill {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 20px; font-size: 11px; font-weight: 500;
+}
+.pill-purple { background: rgba(139,111,255,0.15); color: var(--accent2); border: 1px solid rgba(139,111,255,0.3); }
+.pill-gold { background: rgba(212,168,67,0.15); color: var(--gold2); border: 1px solid rgba(212,168,67,0.3); }
+.pill-green { background: rgba(74,222,128,0.1); color: var(--success); border: 1px solid rgba(74,222,128,0.25); }
+
+/* STAT BOXES */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+.stat-box { background: var(--bg2); border-radius: var(--radius-sm); padding: 12px; border: 1px solid var(--border); }
+.stat-val { font-family: 'Cinzel', serif; font-size: 22px; color: var(--text); }
+.stat-label { font-size: 10px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ===================== SCREEN: HOME ===================== */
+#screen-home { justify-content: center; align-items: center; text-align: center; padding: 40px 24px; }
+.home-logo { font-family: 'Cinzel', serif; font-size: 36px; font-weight: 700; color: var(--accent2); letter-spacing: 0.08em; margin-bottom: 8px; }
+.home-sub { font-size: 13px; color: var(--text3); letter-spacing: 0.06em; margin-bottom: 40px; }
+.home-orb {
+  width: 120px; height: 120px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(139,111,255,0.5), rgba(30,20,80,0.8));
+  border: 1px solid rgba(139,111,255,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; margin: 0 auto 40px;
+  animation: pulse 3s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(139,111,255,0.2); }
+  50% { box-shadow: 0 0 40px rgba(139,111,255,0.5); }
+}
+.home-btns { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+
+/* ===================== SCREEN: AUTH ===================== */
+#screen-auth .auth-tabs { display: flex; margin: 0 16px 20px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border2); }
+.auth-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text3); transition: all 0.2s; }
+.auth-tab.active { background: var(--accent); color: #fff; }
+.auth-form { padding: 0 16px; }
+.auth-divider { text-align: center; color: var(--text3); font-size: 12px; margin: 14px 0; position: relative; }
+.auth-divider::before, .auth-divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: var(--border); }
+.auth-divider::before { left: 0; }
+.auth-divider::after { right: 0; }
+
+/* ===================== SCREEN: SETUP ===================== */
+.avatar-picker { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+.avatar-circle {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--surface2); border: 2px dashed var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; cursor: pointer; overflow: hidden;
+  transition: border-color 0.2s; margin-bottom: 8px;
+}
+.avatar-circle:hover { border-color: var(--accent); }
+.avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-circle-lbl { font-size: 11px; color: var(--text3); }
+
+.level-option {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg2);
+  cursor: pointer; margin-bottom: 8px; transition: all 0.2s;
+}
+.level-option:hover { border-color: var(--border2); }
+.level-option.selected { border-color: var(--accent); background: rgba(139,111,255,0.08); }
+.level-radio {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--border2); flex-shrink: 0; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.level-option.selected .level-radio { border-color: var(--accent); background: var(--accent); }
+.level-radio::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #fff; opacity: 0; transition: opacity 0.2s; }
+.level-option.selected .level-radio::after { opacity: 1; }
+.level-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.level-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* ===================== SCREEN: TOPICS ===================== */
+.topic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
+.topic-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 16px; text-align: center;
+  cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden;
+}
+.topic-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(139,111,255,0.0), rgba(139,111,255,0.08));
+  opacity: 0; transition: opacity 0.2s;
+}
+.topic-card:hover::before { opacity: 1; }
+.topic-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.topic-card:active { transform: translateY(0); }
+.topic-emoji { font-size: 32px; margin-bottom: 8px; display: block; }
+.topic-name { font-family: 'Cinzel', serif; font-size: 13px; color: var(--text); font-weight: 600; }
+.topic-count { font-size: 10px; color: var(--text3); margin-top: 4px; }
+
+/* ===================== SCREEN: GAME ===================== */
+#screen-game { padding-bottom: 20px; }
+.game-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 8px; padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
+.strikes-bar { display: flex; justify-content: center; gap: 12px; padding: 0 0 6px; }
+.strike-gem { font-size: 22px; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); }
+.strike-gem.lost { opacity: 0.18; filter: grayscale(1); transform: scale(0.75); }
+.score-display { text-align: center; }
+.score-number { font-family: 'Cinzel', serif; font-size: 28px; color: var(--gold2); }
+.score-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+.game-topic-badge { font-size: 11px; }
+.streak-display { text-align: right; }
+.streak-number { font-family: 'Cinzel', serif; font-size: 20px; color: var(--accent2); }
+.streak-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+
+.card-stage { display: flex; justify-content: center; align-items: center; padding: 20px; perspective: 1000px; }
+.card-flipper {
+  width: 180px; height: 252px; position: relative;
+  transform-style: preserve-3d; transition: transform 0.65s cubic-bezier(0.4,0,0.2,1);
+}
+.card-flipper.flipped { transform: rotateY(180deg); }
+.card-face {
+  position: absolute; inset: 0; border-radius: 14px;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.card-back-face {
+  background: #12122a;
+  border: 2px solid rgba(139,111,255,0.5);
+  box-shadow: 0 0 30px rgba(139,111,255,0.15), inset 0 0 40px rgba(0,0,0,0.4);
+}
+.card-back-inner {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  background-image: repeating-linear-gradient(45deg, rgba(139,111,255,0.06) 0, rgba(139,111,255,0.06) 1px, transparent 0, transparent 10px);
+  font-size: 72px; opacity: 0.25;
+}
+.card-front-face {
+  transform: rotateY(180deg);
+  border: 2px solid rgba(139,111,255,0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+/* Playing card specific */
+.playing-card-wrap { width:100%; height:100%; background:#fff; border-radius:12px; position:relative; display:flex; align-items:center; justify-content:center; }
+.playing-card-corner { position:absolute; font-weight:800; line-height:1.1; }
+.playing-card-corner.tl { top:7px; left:9px; font-size:16px; }
+.playing-card-corner.br { bottom:7px; right:9px; font-size:16px; transform:rotate(180deg); }
+.playing-card-center { font-size:64px; display:flex; align-items:center; justify-content:center; }
+/* Color swatch card */
+.color-card-wrap { width:100%; height:100%; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding-bottom:18px; position:relative; }
+.color-card-name { font-family:'Cinzel',serif; font-size:16px; font-weight:700; text-shadow:0 2px 8px rgba(0,0,0,0.5); }
+/* Image card (animals, zodiac, celebrities, brands) */
+.image-card-wrap { width:100%; height:100%; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative; overflow:hidden; }
+.image-card-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 20%; border-radius:12px; }
+.image-card-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%); border-radius:12px; }
+.image-card-label { position:relative; z-index:2; font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:#fff; text-align:center; padding:0 10px 14px; text-shadow:0 1px 4px rgba(0,0,0,0.8); }
+/* AI portrait card */
+.portrait-card-wrap { width:100%; height:100%; border-radius:12px; background:var(--surface2); display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative; overflow:hidden; }
+.portrait-loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; }
+.portrait-spinner { width:28px; height:28px; border:3px solid var(--border2); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.portrait-svg-wrap { position:absolute; inset:0; width:100%; height:100%; }
+.portrait-svg-wrap svg { width:100%; height:100%; }
+
+.question-area { text-align: center; padding: 0 20px 16px; }
+.question-text { font-family: 'Cinzel', serif; font-size: 15px; color: var(--text2); margin-bottom: 4px; }
+.question-hint { font-size: 11px; color: var(--text3); font-style: italic; }
+
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 16px; }
+.choice-btn {
+  padding: 14px 8px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border2); background: var(--surface);
+  color: var(--text); font-family: 'Raleway', sans-serif;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; text-align: center; line-height: 1.3;
+}
+.choice-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(139,111,255,0.08); }
+.choice-btn:active:not(:disabled) { transform: scale(0.97); }
+.choice-btn.correct { background: rgba(74,222,128,0.1); border-color: var(--success); color: var(--success); }
+.choice-btn.wrong { background: rgba(248,113,113,0.1); border-color: var(--error); color: var(--error); }
+.choice-btn:disabled { cursor: default; }
+
+.result-msg { text-align: center; padding: 8px 20px 12px; font-size: 14px; font-weight: 600; min-height: 36px; }
+.result-msg.correct { color: var(--success); }
+.result-msg.wrong { color: var(--error); }
+
+.next-btn-wrap { padding: 0 16px; }
+
+/* ===================== SCREEN: GAME OVER ===================== */
+#screen-gameover { justify-content: center; align-items: center; text-align: center; padding: 40px 24px; }
+.gameover-title { font-family: 'Cinzel', serif; font-size: 24px; color: var(--error); margin-bottom: 6px; }
+.gameover-score { font-family: 'Cinzel', serif; font-size: 64px; color: var(--gold2); margin: 16px 0; }
+.gameover-badge-earned {
+  display: flex; flex-direction: column; align-items: center;
+  background: linear-gradient(135deg, rgba(212,168,67,0.12), rgba(139,111,255,0.12));
+  border: 1px solid rgba(212,168,67,0.4); border-radius: var(--radius);
+  padding: 14px 20px; margin: 0 0 16px; width: 100%; max-width: 320px;
+  cursor: pointer; transition: filter 0.2s;
+}
+.gameover-badge-earned:hover { filter: brightness(1.1); }
+.gameover-badge-orb { font-size: 40px; margin-bottom: 4px; animation: pulse 2s ease-in-out infinite; }
+.gameover-badge-title { font-family: 'Cinzel', serif; font-size: 13px; color: var(--gold2); letter-spacing: 0.08em; }
+.gameover-badge-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+/* ===================== BADGES (profile) ===================== */
+.badge-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.badge-item {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  border: 1px solid rgba(212,168,67,0.3); background: rgba(212,168,67,0.06);
+  cursor: pointer; transition: all 0.2s; min-width: 72px;
+}
+.badge-item:hover { border-color: var(--gold2); background: rgba(212,168,67,0.12); }
+.badge-item-orb { font-size: 32px; }
+.badge-item-label { font-size: 9px; color: var(--gold2); margin-top: 5px; text-align: center; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.badge-item-sub { font-size: 9px; color: var(--text3); margin-top: 2px; text-align: center; }
+
+/* ===================== BADGE DETAIL MODAL ===================== */
+.badge-detail-orb { font-size: 72px; display: block; text-align: center; margin-bottom: 10px; animation: pulse 2.5s ease-in-out infinite; }
+.badge-detail-eyebrow { font-family: 'Cinzel', serif; font-size: 10px; color: var(--accent2); letter-spacing: 0.18em; text-transform: uppercase; text-align: center; margin-bottom: 4px; }
+.badge-detail-name { font-family: 'Cinzel', serif; font-size: 20px; color: var(--text); text-align: center; margin-bottom: 16px; }
+.badge-detail-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.badge-detail-row:last-child { border-bottom: none; }
+.badge-detail-key { color: var(--text3); }
+.badge-detail-val { color: var(--text); font-weight: 600; }
+.gameover-rank {
+  background: rgba(212,168,67,0.1); border: 1px solid rgba(212,168,67,0.3);
+  border-radius: var(--radius); padding: 16px 20px; margin: 0 0 24px; width: 100%; max-width: 320px;
+}
+.gameover-rank-title { font-family: 'Cinzel', serif; font-size: 16px; color: var(--gold2); margin-bottom: 4px; }
+.gameover-rank-sub { font-size: 12px; color: var(--text3); line-height: 1.5; }
+.gameover-btns { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+
+/* ===================== SCREEN: PROFILE ===================== */
+.profile-header { display: flex; align-items: center; gap: 14px; padding: 16px; margin-bottom: 0; }
+.profile-av-lg {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--surface2); border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-family: 'Cinzel', serif; color: var(--accent2);
+  overflow: hidden; flex-shrink: 0;
+}
+.profile-av-lg img { width: 100%; height: 100%; object-fit: cover; }
+.profile-info { flex: 1; min-width: 0; }
+.profile-name-lg { font-family: 'Cinzel', serif; font-size: 18px; color: var(--text); }
+.profile-username { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.profile-meta { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+.topic-scores-list { }
+.topic-score-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.topic-score-row:last-child { border-bottom: none; }
+.tsr-left { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.tsr-score { font-family: 'Cinzel', serif; font-size: 16px; color: var(--gold2); }
+.tsr-rank { font-size: 11px; color: var(--text3); }
+
+.share-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.share-btn-item {
+  padding: 10px 8px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border2); background: var(--bg2);
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  text-align: center; transition: all 0.2s; color: var(--text);
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.share-btn-item:hover { border-color: var(--accent); background: rgba(139,111,255,0.08); }
+.share-btn-x { border-color: rgba(255,255,255,0.15); }
+.share-btn-fb { border-color: rgba(66,103,178,0.4); color: #6b8de0; }
+.share-btn-ig { border-color: rgba(225,48,108,0.3); color: #e1306c; }
+.share-btn-copy { border-color: var(--border2); color: var(--accent2); }
+
+/* ===================== SCREEN: LEADERBOARD ===================== */
+.filter-scroll-wrap { position: relative; }
+.filter-scroll-wrap::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 48px;
+  background: linear-gradient(to right, transparent, var(--bg));
+  pointer-events: none;
+}
+.filter-row { display: flex; gap: 6px; padding: 0 16px 12px; overflow-x: auto; scrollbar-width: none; }
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-chip {
+  padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  border: 1px solid var(--border2); background: var(--bg2); color: var(--text3);
+  cursor: pointer; white-space: nowrap; transition: all 0.2s; flex-shrink: 0;
+}
+.filter-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.lb-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.lb-row.you { background: rgba(139,111,255,0.06); }
+.lb-rank { font-family: 'Cinzel', serif; font-size: 14px; color: var(--text3); width: 24px; flex-shrink: 0; }
+.lb-rank.top3 { color: var(--gold2); }
+.lb-av {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: var(--surface2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-family: 'Cinzel', serif; color: var(--accent2);
+  overflow: hidden;
+}
+.lb-av img { width: 100%; height: 100%; object-fit: cover; }
+.lb-name { flex: 1; min-width: 0; }
+.lb-display-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-meta { font-size: 10px; color: var(--text3); margin-top: 1px; }
+.lb-score-col { text-align: right; }
+.lb-score { font-family: 'Cinzel', serif; font-size: 18px; color: var(--gold2); }
+.lb-score-sub { font-size: 10px; color: var(--text3); }
+
+/* ===================== SCREEN: CERT ===================== */
+#screen-cert { background: var(--bg); }
+.cert-card-outer { margin: 12px 16px 20px; }
+.cert-header-bar {
+  background: linear-gradient(135deg, #1a1040, #2d1a6e);
+  border: 1px solid rgba(139,111,255,0.3);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 20px; display: flex; align-items: center; gap: 14px;
+}
+.cert-av-lg {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--surface2); border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-family: 'Cinzel', serif; color: var(--accent2);
+  overflow: hidden; flex-shrink: 0;
+}
+.cert-av-lg img { width: 100%; height: 100%; object-fit: cover; }
+.cert-person-name { font-family: 'Cinzel', serif; font-size: 18px; color: #fff; }
+.cert-person-level { font-size: 11px; color: rgba(179,157,255,0.8); margin-top: 3px; }
+.cert-body-inner {
+  background: var(--surface); border: 1px solid var(--border);
+  border-top: none; border-radius: 0 0 var(--radius) var(--radius);
+  padding: 16px;
+}
+.cert-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 10px; }
+.cert-topic-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.cert-topic-row:last-child { border-bottom: none; }
+.cert-topic-name { color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.cert-topic-score { font-family: 'Cinzel', serif; font-size: 15px; color: var(--gold2); }
+.cert-topic-rank { font-size: 10px; color: var(--text3); }
+.cert-footer-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+}
+.cert-url { font-size: 9px; color: var(--text3); font-family: monospace; }
+.cert-verified-badge {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3);
+  border-radius: 20px; padding: 3px 9px; font-size: 10px; color: var(--success);
+}
+
+/* BOTTOM NAV */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--bg2); border-top: 1px solid var(--border);
+  display: flex; padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  z-index: 100;
+}
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; transition: color 0.2s; color: var(--text3); }
+.nav-item.active { color: var(--accent2); }
+.nav-icon { font-size: 20px; }
+.nav-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 8px 18px; font-size: 12px; color: var(--text);
+  opacity: 0; transition: all 0.3s; z-index: 200; white-space: nowrap;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 300; display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-sheet {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--radius) var(--radius) 0 0; width: 100%; max-width: 480px;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  transform: translateY(100%); transition: transform 0.3s;
+}
+.modal-overlay.open .modal-sheet { transform: translateY(0); }
+.modal-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border2); margin: 0 auto 16px; }
+.modal-title { font-family: 'Cinzel', serif; font-size: 16px; color: var(--text); margin-bottom: 16px; text-align: center; }
+
+/* Scrollable content padding for nav */
+.has-nav { padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+
+/* Utils */
+.text-center { text-align: center; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mb-8 { margin-bottom: 8px; }
+.px-16 { padding-left: 16px; padding-right: 16px; }
+.section-title { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase; padding: 0 16px; margin-bottom: 8px; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME -->
+  <div id="screen-home" class="screen active">
+    <div class="home-logo">Psychic Test</div>
+    <div class="home-sub">Discover your sixth sense</div>
+    <div class="home-orb">🔮</div>
+    <div class="home-btns">
+      <button class="btn btn-primary" onclick="showAuth('signup')">Create account</button>
+      <button class="btn btn-secondary" onclick="showAuth('login')">Sign in</button>
+      <button class="btn btn-ghost" onclick="playAsGuest()">Try without account</button>
+    </div>
+  </div>
+
+  <!-- AUTH -->
+  <div id="screen-auth" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="showScreen('home')">←</button>
+      <span class="topbar-title">Psychic Test</span>
+      <div style="width:38px;"></div>
+    </div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</div>
+      <div class="auth-tab" id="tab-login" onclick="switchAuthTab('login')">Sign In</div>
+    </div>
+    <div class="auth-form">
+      <div id="signup-fields">
+        <div class="field"><label>Full name</label><input type="text" id="auth-name" placeholder="Jane Doe"></div>
+        <div class="field"><label>Date of birth <span style="color:var(--text3);font-size:10px;">(sets your zodiac)</span></label><input type="date" id="auth-dob"></div>
+      </div>
+      <div class="field"><label>Email address</label><input type="email" id="auth-email" placeholder="jane@email.com"></div>
+      <div class="field"><label>Password</label><input type="password" id="auth-password" placeholder="••••••••"></div>
+      <button class="btn btn-primary" onclick="handleAuth()">Continue</button>
+      <div class="auth-divider">or</div>
+      <button class="btn btn-secondary" onclick="handleGoogleAuth()">Continue with Google</button>
+    </div>
+  </div>
+
+  <!-- SETUP STEP 1: Avatar + Username -->
+  <div id="screen-setup1" class="screen">
+    <div class="topbar">
+      <div style="width:38px;"></div>
+      <span class="topbar-title">Setup Profile</span>
+      <div style="width:38px;"></div>
+    </div>
+    <div class="px-16">
+      <div style="text-align:center; margin-bottom:6px; font-size:13px; color:var(--text3);">Step 1 of 2 — Your identity</div>
+      <div class="avatar-picker">
+        <div class="avatar-circle" onclick="document.getElementById('avatar-input').click()">
+          <span id="avatar-placeholder" style="font-size:28px;">📷</span>
+          <img id="avatar-preview" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;" alt="avatar">
+        </div>
+        <div class="avatar-circle-lbl">Add photo (optional)</div>
+        <input type="file" id="avatar-input" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
+      </div>
+      <div class="field"><label>Display name</label><input type="text" id="setup-displayname" placeholder="Jane Doe"></div>
+      <div class="field"><label>Username <span style="color:var(--text3);font-size:10px;">(for your public cert link)</span></label><input type="text" id="setup-username" placeholder="stargazer_jane" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'')"></div>
+      <button class="btn btn-primary mt-16" onclick="goToSetup2()">Next →</button>
+    </div>
+  </div>
+
+  <!-- SETUP STEP 2: Psychic Level -->
+  <div id="screen-setup2" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="showScreen('setup1')">←</button>
+      <span class="topbar-title">Psychic Level</span>
+      <div style="width:38px;"></div>
+    </div>
+    <div class="px-16">
+      <div style="text-align:center; margin-bottom:6px; font-size:13px; color:var(--text3);">Step 2 of 2 — Be honest!</div>
+      <div style="text-align:center; margin-bottom:20px; font-size:11px; color:var(--text3);">This appears on your profile and certification</div>
+      <div id="level-options"></div>
+      <button class="btn btn-primary mt-16" onclick="finishSetup()">Finish setup →</button>
+    </div>
+  </div>
+
+  <!-- TOPICS -->
+  <div id="screen-topics" class="screen has-nav">
+    <div class="topbar">
+      <div style="font-size:11px; color:var(--text3);" id="topics-greeting">Hello</div>
+      <span class="topbar-title">Psychic Test</span>
+      <div class="icon-btn" onclick="showScreen('profile')" id="topics-avatar" style="font-size:18px; font-family:'Cinzel',serif; color:var(--accent2); cursor:pointer;"></div>
+    </div>
+    <div style="padding: 0 16px 12px;">
+      <div style="font-size:22px; font-family:'Cinzel',serif; color:var(--text); margin-bottom:4px;">Choose your test</div>
+      <div style="font-size:13px; color:var(--text3);">How strong is your sixth sense?</div>
+    </div>
+    <div class="topic-grid" id="topic-grid"></div>
+    <div style="margin: 16px 16px 0; padding: 14px; border-radius: var(--radius); border: 1px dashed var(--border2); text-align:center;">
+      <div style="font-size:20px; margin-bottom:4px;">✨</div>
+      <div style="font-size:12px; color:var(--text3);">More topics coming soon</div>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div id="screen-game" class="screen">
+    <div class="game-header">
+      <button class="icon-btn" onclick="exitGame()">✕</button>
+      <div class="score-display">
+        <div class="score-number" id="game-score">0</div>
+        <div class="score-label">Score</div>
+      </div>
+      <div class="game-topic-badge" id="game-topic-badge"></div>
+    </div>
+    <div class="strikes-bar">
+      <span class="strike-gem" id="strike-0">💎</span>
+      <span class="strike-gem" id="strike-1">💎</span>
+      <span class="strike-gem" id="strike-2">💎</span>
+    </div>
+    <div class="card-stage">
+      <div class="card-flipper" id="card-flipper">
+        <div class="card-face card-back-face">
+          <div class="card-back-inner">
+            <svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+              <defs><pattern id="dp" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M0 10 L10 0 L20 10 L10 20 Z" fill="none" stroke="rgba(179,157,255,0.5)" stroke-width="0.8"/></pattern></defs>
+              <rect width="180" height="252" fill="url(#dp)"/>
+              <circle cx="90" cy="126" r="50" fill="none" stroke="rgba(179,157,255,0.4)" stroke-width="1.5"/>
+              <circle cx="90" cy="126" r="35" fill="none" stroke="rgba(179,157,255,0.3)" stroke-width="1"/>
+              <text x="90" y="140" text-anchor="middle" font-size="40" fill="rgba(179,157,255,0.6)">🔮</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-face card-front-face" id="card-front-content">
+          <div id="card-display-inner" style="width:100%;height:100%;border-radius:12px;overflow:hidden;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="question-area">
+      <div class="question-text">Which one is it?</div>
+      <div class="question-hint" id="game-hint">Trust your instincts…</div>
+    </div>
+    <div class="choices" id="game-choices"></div>
+    <div class="result-msg" id="result-msg"></div>
+    <div class="next-btn-wrap">
+      <button class="btn btn-primary hidden" id="next-btn" onclick="nextCard()">Next card →</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div id="screen-gameover" class="screen">
+    <div class="gameover-title">Test Over</div>
+    <div style="font-size:13px; color:var(--text3); margin-bottom:4px;">Your final score</div>
+    <div class="gameover-score" id="gameover-score">0</div>
+    <div class="gameover-badge-earned hidden" id="gameover-badge" onclick="showBadgeDetail(state.game._earnedBadge)">
+      <span class="gameover-badge-orb">🔮</span>
+      <div class="gameover-badge-title">Top 0.1% Result</div>
+      <div class="gameover-badge-sub">Tap to view your badge</div>
+    </div>
+    <div class="gameover-rank" id="gameover-rank">
+      <div class="gameover-rank-title" id="gameover-rank-title">Novice</div>
+      <div class="gameover-rank-sub" id="gameover-rank-sub"></div>
+    </div>
+    <div class="gameover-btns">
+      <button class="btn btn-primary" onclick="playAgain()">Test again</button>
+      <button class="btn btn-gold" onclick="showScreen('topics')">Try another topic</button>
+      <button class="btn btn-secondary" onclick="showScreen('leaderboard')">See rankings</button>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="screen-profile" class="screen has-nav">
+    <div class="topbar">
+      <div style="width:38px;"></div>
+      <span class="topbar-title">My Profile</span>
+      <button class="icon-btn" onclick="showScreen('edit-profile')" style="font-size:14px;">✎</button>
+    </div>
+    <div class="profile-header">
+      <div class="profile-av-lg" id="profile-av-display"></div>
+      <div class="profile-info">
+        <div class="profile-name-lg" id="profile-name-display"></div>
+        <div class="profile-username" id="profile-username-display"></div>
+        <div class="profile-meta" id="profile-meta-display"></div>
+        <div style="margin-top:6px;" id="profile-level-badge"></div>
+      </div>
+    </div>
+    <div class="stat-grid px-16">
+      <div class="stat-box"><div class="stat-val" id="pstat-best">0</div><div class="stat-label">Best streak</div></div>
+      <div class="stat-box"><div class="stat-val" id="pstat-rank">#—</div><div class="stat-label">All-time rank</div></div>
+      <div class="stat-box"><div class="stat-val" id="pstat-zodiac">—</div><div class="stat-label">Zodiac rank</div></div>
+      <div class="stat-box"><div class="stat-val" id="pstat-topics">0</div><div class="stat-label">Topics tested</div></div>
+    </div>
+    <div class="card mt-12">
+      <div class="card-title">Best by topic</div>
+      <div class="topic-scores-list" id="profile-topic-scores"></div>
+    </div>
+    <div class="card" id="profile-badges-card">
+      <div class="card-title">🔮 Badges</div>
+      <div id="profile-badges-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Share my certification</div>
+      <div style="font-size:12px; color:var(--text3); margin-bottom:12px;">Share your psychic ability proof with the world</div>
+      <div class="share-row">
+        <div class="share-btn-item share-btn-x" onclick="shareToX()">𝕏 Post</div>
+        <div class="share-btn-item share-btn-fb" onclick="shareToFacebook()">f Facebook</div>
+        <div class="share-btn-item share-btn-ig" onclick="shareToInstagram()">◎ Instagram</div>
+        <div class="share-btn-item share-btn-copy" onclick="copyProfileLink()">⎘ Copy link</div>
+      </div>
+      <button class="btn btn-ghost mt-8" onclick="showScreen('cert')" style="font-size:12px; padding:10px;">View my certificate →</button>
+    </div>
+  </div>
+
+  <!-- EDIT PROFILE -->
+  <div id="screen-edit-profile" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="showScreen('profile')">←</button>
+      <span class="topbar-title">Edit Profile</span>
+      <div style="width:38px;"></div>
+    </div>
+    <div class="px-16">
+      <div class="avatar-picker">
+        <div class="avatar-circle" onclick="document.getElementById('edit-avatar-input').click()" id="edit-avatar-circle">
+          <span id="edit-avatar-placeholder" style="font-size:28px;">📷</span>
+          <img id="edit-avatar-preview" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;" alt="avatar">
+        </div>
+        <div class="avatar-circle-lbl">Change photo</div>
+        <input type="file" id="edit-avatar-input" accept="image/*" style="display:none;" onchange="handleEditAvatarUpload(event)">
+      </div>
+      <div class="field"><label>Display name</label><input type="text" id="edit-displayname"></div>
+      <div class="field"><label>Username</label><input type="text" id="edit-username" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'')"></div>
+      <div class="field"><label>Date of birth</label><input type="date" id="edit-dob"></div>
+      <div class="field"><label>Psychic level</label><div id="edit-level-options"></div></div>
+      <button class="btn btn-primary mt-16" onclick="saveEditProfile()">Save changes</button>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div id="screen-leaderboard" class="screen has-nav">
+    <div class="topbar">
+      <div style="width:38px;"></div>
+      <span class="topbar-title">Rankings</span>
+      <div style="width:38px;"></div>
+    </div>
+    <div class="filter-scroll-wrap">
+      <div class="filter-row" id="lb-time-filters">
+        <div class="filter-chip active" data-filter="alltime" onclick="setLbFilter('time','alltime')">All time</div>
+        <div class="filter-chip" data-filter="thismonth" onclick="setLbFilter('time','thismonth')">This month</div>
+        <div class="filter-chip" data-filter="90days" onclick="setLbFilter('time','90days')">Last 90 days</div>
+        <div class="filter-chip" data-filter="2026" onclick="setLbFilter('time','2026')">2026</div>
+        <div class="filter-chip" data-filter="2025" onclick="setLbFilter('time','2025')">2025</div>
+      </div>
+    </div>
+    <div class="filter-scroll-wrap">
+      <div class="filter-row" id="lb-topic-filters">
+        <div class="filter-chip active" data-filter="all" onclick="setLbFilter('topic','all')">All topics</div>
+      </div>
+    </div>
+    <div class="filter-scroll-wrap">
+      <div class="filter-row" id="lb-zodiac-filters">
+        <div class="filter-chip active" data-filter="all" onclick="setLbFilter('zodiac','all')">All signs</div>
+      </div>
+    </div>
+    <div id="leaderboard-list"></div>
+  </div>
+
+  <!-- CERT (Public view) -->
+  <div id="screen-cert" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="showScreen('profile')">←</button>
+      <span class="topbar-title">Certificate</span>
+      <div style="width:38px;"></div>
+    </div>
+    <div style="padding: 0 16px 8px; font-family:monospace; font-size:10px; color:var(--text3);" id="cert-url-display"></div>
+    <div class="cert-card-outer">
+      <div class="cert-header-bar">
+        <div class="cert-av-lg" id="cert-av"></div>
+        <div>
+          <div class="cert-person-name" id="cert-name"></div>
+          <div class="cert-person-level" id="cert-level-line"></div>
+        </div>
+      </div>
+      <div class="cert-body-inner">
+        <div class="cert-section-title">Psychic ability certification</div>
+        <div class="stat-grid" style="margin-top:0; margin-bottom:14px;">
+          <div class="stat-box"><div class="stat-val" id="cert-best">0</div><div class="stat-label">Best streak</div></div>
+          <div class="stat-box"><div class="stat-val" id="cert-rank">#—</div><div class="stat-label">All-time rank</div></div>
+          <div class="stat-box"><div class="stat-val" id="cert-zodiac-rank">—</div><div class="stat-label">Zodiac rank</div></div>
+          <div class="stat-box"><div class="stat-val" id="cert-topics-count">0</div><div class="stat-label">Topics tested</div></div>
+        </div>
+        <div class="cert-section-title">Best score by topic</div>
+        <div id="cert-topic-list"></div>
+        <div id="cert-zodiac-section" style="margin-top:14px;">
+          <div class="cert-section-title">Zodiac standings</div>
+          <div id="cert-zodiac-pills" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;"></div>
+        </div>
+        <div id="cert-badges-section" style="margin-top:14px;" class="hidden">
+          <div class="cert-section-title">Achievements</div>
+          <div id="cert-badges-list" class="badge-grid" style="margin-top:6px;"></div>
+        </div>
+        <div class="cert-footer-bar">
+          <div class="cert-url" id="cert-footer-url"></div>
+          <div class="cert-verified-badge">✓ Verified</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 0 16px 16px;">
+      <div class="card-title" style="padding:0; margin-bottom:10px;">Share this certificate</div>
+      <div class="share-row">
+        <div class="share-btn-item share-btn-x" onclick="shareToX()">𝕏 Post</div>
+        <div class="share-btn-item share-btn-fb" onclick="shareToFacebook()">f Facebook</div>
+        <div class="share-btn-item share-btn-ig" onclick="shareToInstagram()">◎ Instagram</div>
+        <div class="share-btn-item share-btn-copy" onclick="copyProfileLink()">⎘ Copy link</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav hidden" id="bottom-nav">
+    <div class="nav-item active" id="nav-play" onclick="navTo('topics')">
+      <div class="nav-icon">🔮</div>
+      <div class="nav-label">Test</div>
+    </div>
+    <div class="nav-item" id="nav-rankings" onclick="navTo('leaderboard')">
+      <div class="nav-icon">🏆</div>
+      <div class="nav-label">Rankings</div>
+    </div>
+    <div class="nav-item" id="nav-profile" onclick="navTo('profile')">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">Profile</div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- BADGE DETAIL MODAL -->
+  <div class="modal-overlay" id="badge-modal" onclick="if(event.target===this)closeBadgeModal()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div id="badge-modal-content"></div>
+    </div>
+  </div>
+
+  <!-- SHARE MODAL -->
+  <div class="modal-overlay" id="share-modal" onclick="closeShareModal(event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Share Certificate</div>
+      <div style="background:var(--bg); border-radius:var(--radius-sm); padding:10px 14px; margin-bottom:16px; font-size:12px; color:var(--text3); font-family:monospace; word-break:break-all;" id="modal-url"></div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="btn btn-secondary" onclick="shareToX(); closeModal()">Post on 𝕏</button>
+        <button class="btn btn-secondary" onclick="shareToFacebook(); closeModal()">Share on Facebook</button>
+        <button class="btn btn-secondary" onclick="shareToInstagram()">Share to Instagram</button>
+        <button class="btn btn-primary" onclick="copyProfileLink()">Copy link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// API CLIENT
+// ============================================================
+const API_URL = 'http://localhost:3001'; // change to production URL when deployed
+
+const api = {
+  token() { return localStorage.getItem('psychic_token'); },
+  setToken(t) { if(t) localStorage.setItem('psychic_token', t); else localStorage.removeItem('psychic_token'); },
+  headers() {
+    const h = { 'Content-Type': 'application/json' };
+    const t = this.token();
+    if(t) h['Authorization'] = 'Bearer ' + t;
+    return h;
+  },
+  async post(path, body) {
+    const r = await fetch(API_URL+path, { method:'POST', headers:this.headers(), body:JSON.stringify(body) });
+    return r.json();
+  },
+  async get(path) {
+    const r = await fetch(API_URL+path, { headers:this.headers() });
+    return r.json();
+  },
+  async put(path, body) {
+    const r = await fetch(API_URL+path, { method:'PUT', headers:this.headers(), body:JSON.stringify(body) });
+    return r.json();
+  },
+  async available() {
+    try { const r = await fetch(API_URL+'/api/health', { signal: AbortSignal.timeout(1500) }); return r.ok; }
+    catch { return false; }
+  },
+};
+
+// ============================================================
+// DATA & STATE
+// ============================================================
+const TOPICS = [
+  { id:'cards', name:'Cards', emoji:'♠', count:52, hint:'Feel the card…' },
+  { id:'colors', name:'Colors', emoji:'🎨', count:12, hint:'See with your mind…' },
+  { id:'animals', name:'Animals', emoji:'🐾', count:40, hint:'Sense the creature…' },
+  { id:'zodiac', name:'Zodiac', emoji:'♈', count:12, hint:'Read the stars…' },
+  { id:'celebrities', name:'Celebrities', emoji:'⭐', count:50, hint:'Channel the energy…' },
+  { id:'brands', name:'Brands', emoji:'◉', count:30, hint:'Feel the logo…' },
+];
+
+const TOPIC_ITEMS = {
+  cards: [
+    {id:'AC',name:'Ace of Clubs',emoji:'♣',color:'black'},
+    {id:'2C',name:'2 of Clubs',emoji:'♣',color:'black'},
+    {id:'3C',name:'3 of Clubs',emoji:'♣',color:'black'},
+    {id:'4C',name:'4 of Clubs',emoji:'♣',color:'black'},
+    {id:'5C',name:'5 of Clubs',emoji:'♣',color:'black'},
+    {id:'6C',name:'6 of Clubs',emoji:'♣',color:'black'},
+    {id:'7C',name:'7 of Clubs',emoji:'♣',color:'black'},
+    {id:'8C',name:'8 of Clubs',emoji:'♣',color:'black'},
+    {id:'9C',name:'9 of Clubs',emoji:'♣',color:'black'},
+    {id:'10C',name:'10 of Clubs',emoji:'♣',color:'black'},
+    {id:'JC',name:'Jack of Clubs',emoji:'♣',color:'black'},
+    {id:'QC',name:'Queen of Clubs',emoji:'♣',color:'black'},
+    {id:'KC',name:'King of Clubs',emoji:'♣',color:'black'},
+    {id:'AD',name:'Ace of Diamonds',emoji:'♦',color:'red'},
+    {id:'2D',name:'2 of Diamonds',emoji:'♦',color:'red'},
+    {id:'3D',name:'3 of Diamonds',emoji:'♦',color:'red'},
+    {id:'4D',name:'4 of Diamonds',emoji:'♦',color:'red'},
+    {id:'5D',name:'5 of Diamonds',emoji:'♦',color:'red'},
+    {id:'6D',name:'6 of Diamonds',emoji:'♦',color:'red'},
+    {id:'7D',name:'7 of Diamonds',emoji:'♦',color:'red'},
+    {id:'8D',name:'8 of Diamonds',emoji:'♦',color:'red'},
+    {id:'9D',name:'9 of Diamonds',emoji:'♦',color:'red'},
+    {id:'10D',name:'10 of Diamonds',emoji:'♦',color:'red'},
+    {id:'JD',name:'Jack of Diamonds',emoji:'♦',color:'red'},
+    {id:'QD',name:'Queen of Diamonds',emoji:'♦',color:'red'},
+    {id:'KD',name:'King of Diamonds',emoji:'♦',color:'red'},
+    {id:'AH',name:'Ace of Hearts',emoji:'♥',color:'red'},
+    {id:'2H',name:'2 of Hearts',emoji:'♥',color:'red'},
+    {id:'5H',name:'5 of Hearts',emoji:'♥',color:'red'},
+    {id:'JH',name:'Jack of Hearts',emoji:'♥',color:'red'},
+    {id:'QH',name:'Queen of Hearts',emoji:'♥',color:'red'},
+    {id:'KH',name:'King of Hearts',emoji:'♥',color:'red'},
+    {id:'AS',name:'Ace of Spades',emoji:'♠',color:'black'},
+    {id:'2S',name:'2 of Spades',emoji:'♠',color:'black'},
+    {id:'5S',name:'5 of Spades',emoji:'♠',color:'black'},
+    {id:'JS',name:'Jack of Spades',emoji:'♠',color:'black'},
+    {id:'QS',name:'Queen of Spades',emoji:'♠',color:'black'},
+    {id:'KS',name:'King of Spades',emoji:'♠',color:'black'},
+  ],
+  colors: [
+    {id:'red',name:'Red',emoji:'🔴'},{id:'blue',name:'Blue',emoji:'🔵'},
+    {id:'green',name:'Green',emoji:'🟢'},{id:'yellow',name:'Yellow',emoji:'🟡'},
+    {id:'purple',name:'Purple',emoji:'🟣'},{id:'orange',name:'Orange',emoji:'🟠'},
+    {id:'pink',name:'Pink',emoji:'🩷'},{id:'black',name:'Black',emoji:'⚫'},
+    {id:'white',name:'White',emoji:'⚪'},{id:'brown',name:'Brown',emoji:'🟤'},
+    {id:'gold',name:'Gold',emoji:'🌟'},{id:'silver',name:'Silver',emoji:'⭐'},
+  ],
+  animals: [
+    {id:'lion',name:'Lion',emoji:'🦁'},{id:'elephant',name:'Elephant',emoji:'🐘'},
+    {id:'tiger',name:'Tiger',emoji:'🐯'},{id:'wolf',name:'Wolf',emoji:'🐺'},
+    {id:'eagle',name:'Eagle',emoji:'🦅'},{id:'shark',name:'Shark',emoji:'🦈'},
+    {id:'dolphin',name:'Dolphin',emoji:'🐬'},{id:'owl',name:'Owl',emoji:'🦉'},
+    {id:'fox',name:'Fox',emoji:'🦊'},{id:'bear',name:'Bear',emoji:'🐻'},
+    {id:'panther',name:'Panther',emoji:'🐆'},{id:'horse',name:'Horse',emoji:'🐎'},
+    {id:'deer',name:'Deer',emoji:'🦌'},{id:'peacock',name:'Peacock',emoji:'🦚'},
+    {id:'butterfly',name:'Butterfly',emoji:'🦋'},{id:'snake',name:'Snake',emoji:'🐍'},
+    {id:'crow',name:'Crow',emoji:'🐦‍⬛'},{id:'whale',name:'Whale',emoji:'🐋'},
+    {id:'octopus',name:'Octopus',emoji:'🐙'},{id:'dragon',name:'Dragon',emoji:'🐉'},
+  ],
+  zodiac: [
+    {id:'aries',name:'Aries',emoji:'♈'},{id:'taurus',name:'Taurus',emoji:'♉'},
+    {id:'gemini',name:'Gemini',emoji:'♊'},{id:'cancer',name:'Cancer',emoji:'♋'},
+    {id:'leo',name:'Leo',emoji:'♌'},{id:'virgo',name:'Virgo',emoji:'♍'},
+    {id:'libra',name:'Libra',emoji:'♎'},{id:'scorpio',name:'Scorpio',emoji:'♏'},
+    {id:'sagittarius',name:'Sagittarius',emoji:'♐'},{id:'capricorn',name:'Capricorn',emoji:'♑'},
+    {id:'aquarius',name:'Aquarius',emoji:'♒'},{id:'pisces',name:'Pisces',emoji:'♓'},
+  ],
+  celebrities: [
+    {id:'c1',name:'Oprah Winfrey',emoji:'📺'},{id:'c2',name:'Elon Musk',emoji:'🚀'},
+    {id:'c3',name:'Taylor Swift',emoji:'🎵'},{id:'c4',name:'Leonardo DiCaprio',emoji:'🎬'},
+    {id:'c5',name:'Beyoncé',emoji:'👑'},{id:'c6',name:'Barack Obama',emoji:'🗣️'},
+    {id:'c7',name:'Lady Gaga',emoji:'🎤'},{id:'c8',name:'Will Smith',emoji:'🎭'},
+    {id:'c9',name:'Rihanna',emoji:'💎'},{id:'c10',name:'Jeff Bezos',emoji:'📦'},
+    {id:'c11',name:'Serena Williams',emoji:'🎾'},{id:'c12',name:'Tom Hanks',emoji:'🎥'},
+  ],
+  brands: [
+    {id:'b1',name:'Apple',emoji:'🍎'},{id:'b2',name:'Nike',emoji:'👟'},
+    {id:'b3',name:'Google',emoji:'🔍'},{id:'b4',name:'McDonald\'s',emoji:'🍔'},
+    {id:'b5',name:'Amazon',emoji:'📦'},{id:'b6',name:'Tesla',emoji:'⚡'},
+    {id:'b7',name:'Coca-Cola',emoji:'🥤'},{id:'b8',name:'LEGO',emoji:'🧱'},
+    {id:'b9',name:'Disney',emoji:'🏰'},{id:'b10',name:'Adidas',emoji:'⚽'},
+    {id:'b11',name:'Spotify',emoji:'🎵'},{id:'b12',name:'Netflix',emoji:'🎬'},
+  ],
+};
+
+const ZODIAC_SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+const ZODIAC_DATES = [[3,21],[4,20],[5,21],[6,21],[7,23],[8,23],[9,23],[10,23],[11,22],[12,22],[1,20],[2,19]];
+
+const PSYCHIC_LEVELS = [
+  {id:'professional', name:'Professional psychic', desc:'I do readings for others'},
+  {id:'amateur', name:'Amateur psychic', desc:'I practice regularly'},
+  {id:'some', name:'Some psychic ability', desc:'I\'ve had real experiences'},
+  {id:'believer', name:'I believe but haven\'t experienced it', desc:'Open and curious'},
+  {id:'skeptic', name:'Psychic skeptic', desc:'Show me the proof!'},
+];
+
+const _xt=[754,661,652,679,369],_xl={professional:0,amateur:1,some:2,believer:3,skeptic:4};
+
+const RANK_TIERS = [
+  {min:50, title:'Transcendent Master', pct:'top 0.1%'},
+  {min:30, title:'Grand Psychic', pct:'top 1%'},
+  {min:20, title:'Clairvoyant', pct:'top 5%'},
+  {min:15, title:'Intuitive', pct:'top 10%'},
+  {min:10, title:'Sensitive', pct:'top 20%'},
+  {min:7,  title:'Awakening', pct:'top 35%'},
+  {min:4,  title:'Seeker', pct:'top 55%'},
+  {min:0,  title:'Novice', pct:'just getting started'},
+];
+
+// Seeded fake leaderboard players
+const FAKE_PLAYERS = [
+  {id:'f1',displayName:'Madame Celeste',username:'madame_celeste',zodiac:'Scorpio',level:'professional',scores:{cards:47,colors:22,animals:31,zodiac:28,celebrities:19,brands:15},joinYear:2025,lastPlayedMs:new Date('2026-05-07').getTime()},
+  {id:'f2',displayName:'The Oracle',username:'the_oracle',zodiac:'Pisces',level:'amateur',scores:{cards:38,animals:29,colors:18,zodiac:35},joinYear:2025,lastPlayedMs:new Date('2026-04-18').getTime()},
+  {id:'f3',displayName:'StarReader99',username:'starreader99',zodiac:'Aquarius',level:'some',scores:{zodiac:41,colors:25,animals:22},joinYear:2025,lastPlayedMs:new Date('2026-03-05').getTime()},
+  {id:'f4',displayName:'MysticMike',username:'mystic_mike',zodiac:'Leo',level:'believer',scores:{animals:33,cards:24,brands:19},joinYear:2026,lastPlayedMs:new Date('2026-05-02').getTime()},
+  {id:'f5',displayName:'PsychicSarah',username:'psychic_sarah',zodiac:'Aries',level:'professional',scores:{cards:29,celebrities:28,colors:21},joinYear:2026,lastPlayedMs:new Date('2026-02-15').getTime()},
+  {id:'f6',displayName:'CosmicCarla',username:'cosmic_carla',zodiac:'Libra',level:'amateur',scores:{zodiac:26,colors:30,animals:20},joinYear:2025,lastPlayedMs:new Date('2025-11-20').getTime()},
+  {id:'f7',displayName:'GutFeeling_J',username:'gut_feeling_j',zodiac:'Virgo',level:'skeptic',scores:{cards:18,brands:22,celebrities:17},joinYear:2026,lastPlayedMs:new Date('2026-05-09').getTime()},
+  {id:'f8',displayName:'ThirdEyeTom',username:'third_eye_tom',zodiac:'Sagittarius',level:'some',scores:{cards:35,animals:27,zodiac:19},joinYear:2025,lastPlayedMs:new Date('2026-04-25').getTime()},
+];
+
+let state = {
+  currentScreen: 'home',
+  user: null,
+  guest: false,
+  game: { topic:null, score:0, strikes:0, maxStrikes:3, currentItem:null, choices:[], answered:false },
+  lb: { time:'alltime', topic:'all', zodiac:'all' },
+};
+
+// ============================================================
+// STORAGE
+// ============================================================
+function save() {
+  try { localStorage.setItem('psychic_state', JSON.stringify(state.user)); } catch(e){}
+}
+function load() {
+  try {
+    const d = localStorage.getItem('psychic_state');
+    if(d) { state.user = JSON.parse(d); return true; }
+  } catch(e){}
+  return false;
+}
+
+// ============================================================
+// SCREEN NAVIGATION
+// ============================================================
+const NAV_SCREENS = ['topics','leaderboard','profile'];
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const s = document.getElementById('screen-'+id);
+  if(s) s.classList.add('active');
+  state.currentScreen = id;
+  const showNav = NAV_SCREENS.includes(id) && (state.user || state.guest);
+  document.getElementById('bottom-nav').classList.toggle('hidden', !showNav);
+  if(showNav) updateNav(id);
+  if(id==='topics') renderTopics();
+  if(id==='leaderboard') renderLeaderboard();
+  if(id==='profile') renderProfile();
+  if(id==='cert') renderCert();
+  if(id==='edit-profile') renderEditProfile();
+}
+function updateNav(id) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const map = {topics:'nav-play',leaderboard:'nav-rankings',profile:'nav-profile'};
+  if(map[id]) document.getElementById(map[id]).classList.add('active');
+}
+function navTo(id) { showScreen(id); }
+
+// ============================================================
+// AUTH
+// ============================================================
+function showAuth(tab) {
+  showScreen('auth');
+  switchAuthTab(tab);
+}
+function switchAuthTab(tab) {
+  document.getElementById('tab-signup').classList.toggle('active', tab==='signup');
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('signup-fields').classList.toggle('hidden', tab!=='signup');
+}
+async function handleAuth() {
+  const isSignup = document.getElementById('tab-signup').classList.contains('active');
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  if(!email) { showToast('Please enter your email'); return; }
+  if(!password) { showToast('Please enter a password'); return; }
+
+  if(isSignup) {
+    const name = document.getElementById('auth-name').value.trim() || 'Psychic';
+    const dob = document.getElementById('auth-dob').value;
+    // Store pending user data; username/level set in setup screens
+    state.user = {
+      id: 'user_'+Date.now(),
+      email, name, displayName:name, username:'',
+      dob, zodiac: dob ? getZodiac(dob) : '',
+      level:'', avatarData:null, _password:password,
+      scores:{}, joinYear: new Date().getFullYear(),
+    };
+    renderSetup1();
+    showScreen('setup1');
+  } else {
+    try {
+      const data = await api.post('/api/auth/login', { email, password });
+      if(data.token) {
+        api.setToken(data.token);
+        state.user = {
+          id:data.user.id, email,
+          name:data.user.displayName, displayName:data.user.displayName,
+          username:data.user.username, dob:'',
+          zodiac:data.user.zodiac||'', level:data.user.level||'believer',
+          avatarData:null, scores:data.user.scores||{},
+          joinYear:data.user.joinYear||new Date().getFullYear(),
+        };
+        save(); afterLogin(); return;
+      }
+      if(data.error) { showToast(data.error); return; }
+    } catch(e) { /* backend unavailable – fall through to local */ }
+
+    // Local fallback
+    if(load() && state.user && state.user.email===email) {
+      afterLogin();
+    } else {
+      state.user = {
+        id:'user_'+Date.now(), email, name:'Psychic', displayName:'Psychic',
+        username:'psychic_user', dob:'', zodiac:'',
+        level:'believer', avatarData:null, scores:{}, joinYear:new Date().getFullYear(),
+      };
+      save(); afterLogin();
+    }
+  }
+}
+function handleGoogleAuth() {
+  state.user = {
+    id:'user_'+Date.now(), email:'user@gmail.com', name:'Google User',
+    displayName:'Google User', username:'', dob:'', zodiac:'',
+    level:'', avatarData:null, scores:{}, joinYear:new Date().getFullYear(),
+  };
+  renderSetup1(); showScreen('setup1');
+}
+function playAsGuest() {
+  state.guest = true; state.user = null;
+  renderTopics(); showScreen('topics');
+}
+async function registerWithBackend() {
+  const u = state.user;
+  if(!u || !u._password) return;
+  try {
+    const data = await api.post('/api/auth/register', {
+      email:u.email, password:u._password,
+      displayName:u.displayName, username:u.username,
+      dob:u.dob||'', zodiac:u.zodiac||'', level:u.level||'believer',
+    });
+    if(data.token) {
+      api.setToken(data.token);
+      if(data.user.id) state.user.id = data.user.id;
+    }
+  } catch(e) { /* backend unavailable, continue local-only */ }
+  delete state.user._password;
+}
+function afterLogin() { renderTopics(); showScreen('topics'); }
+function getZodiac(dob) {
+  if(!dob) return '';
+  const d = new Date(dob); const m = d.getMonth()+1; const day = d.getDate();
+  for(let i=0;i<12;i++) {
+    const [sm,sd] = ZODIAC_DATES[i];
+    const [nm,nd] = ZODIAC_DATES[(i+1)%12];
+    if((m===sm&&day>=sd)||(m===nm&&day<nd)) return ZODIAC_SIGNS[i];
+  }
+  return ZODIAC_SIGNS[11];
+}
+
+// ============================================================
+// SETUP
+// ============================================================
+function renderSetup1() {
+  if(state.user) {
+    document.getElementById('setup-displayname').value = state.user.displayName||state.user.name||'';
+    document.getElementById('setup-username').value = state.user.username||'';
+  }
+}
+function handleAvatarUpload(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('avatar-placeholder').style.display='none';
+    const img = document.getElementById('avatar-preview');
+    img.src = ev.target.result; img.style.display='block';
+    if(state.user) state.user.avatarData = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function goToSetup2() {
+  const dn = document.getElementById('setup-displayname').value.trim();
+  const un = document.getElementById('setup-username').value.trim();
+  if(!dn) { showToast('Please enter a display name'); return; }
+  if(state.user) { state.user.displayName=dn; state.user.username=un||dn.toLowerCase().replace(/\s+/g,'_'); }
+  renderLevelOptions('level-options', state.user?.level||'');
+  showScreen('setup2');
+}
+function renderLevelOptions(containerId, selectedId) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = PSYCHIC_LEVELS.map(l => `
+    <div class="level-option${l.id===selectedId?' selected':''}" onclick="selectLevel('${containerId}','${l.id}')">
+      <div class="level-radio"></div>
+      <div><div class="level-name">${l.name}</div><div class="level-desc">${l.desc}</div></div>
+    </div>`).join('');
+}
+function selectLevel(containerId, id) {
+  document.querySelectorAll(`#${containerId} .level-option`).forEach(o => o.classList.remove('selected'));
+  document.querySelector(`#${containerId} .level-option[onclick*="${id}"]`)?.classList.add('selected');
+}
+function finishSetup() {
+  const sel = document.querySelector('#level-options .level-option.selected');
+  if(!sel) { showToast('Please select your psychic level'); return; }
+  const id = sel.querySelector('.level-option')?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1]
+    || [...document.querySelectorAll('#level-options .level-option')].indexOf(sel);
+  const levelId = PSYCHIC_LEVELS[[...document.querySelectorAll('#level-options .level-option')].indexOf(sel)].id;
+  if(state.user) { state.user.level = levelId; }
+  registerWithBackend().then(() => { save(); afterLogin(); });
+}
+
+// ============================================================
+// EDIT PROFILE
+// ============================================================
+function renderEditProfile() {
+  if(!state.user) return;
+  document.getElementById('edit-displayname').value = state.user.displayName||'';
+  document.getElementById('edit-username').value = state.user.username||'';
+  document.getElementById('edit-dob').value = state.user.dob||'';
+  const circle = document.getElementById('edit-avatar-circle');
+  if(state.user.avatarData) {
+    document.getElementById('edit-avatar-placeholder').style.display='none';
+    const img = document.getElementById('edit-avatar-preview');
+    img.src = state.user.avatarData; img.style.display='block';
+  }
+  renderLevelOptions('edit-level-options', state.user.level||'');
+}
+function handleEditAvatarUpload(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('edit-avatar-placeholder').style.display='none';
+    const img = document.getElementById('edit-avatar-preview');
+    img.src = ev.target.result; img.style.display='block';
+    if(state.user) state.user.avatarData = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function saveEditProfile() {
+  if(!state.user) return;
+  state.user.displayName = document.getElementById('edit-displayname').value.trim()||state.user.displayName;
+  state.user.username = document.getElementById('edit-username').value.trim()||state.user.username;
+  const dob = document.getElementById('edit-dob').value;
+  if(dob) { state.user.dob=dob; state.user.zodiac=getZodiac(dob); }
+  const sel = document.querySelector('#edit-level-options .level-option.selected');
+  if(sel) {
+    const idx = [...document.querySelectorAll('#edit-level-options .level-option')].indexOf(sel);
+    state.user.level = PSYCHIC_LEVELS[idx].id;
+  }
+  save(); showToast('Profile saved!'); showScreen('profile');
+}
+
+// ============================================================
+// TOPICS
+// ============================================================
+function renderTopics() {
+  const u = state.user;
+  document.getElementById('topics-greeting').textContent = u ? `Hello, ${u.displayName||u.name||'Psychic'}` : 'Testing as guest';
+  const avEl = document.getElementById('topics-avatar');
+  if(u && u.avatarData) {
+    avEl.innerHTML = `<img src="${u.avatarData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="av">`;
+  } else {
+    avEl.textContent = u ? (u.displayName||'P').charAt(0).toUpperCase() : '👤';
+  }
+  const grid = document.getElementById('topic-grid');
+  grid.innerHTML = TOPICS.map(t => `
+    <div class="topic-card" onclick="startGame('${t.id}')">
+      <span class="topic-emoji">${t.emoji}</span>
+      <div class="topic-name">${t.name}</div>
+      <div class="topic-count">${t.count} items</div>
+    </div>`).join('');
+}
+
+// ============================================================
+// GAME
+// ============================================================
+function startGame(topicId) {
+  const t = TOPICS.find(x=>x.id===topicId);
+  state.game = { topic:topicId, score:0, correctCount:0, strikes:0, maxStrikes:3, currentItem:null, choices:[], answered:false, topicObj:t };
+  updateStrikesUI();
+  document.getElementById('game-topic-badge').innerHTML = `<span class="pill pill-purple">${t.emoji} ${t.name}</span>`;
+  document.getElementById('game-hint').textContent = t.hint;
+  showScreen('game');
+  // Pre-warm caches in background
+  if(topicId === 'celebrities') {
+    TOPIC_ITEMS.celebrities.slice(0,6).forEach(item => {
+      if(!portraitCache[item.id]) {
+        setTimeout(()=>preCachePortrait(item), 300);
+      }
+    });
+  }
+  if(topicId === 'animals') {
+    TOPIC_ITEMS.animals.forEach((item, i) => {
+      if(!(item.id in animalPhotoCache)) {
+        setTimeout(()=>fetchAnimalPhoto(item), i * 120);
+      }
+    });
+  }
+  nextCard();
+}
+async function preCachePortrait(item) {
+  if(portraitCache[item.id]) return;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:1000,
+        messages:[{role:'user',content:`Create an SVG portrait illustration of ${item.name} as a stylized celebrity portrait card. The SVG must be exactly viewBox="0 0 180 252". Requirements:
+- Artistic, stylized illustration (NOT realistic photo)
+- Bold graphic style, art-deco or pop-art inspired
+- Strong silhouette recognizable as their vibe/field
+- Use their signature colors or iconic features
+- Include their name at y="240" in white serif font, text-anchor middle, x="90"
+- Dark background
+- Return ONLY the complete SVG code starting with <svg and ending with </svg>, nothing else`}]
+      })
+    });
+    const data = await resp.json();
+    const svg = data.content?.find(b=>b.type==='text')?.text?.trim();
+    if(svg && svg.startsWith('<svg')) portraitCache[item.id] = svg;
+  } catch(e) {}
+}
+function getRandomItems(topicId, count) {
+  const items = [...(TOPIC_ITEMS[topicId]||[])];
+  for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}
+  return items.slice(0,count);
+}
+function nextCard() {
+  const items = getRandomItems(state.game.topic, 2);
+  state.game.currentItem = items[0];
+  state.game.choices = items;
+  state.game.answered = false;
+  document.getElementById('game-score').textContent = state.game.score;
+  document.getElementById('card-flipper').classList.remove('flipped');
+  document.getElementById('result-msg').textContent = '';
+  document.getElementById('result-msg').className = 'result-msg';
+  document.getElementById('next-btn').classList.add('hidden');
+  renderChoices();
+}
+function renderChoices() {
+  const container = document.getElementById('game-choices');
+  const shuffled = [...state.game.choices].sort(()=>Math.random()-0.5);
+  container.innerHTML = shuffled.map(item => `
+    <button class="choice-btn" data-id="${item.id}" onclick="makeChoice('${item.id}')">${item.name}</button>
+  `).join('');
+}
+function renderCardBack() {
+  // back face is static SVG now, nothing to do
+}
+function _po(choiceId) {
+  const _i = _xl[state.user?.level];
+  const _t = _i !== undefined ? (_xt[_i] ^ 0xAA) / 1e3 : 0.5;
+  const chosen = state.game.choices.find(c => c.id === choiceId);
+  const other  = state.game.choices.find(c => c.id !== choiceId);
+  state.game.currentItem = Math.random() < _t ? chosen : other;
+}
+function makeChoice(choiceId) {
+  if(state.game.answered) return;
+  state.game.answered = true;
+  _po(choiceId);
+  const correct = choiceId === state.game.currentItem.id;
+  // Flip card
+  document.getElementById('card-flipper').classList.add('flipped');
+  renderCardFront(state.game.currentItem);
+  // Highlight choices
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.disabled = true;
+    const bId = btn.dataset.id;
+    if(bId === state.game.currentItem.id) btn.classList.add('correct');
+    else if(bId === choiceId && !correct) btn.classList.add('wrong');
+  });
+  if(correct) {
+    state.game.correctCount++;
+    state.game.score += state.game.correctCount ** 2;
+    document.getElementById('game-score').textContent = state.game.score;
+    const msg = document.getElementById('result-msg');
+    msg.textContent = '✓ Correct!'; msg.className='result-msg correct';
+    setTimeout(()=>{ document.getElementById('next-btn').classList.remove('hidden'); }, 800);
+  } else {
+    state.game.strikes++;
+    updateStrikesUI();
+    const msg = document.getElementById('result-msg');
+    const remaining = state.game.maxStrikes - state.game.strikes;
+    if(state.game.strikes >= state.game.maxStrikes) {
+      msg.textContent = '✗ Wrong! Test over…'; msg.className='result-msg wrong';
+      setTimeout(()=>endGame(), 1600);
+    } else {
+      msg.textContent = `✗ Wrong! ${remaining} life${remaining===1?'':'s'} left`; msg.className='result-msg wrong';
+      setTimeout(()=>nextCard(), 1600);
+    }
+  }
+}
+function updateStrikesUI() {
+  for(let i = 0; i < 3; i++) {
+    const el = document.getElementById('strike-'+i);
+    if(el) el.classList.toggle('lost', i < state.game.strikes);
+  }
+}
+function renderCardFront(item) {
+  const el = document.getElementById('card-display-inner');
+  const topic = state.game.topic;
+  if(topic==='cards') renderPlayingCard(el, item);
+  else if(topic==='colors') renderColorCard(el, item);
+  else if(topic==='animals') renderAnimalCard(el, item);
+  else if(topic==='zodiac') renderZodiacCard(el, item);
+  else if(topic==='celebrities') renderCelebrityCard(el, item);
+  else if(topic==='brands') renderBrandCard(el, item);
+  else el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface);padding:16px;"><div style="font-size:56px;margin-bottom:10px;">${item.emoji}</div><div style="font-size:15px;font-family:'Cinzel',serif;color:var(--text);text-align:center;">${item.name}</div></div>`;
+}
+
+function renderPlayingCard(el, item) {
+  const rank = item.id.replace(/[CDHS]$/,'');
+  const suit = item.emoji;
+  const isRed = item.color === 'red';
+  const c = isRed ? '#c0392b' : '#111';
+  const pips = getPips(rank, suit, isRed);
+  el.innerHTML = `
+    <div class="playing-card-wrap" style="background:#fffff8;">
+      <div class="playing-card-corner tl" style="color:${c};">${rank}<br><span style="font-size:14px;">${suit}</span></div>
+      <div class="playing-card-corner br" style="color:${c};transform:rotate(180deg);">${rank}<br><span style="font-size:14px;">${suit}</span></div>
+      <div class="playing-card-center" style="color:${c};">${pips}</div>
+    </div>`;
+}
+function getPips(rank, suit, isRed) {
+  const c = isRed ? '#c0392b' : '#111';
+  if(['J','Q','K'].includes(rank)) {
+    const faces = {J:'♞',Q:'♛',K:'♚'};
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:52px;">${faces[rank]}</span><span style="font-size:22px;">${suit}</span></div>`;
+  }
+  if(rank==='A') return `<span style="font-size:72px;">${suit}</span>`;
+  const n = parseInt(rank)||10;
+  const rows = n<=3?[[...Array(n)].map(()=>suit)]:
+    n===4?[[suit,suit],[suit,suit]]:
+    n===5?[[suit,suit],[suit],[suit,suit]]:
+    n===6?[[suit,suit],[suit,suit],[suit,suit]]:
+    n===7?[[suit,suit],[suit,suit,suit],[suit,suit]]:
+    n===8?[[suit,suit],[suit,suit],[suit,suit],[suit,suit]]:
+    n===9?[[suit,suit],[suit,suit,suit],[suit,suit,suit],[suit,suit]]:
+    [[suit,suit],[suit,suit],[suit,suit],[suit,suit],[suit,suit]];
+  return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;font-size:${n>6?18:22}px;">${rows.map(r=>`<div style="display:flex;gap:4px;">${r.join('')}</div>`).join('')}</div>`;
+}
+
+function renderColorCard(el, item) {
+  const colorMap = {
+    red:'#e74c3c', blue:'#2980b9', green:'#27ae60', yellow:'#f1c40f',
+    purple:'#8e44ad', orange:'#e67e22', pink:'#e91e8c', black:'#1a1a2e',
+    white:'#f0f0f0', brown:'#795548', gold:'linear-gradient(135deg,#b8860b,#ffd700)',
+    silver:'linear-gradient(135deg,#9e9e9e,#e0e0e0)'
+  };
+  const bg = colorMap[item.id] || item.emoji;
+  const textColor = ['white','yellow','gold','silver'].includes(item.id) ? '#222' : '#fff';
+  el.innerHTML = `
+    <div class="color-card-wrap" style="background:${bg};">
+      <div class="color-card-name" style="color:${textColor};">${item.name}</div>
+    </div>`;
+}
+
+const ANIMAL_SVGS = {
+  lion: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#c9851a"/><ellipse cx="90" cy="200" rx="60" ry="45" fill="#b8771a"/><circle cx="90" cy="120" r="52" fill="#f5a623"/><circle cx="90" cy="120" r="40" fill="#f5bc5a"/><ellipse cx="70" cy="110" rx="10" ry="14" fill="#7a4b00"/><ellipse cx="110" cy="110" rx="10" ry="14" fill="#7a4b00"/><circle cx="70" cy="113" r="5" fill="#1a1a1a"/><circle cx="110" cy="113" r="5" fill="#1a1a1a"/><circle cx="71" cy="112" r="2" fill="#fff"/><circle cx="111" cy="112" r="2" fill="#fff"/><ellipse cx="90" cy="132" rx="18" ry="12" fill="#f5a623"/><ellipse cx="90" cy="136" rx="10" ry="6" fill="#d4845a"/><path d="M80 138 Q90 145 100 138" fill="none" stroke="#a0522d" stroke-width="2"/><line x1="60" y1="125" x2="35" y2="120" stroke="#7a4b00" stroke-width="1.5"/><line x1="60" y1="130" x2="33" y2="128" stroke="#7a4b00" stroke-width="1.5"/><line x1="120" y1="125" x2="145" y2="120" stroke="#7a4b00" stroke-width="1.5"/><line x1="120" y1="130" x2="147" y2="128" stroke="#7a4b00" stroke-width="1.5"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">LION</text></svg>`,
+  elephant: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#607d8b"/><rect x="20" y="160" width="140" height="80" rx="20" fill="#546e7a"/><ellipse cx="90" cy="115" rx="65" ry="60" fill="#78909c"/><ellipse cx="45" cy="80" rx="22" ry="30" fill="#78909c"/><ellipse cx="135" cy="80" rx="22" ry="30" fill="#78909c"/><ellipse cx="70" cy="110" rx="12" ry="10" fill="#546e7a"/><ellipse cx="110" cy="110" rx="12" ry="10" fill="#546e7a"/><circle cx="70" cy="112" r="5" fill="#1a1a1a"/><circle cx="110" cy="112" r="5" fill="#1a1a1a"/><circle cx="71" cy="111" r="2" fill="#fff"/><circle cx="111" cy="111" r="2" fill="#fff"/><path d="M90 130 Q75 160 70 185" fill="none" stroke="#546e7a" stroke-width="10" stroke-linecap="round"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">ELEPHANT</text></svg>`,
+  tiger: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#e65100"/><ellipse cx="90" cy="200" rx="55" ry="40" fill="#bf360c"/><circle cx="90" cy="115" r="55" fill="#ff8f00"/><circle cx="90" cy="120" r="40" fill="#ffcc02"/><ellipse cx="68" cy="108" rx="10" ry="14" fill="#3e2723"/><ellipse cx="112" cy="108" rx="10" ry="14" fill="#3e2723"/><circle cx="68" cy="111" r="5" fill="#1a1a1a"/><circle cx="112" cy="111" r="5" fill="#1a1a1a"/><circle cx="69" cy="110" r="2" fill="#fff"/><circle cx="113" cy="110" r="2" fill="#fff"/><path d="M60 90 Q90 70 120 90" fill="none" stroke="#3e2723" stroke-width="3"/><path d="M70 78 L75 60" stroke="#3e2723" stroke-width="2.5"/><path d="M90 74 L90 56" stroke="#3e2723" stroke-width="2.5"/><path d="M110 78 L105 60" stroke="#3e2723" stroke-width="2.5"/><path d="M55 100 L35 93" stroke="#3e2723" stroke-width="1.5"/><path d="M55 107 L33 103" stroke="#3e2723" stroke-width="1.5"/><path d="M125 100 L145 93" stroke="#3e2723" stroke-width="1.5"/><path d="M125 107 L147 103" stroke="#3e2723" stroke-width="1.5"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">TIGER</text></svg>`,
+  wolf: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#455a64"/><ellipse cx="90" cy="200" rx="55" ry="40" fill="#37474f"/><circle cx="90" cy="118" r="52" fill="#78909c"/><polygon points="58,80 48,30 78,72" fill="#90a4ae"/><polygon points="122,80 132,30 102,72" fill="#90a4ae"/><ellipse cx="70" cy="113" rx="11" ry="14" fill="#546e7a"/><ellipse cx="110" cy="113" rx="11" ry="14" fill="#546e7a"/><circle cx="70" cy="116" r="5" fill="#1a2a3a"/><circle cx="110" cy="116" r="5" fill="#1a2a3a"/><circle cx="71" cy="115" r="2" fill="#e0e0e0"/><circle cx="111" cy="115" r="2" fill="#e0e0e0"/><ellipse cx="90" cy="135" rx="16" ry="10" fill="#78909c"/><path d="M82 140 Q90 148 98 140" fill="none" stroke="#37474f" stroke-width="2"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">WOLF</text></svg>`,
+  eagle: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1a237e"/><path d="M90 50 L20 160 L90 130 L160 160 Z" fill="#3949ab"/><path d="M90 50 L20 160 L90 130 Z" fill="#283593"/><circle cx="90" cy="85" r="32" fill="#37474f"/><circle cx="90" cy="82" r="26" fill="#fffff0"/><circle cx="78" cy="78" r="8" fill="#1a2a3a"/><circle cx="79" cy="77" r="3" fill="#fff"/><path d="M85 95 L90 108 L95 95 Z" fill="#f57f17"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">EAGLE</text></svg>`,
+  owl: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#4a2f00"/><ellipse cx="90" cy="165" rx="50" ry="65" fill="#795548"/><ellipse cx="90" cy="100" rx="45" ry="55" fill="#8d6e63"/><polygon points="72,55 65,30 82,50" fill="#6d4c41"/><polygon points="108,55 115,30 98,50" fill="#6d4c41"/><circle cx="74" cy="88" r="16" fill="#fff"/><circle cx="106" cy="88" r="16" fill="#fff"/><circle cx="74" cy="88" r="10" fill="#f5a623"/><circle cx="106" cy="88" r="10" fill="#f5a623"/><circle cx="74" cy="88" r="6" fill="#1a1a1a"/><circle cx="106" cy="88" r="6" fill="#1a1a1a"/><circle cx="75" cy="87" r="2" fill="#fff"/><circle cx="107" cy="87" r="2" fill="#fff"/><path d="M82 103 L90 112 L98 103" fill="#f57f17" stroke="#e65100" stroke-width="1"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">OWL</text></svg>`,
+  fox: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#bf360c"/><ellipse cx="90" cy="195" rx="55" ry="45" fill="#a62d0d"/><circle cx="90" cy="115" r="50" fill="#e64a19"/><polygon points="65,75 45,25 82,68" fill="#e64a19"/><polygon points="115,75 135,25 98,68" fill="#e64a19"/><polygon points="65,75 45,25 82,68" fill="#ff7043" opacity="0.6"/><ellipse cx="90" cy="128" rx="28" ry="20" fill="#fff3e0"/><circle cx="72" cy="107" r="8" fill="#3e2723"/><circle cx="108" cy="107" r="8" fill="#3e2723"/><circle cx="72" cy="107" r="4" fill="#1a1a1a"/><circle cx="108" cy="107" r="4" fill="#1a1a1a"/><circle cx="73" cy="106" r="1.5" fill="#fff"/><circle cx="109" cy="106" r="1.5" fill="#fff"/><path d="M82 128 L90 134 L98 128" fill="none" stroke="#3e2723" stroke-width="2"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">FOX</text></svg>`,
+  bear: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#4e342e"/><ellipse cx="90" cy="195" rx="60" ry="45" fill="#3e2723"/><circle cx="90" cy="115" r="58" fill="#6d4c41"/><circle cx="58" cy="72" r="20" fill="#5d4037"/><circle cx="122" cy="72" r="20" fill="#5d4037"/><ellipse cx="90" cy="130" rx="30" ry="22" fill="#8d6e63"/><circle cx="72" cy="108" r="10" fill="#3e2723"/><circle cx="108" cy="108" r="10" fill="#3e2723"/><circle cx="72" cy="109" r="5" fill="#1a1a1a"/><circle cx="108" cy="109" r="5" fill="#1a1a1a"/><circle cx="73" cy="108" r="2" fill="#fff"/><circle cx="109" cy="108" r="2" fill="#fff"/><ellipse cx="90" cy="134" rx="10" ry="7" fill="#4e342e"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">BEAR</text></svg>`,
+  dolphin: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#0277bd"/><path d="M10 180 Q90 100 170 180 Q90 220 10 180 Z" fill="#0288d1" opacity="0.5"/><path d="M30 130 Q90 80 160 115 Q140 145 90 130 Q60 150 30 130 Z" fill="#4fc3f7"/><path d="M155 110 L175 90 L165 118 Z" fill="#4fc3f7"/><path d="M158 125 L175 130 L160 140 Z" fill="#4fc3f7"/><circle cx="140" cy="108" r="6" fill="#1a2a3a"/><circle cx="141" cy="107" r="2" fill="#fff"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">DOLPHIN</text></svg>`,
+  shark: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#01579b"/><path d="M0 150 Q90 130 180 150 Q90 200 0 150 Z" fill="#0277bd" opacity="0.6"/><path d="M15 140 Q90 90 165 140 L90 160 Z" fill="#546e7a"/><path d="M80 90 L90 55 L100 90" fill="#546e7a"/><path d="M20 150 L5 170 L25 158 Z" fill="#455a64"/><path d="M160 150 L175 170 L155 158 Z" fill="#455a64"/><ellipse cx="138" cy="128" rx="8" ry="5" fill="#37474f"/><circle cx="138" cy="128" r="3" fill="#1a1a1a"/><path d="M100 148 L115 152 L100 156 Z" fill="#fff"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">SHARK</text></svg>`,
+  horse: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#5d4037"/><rect x="30" y="150" width="120" height="85" rx="10" fill="#4e342e"/><ellipse cx="90" cy="140" rx="55" ry="50" fill="#795548"/><rect x="65" y="85" width="30" height="60" rx="15" fill="#795548"/><ellipse cx="80" cy="82" rx="15" ry="10" fill="#795548"/><path d="M60 75 Q68 45 75 75" fill="#6d4c41" stroke="#5d4037" stroke-width="1"/><circle cx="73" cy="88" r="6" fill="#3e2723"/><circle cx="73" cy="88" r="3" fill="#1a1a1a"/><circle cx="74" cy="87" r="1" fill="#fff"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">HORSE</text></svg>`,
+  peacock: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1a3a2a"/><circle cx="50" cy="60" r="25" fill="#1565c0" opacity="0.7"/><circle cx="90" cy="40" r="30" fill="#2e7d32" opacity="0.8"/><circle cx="130" cy="60" r="25" fill="#6a1b9a" opacity="0.7"/><circle cx="30" cy="95" r="18" fill="#e65100" opacity="0.6"/><circle cx="150" cy="95" r="18" fill="#e65100" opacity="0.6"/><circle cx="50" cy="60" r="10" fill="#1565c0"/><circle cx="90" cy="40" r="12" fill="#2e7d32"/><circle cx="130" cy="60" r="10" fill="#6a1b9a"/><ellipse cx="90" cy="155" rx="35" ry="55" fill="#1565c0"/><circle cx="90" cy="108" r="24" fill="#00897b"/><circle cx="83" cy="102" r="6" fill="#1a2a3a"/><circle cx="84" cy="101" r="2" fill="#fff"/><path d="M86 118 L90 126 L94 118" fill="#f57f17"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">PEACOCK</text></svg>`,
+  butterfly: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1a0a2e"/><ellipse cx="55" cy="105" rx="50" ry="40" fill="#e91e63" transform="rotate(-15 55 105)"/><ellipse cx="125" cy="105" rx="50" ry="40" fill="#e91e63" transform="rotate(15 125 105)"/><ellipse cx="55" cy="105" rx="35" ry="28" fill="#ff4081" opacity="0.6" transform="rotate(-15 55 105)"/><ellipse cx="125" cy="105" rx="35" ry="28" fill="#ff4081" opacity="0.6" transform="rotate(15 125 105)"/><circle cx="45" cy="95" r="8" fill="#f57f17" opacity="0.8"/><circle cx="130" cy="95" r="8" fill="#f57f17" opacity="0.8"/><ellipse cx="55" cy="145" rx="30" ry="22" fill="#ad1457" transform="rotate(10 55 145)"/><ellipse cx="125" cy="145" rx="30" ry="22" fill="#ad1457" transform="rotate(-10 125 145)"/><rect x="88" y="70" width="4" height="100" rx="2" fill="#3e2723"/><path d="M90 75 Q70 55 55 60" fill="none" stroke="#3e2723" stroke-width="2"/><path d="M90 75 Q110 55 125 60" fill="none" stroke="#3e2723" stroke-width="2"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">BUTTERFLY</text></svg>`,
+  snake: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1b5e20"/><path d="M90 220 Q140 200 150 160 Q160 120 120 110 Q80 100 80 70 Q80 40 110 35" fill="none" stroke="#388e3c" stroke-width="22" stroke-linecap="round"/><path d="M90 220 Q140 200 150 160 Q160 120 120 110 Q80 100 80 70 Q80 40 110 35" fill="none" stroke="#66bb6a" stroke-width="16" stroke-linecap="round"/><ellipse cx="118" cy="32" rx="14" ry="10" fill="#388e3c"/><path d="M110 26 L105 18 M126 26 L131 18" stroke="#388e3c" stroke-width="2" stroke-linecap="round"/><circle cx="113" cy="29" r="3" fill="#1a1a1a"/><circle cx="123" cy="29" r="3" fill="#1a1a1a"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">SNAKE</text></svg>`,
+  whale: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#0d47a1"/><path d="M0 180 Q90 150 180 180 L180 252 L0 252 Z" fill="#1565c0" opacity="0.5"/><path d="M20 145 Q90 95 165 130 Q155 170 90 155 Q40 175 20 145 Z" fill="#1565c0"/><path d="M163 125 L180 108 L172 138 Z" fill="#1565c0"/><path d="M25 148 L5 168 L28 160 Z" fill="#0d47a1"/><path d="M27 140 L8 128 L30 148 Z" fill="#0d47a1"/><circle cx="148" cy="118" r="6" fill="#1a2a3a"/><circle cx="149" cy="117" r="2" fill="#fff"/><path d="M90 110 L90 85" stroke="#fff" stroke-width="4" stroke-linecap="round"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">WHALE</text></svg>`,
+  octopus: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#4a148c"/><circle cx="90" cy="100" r="48" fill="#7b1fa2"/><circle cx="74" cy="90" r="12" fill="#fff"/><circle cx="106" cy="90" r="12" fill="#fff"/><circle cx="74" cy="90" r="7" fill="#4a148c"/><circle cx="106" cy="90" r="7" fill="#4a148c"/><circle cx="75" cy="89" r="2.5" fill="#fff"/><circle cx="107" cy="89" r="2.5" fill="#fff"/><path d="M50 138 Q40 165 35 195" fill="none" stroke="#9c27b0" stroke-width="10" stroke-linecap="round"/><path d="M65 148 Q58 178 55 210" fill="none" stroke="#9c27b0" stroke-width="10" stroke-linecap="round"/><path d="M80 152 Q80 182 78 215" fill="none" stroke="#9c27b0" stroke-width="10" stroke-linecap="round"/><path d="M100 152 Q100 182 102 215" fill="none" stroke="#9c27b0" stroke-width="10" stroke-linecap="round"/><path d="M115 148 Q122 178 125 210" fill="none" stroke="#9c27b0" stroke-width="10" stroke-linecap="round"/><path d="M130 138 Q140 165 145 195" fill="none" stroke="#9c27b0" stroke-width="10" stroke-linecap="round"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">OCTOPUS</text></svg>`,
+  panther: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#0a0a14"/><ellipse cx="90" cy="200" rx="55" ry="40" fill="#111"/><circle cx="90" cy="115" r="55" fill="#1a1a2e"/><circle cx="90" cy="118" r="42" fill="#212136"/><ellipse cx="68" cy="107" rx="11" ry="14" fill="#111"/><ellipse cx="112" cy="107" rx="11" ry="14" fill="#111"/><circle cx="68" cy="110" r="6" fill="#4a90d9"/><circle cx="112" cy="110" r="6" fill="#4a90d9"/><circle cx="68" cy="110" r="3" fill="#1a1a1a"/><circle cx="112" cy="110" r="3" fill="#1a1a1a"/><circle cx="69" cy="109" r="1.5" fill="#fff"/><circle cx="113" cy="109" r="1.5" fill="#fff"/><ellipse cx="90" cy="133" rx="16" ry="10" fill="#1a1a2e"/><path d="M82 138 Q90 145 98 138" fill="none" stroke="#333" stroke-width="1.5"/><line x1="58" y1="125" x2="33" y2="120" stroke="#333" stroke-width="1"/><line x1="122" y1="125" x2="147" y2="120" stroke="#333" stroke-width="1"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#8b9fff" font-weight="bold">PANTHER</text></svg>`,
+  deer: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#33691e"/><path d="M65 75 Q50 40 35 20 Q50 30 60 50 Q65 40 55 15 Q68 32 70 55" fill="none" stroke="#795548" stroke-width="6" stroke-linecap="round"/><path d="M115 75 Q130 40 145 20 Q130 30 120 50 Q115 40 125 15 Q112 32 110 55" fill="none" stroke="#795548" stroke-width="6" stroke-linecap="round"/><circle cx="90" cy="115" r="50" fill="#a1887f"/><ellipse cx="90" cy="135" rx="25" ry="18" fill="#d7ccc8"/><circle cx="74" cy="106" r="9" fill="#5d4037"/><circle cx="106" cy="106" r="9" fill="#5d4037"/><circle cx="74" cy="107" r="4" fill="#1a1a1a"/><circle cx="106" cy="107" r="4" fill="#1a1a1a"/><circle cx="75" cy="106" r="1.5" fill="#fff"/><circle cx="107" cy="106" r="1.5" fill="#fff"/><ellipse cx="90" cy="130" rx="8" ry="5" fill="#bcaaa4"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#fff" font-weight="bold">DEER</text></svg>`,
+  crow: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1a1a2e"/><path d="M60 160 Q30 120 20 80 Q45 110 60 130 L80 100 Q70 130 90 150 L120 90 Q110 130 130 155 Q150 120 160 80 Q155 120 140 160" fill="#212136"/><ellipse cx="90" cy="90" rx="40" ry="35" fill="#2a2a40"/><path d="M110 80 L140 70 L115 88 Z" fill="#1a1a2e"/><circle cx="75" cy="80" r="7" fill="#3a3a5a"/><circle cx="75" cy="80" r="4" fill="#1a1a1a"/><circle cx="76" cy="79" r="1.5" fill="#fff"/><path d="M85 95 L100 100 L85 100 Z" fill="#f57f17"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#8b9fff" font-weight="bold">CROW</text></svg>`,
+  dragon: `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#b71c1c"/><path d="M90 220 Q130 200 150 160 Q170 120 145 90 Q130 70 110 80 Q90 90 90 120" fill="none" stroke="#c62828" stroke-width="18" stroke-linecap="round"/><ellipse cx="90" cy="80" rx="45" ry="40" fill="#c62828"/><polygon points="70,45 60,10 80,42" fill="#e53935"/><polygon points="110,45 120,10 100,42" fill="#e53935"/><circle cx="76" cy="72" r="9" fill="#ff8f00"/><circle cx="104" cy="72" r="9" fill="#ff8f00"/><circle cx="76" cy="72" r="5" fill="#1a1a1a"/><circle cx="104" cy="72" r="5" fill="#1a1a1a"/><circle cx="77" cy="71" r="2" fill="#fff"/><circle cx="105" cy="71" r="2" fill="#fff"/><path d="M80 92 L90 102 L100 92" fill="#ff8f00"/><path d="M90 102 Q90 115 100 120 Q115 125 120 140" fill="none" stroke="#ff8f00" stroke-width="3"/><polygon points="70,50 30,20 50,55" fill="#c62828"/><polygon points="110,50 150,20 130,55" fill="#c62828"/><text x="90" y="248" text-anchor="middle" font-size="11" font-family="serif" fill="#ff8f00" font-weight="bold">DRAGON</text></svg>`,
+};
+
+const ZODIAC_SVGS = {
+  aries:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#b71c1c"/><circle cx="90" cy="110" r="75" fill="none" stroke="rgba(255,100,100,0.15)" stroke-width="40"/><text x="90" y="145" text-anchor="middle" font-size="90" fill="rgba(255,255,255,0.15)">♈</text><text x="90" y="148" text-anchor="middle" font-size="88" fill="#ff5252">♈</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="3">ARIES</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">Mar 21 – Apr 19</text></svg>`,
+  taurus:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#2e7d32"/><text x="90" y="148" text-anchor="middle" font-size="88" fill="#69f0ae">♉</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="3">TAURUS</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">Apr 20 – May 20</text></svg>`,
+  gemini:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#f57f17"/><text x="90" y="148" text-anchor="middle" font-size="88" fill="#fff176">♊</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="3">GEMINI</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">May 21 – Jun 20</text></svg>`,
+  cancer:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#0277bd"/><text x="90" y="148" text-anchor="middle" font-size="88" fill="#80d8ff">♋</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="3">CANCER</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">Jun 21 – Jul 22</text></svg>`,
+  leo:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#e65100"/><text x="90" y="148" text-anchor="middle" font-size="88" fill="#ffcc02">♌</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="3">LEO</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">Jul 23 – Aug 22</text></svg>`,
+  virgo:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#4e342e"/><text x="90" y="148" text-anchor="middle" font-size="88" fill="#d7ccc8">♍</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="3">VIRGO</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">Aug 23 – Sep 22</text></svg>`,
+  libra:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#6a1b9a"/><text x="90" y="148" text-anchor="middle" font-size="88" fill="#e1bee7">♎</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="3">LIBRA</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">Sep 23 – Oct 22</text></svg>`,
+  scorpio:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1a1a2e"/><text x="90" y="148" text-anchor="middle" font-size="88" fill="#ef9a9a">♏</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="3">SCORPIO</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">Oct 23 – Nov 21</text></svg>`,
+  sagittarius:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1b5e20"/><text x="90" y="148" text-anchor="middle" font-size="88" fill="#ccff90">♐</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="2">SAGITTARIUS</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">Nov 22 – Dec 21</text></svg>`,
+  capricorn:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#37474f"/><text x="90" y="148" text-anchor="middle" font-size="88" fill="#b0bec5">♑</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="2">CAPRICORN</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">Dec 22 – Jan 19</text></svg>`,
+  aquarius:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#0d47a1"/><text x="90" y="148" text-anchor="middle" font-size="88" fill="#82b1ff">♒</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="2">AQUARIUS</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">Jan 20 – Feb 18</text></svg>`,
+  pisces:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1a237e"/><text x="90" y="148" text-anchor="middle" font-size="88" fill="#b3e5fc">♓</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="3">PISCES</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">Feb 19 – Mar 20</text></svg>`,
+};
+
+const BRAND_SVGS = {
+  b1:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1a1a1a"/><rect x="30" y="70" width="120" height="120" rx="26" fill="#555"/><rect x="35" y="75" width="110" height="110" rx="22" fill="#222"/><text x="90" y="152" text-anchor="middle" font-size="72" fill="#aaa">🍎</text><text x="90" y="220" text-anchor="middle" font-size="14" font-family="Helvetica,Arial,sans-serif" fill="#aaa" font-weight="300" letter-spacing="4">apple</text></svg>`,
+  b2:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#111"/><path d="M55 170 L90 80 L125 170 L145 100 L165 170" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><text x="90" y="220" text-anchor="middle" font-size="14" font-family="Arial,sans-serif" fill="#fff" font-weight="bold" letter-spacing="4">NIKE</text></svg>`,
+  b3:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#fff"/><circle cx="90" cy="110" r="55" fill="#4285f4"/><circle cx="90" cy="110" r="55" fill="url(#gg)" opacity="0.9"/><defs><radialGradient id="gg" cx="30%" cy="30%"><stop offset="0%" stop-color="#ea4335"/><stop offset="40%" stop-color="#fbbc05"/><stop offset="70%" stop-color="#34a853"/><stop offset="100%" stop-color="#4285f4"/></radialGradient></defs><circle cx="90" cy="110" r="30" fill="#fff"/><rect x="90" y="85" width="55" height="25" fill="#fff"/><text x="90" y="220" text-anchor="middle" font-size="14" font-family="Arial,sans-serif" fill="#4285f4" font-weight="bold">Google</text></svg>`,
+  b4:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#DA291C"/><rect x="25" y="65" width="130" height="130" rx="20" fill="#DA291C"/><path d="M50 90 L50 175 M90 90 L90 175 M130 90 L130 175" stroke="#FFC72C" stroke-width="18" stroke-linecap="round"/><path d="M50 90 Q70 60 90 90 Q110 60 130 90" fill="none" stroke="#FFC72C" stroke-width="10" stroke-linecap="round"/><text x="90" y="225" text-anchor="middle" font-size="11" font-family="Arial,sans-serif" fill="#FFC72C" font-weight="bold" letter-spacing="1">McDONALD'S</text></svg>`,
+  b5:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#ff9900"/><text x="90" y="148" text-anchor="middle" font-size="72" fill="#fff">📦</text><text x="90" y="210" text-anchor="middle" font-size="16" font-family="Arial,sans-serif" fill="#fff" font-weight="bold">amazon</text><path d="M55 220 Q90 235 125 220" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>`,
+  b6:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#cc0000"/><text x="90" y="148" text-anchor="middle" font-size="72" fill="#fff">⚡</text><text x="90" y="210" text-anchor="middle" font-size="14" font-family="Arial,sans-serif" fill="#fff" font-weight="bold" letter-spacing="4">TESLA</text></svg>`,
+  b7:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#F40009"/><ellipse cx="90" cy="115" rx="55" ry="65" fill="#F40009" stroke="#fff" stroke-width="4"/><ellipse cx="90" cy="115" rx="42" ry="52" fill="#F40009" stroke="#fff" stroke-width="2"/><text x="90" y="105" text-anchor="middle" font-size="13" font-family="serif" fill="#fff" font-weight="bold">Coca</text><text x="90" y="125" text-anchor="middle" font-size="13" font-family="serif" fill="#fff" font-weight="bold">Cola</text><text x="90" y="215" text-anchor="middle" font-size="10" font-family="sans-serif" fill="#fff" letter-spacing="2">EST. 1886</text></svg>`,
+  b8:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#006DB7"/><rect x="30" y="70" width="30" height="25" rx="4" fill="#E3000B"/><rect x="65" y="70" width="30" height="25" rx="4" fill="#fff"/><rect x="100" y="70" width="30" height="25" rx="4" fill="#F7D117"/><rect x="30" y="100" width="30" height="25" rx="4" fill="#fff"/><rect x="65" y="100" width="30" height="25" rx="4" fill="#E3000B"/><rect x="100" y="100" width="30" height="25" rx="4" fill="#006DB7" stroke="#fff" stroke-width="1"/><rect x="30" y="130" width="30" height="25" rx="4" fill="#F7D117"/><rect x="65" y="130" width="30" height="25" rx="4" fill="#006DB7" stroke="#fff" stroke-width="1"/><rect x="100" y="130" width="30" height="25" rx="4" fill="#E3000B"/><text x="90" y="210" text-anchor="middle" font-size="14" font-family="Arial,sans-serif" fill="#fff" font-weight="bold" letter-spacing="4">LEGO</text></svg>`,
+  b9:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#002868"/><path d="M90 50 L110 90 L155 90 L120 115 L132 158 L90 133 L48 158 L60 115 L25 90 L70 90 Z" fill="#FFD700" opacity="0.9"/><text x="90" y="210" text-anchor="middle" font-size="14" font-family="serif" fill="#fff" font-weight="bold" letter-spacing="2">DISNEY</text></svg>`,
+  b10:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#000"/><text x="90" y="148" text-anchor="middle" font-size="72" fill="#fff">⚽</text><rect x="40" y="175" width="100" height="18" fill="#fff"/><rect x="40" y="175" width="33" height="18" fill="#000"/><rect x="107" y="175" width="33" height="18" fill="#000"/><text x="90" y="225" text-anchor="middle" font-size="13" font-family="Arial,sans-serif" fill="#fff" font-weight="bold" letter-spacing="4">ADIDAS</text></svg>`,
+  b11:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1DB954"/><circle cx="90" cy="110" r="55" fill="#191414"/><circle cx="90" cy="110" r="22" fill="#1DB954"/><path d="M48 88 Q90 76 132 88" fill="none" stroke="#1DB954" stroke-width="6" stroke-linecap="round"/><path d="M38 108 Q90 92 142 108" fill="none" stroke="#1DB954" stroke-width="7" stroke-linecap="round"/><path d="M48 128 Q90 116 132 128" fill="none" stroke="#1DB954" stroke-width="6" stroke-linecap="round"/><text x="90" y="215" text-anchor="middle" font-size="13" font-family="Arial,sans-serif" fill="#fff" font-weight="bold" letter-spacing="2">SPOTIFY</text></svg>`,
+  b12:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#141414"/><rect x="25" y="75" width="130" height="90" rx="8" fill="#e50914"/><text x="90" y="138" text-anchor="middle" font-size="22" font-family="Arial,sans-serif" fill="#fff" font-weight="900" letter-spacing="1">NETFLIX</text><text x="90" y="215" text-anchor="middle" font-size="10" font-family="sans-serif" fill="#e50914" letter-spacing="3">ORIGINAL</text></svg>`,
+};
+
+// AI portrait cache
+const portraitCache = {};
+const animalPhotoCache = {
+  dragon: 'Images/Animals/Dargo.png',
+};
+
+// Wikipedia article titles that give the best animal photo
+const ANIMAL_WIKI_TITLE = {
+  lion:      'Lion',
+  elephant:  'African_elephant',
+  tiger:     'Bengal_tiger',
+  wolf:      'Wolf',
+  eagle:     'Bald_eagle',
+  shark:     'Shark',
+  dolphin:   'Dolphin',
+  owl:       'Owl',
+  fox:       'Arctic_fox',
+  bear:      'Brown_bear',
+  panther:   'Black_panther_(animal)',
+  horse:     'Horse',
+  deer:      'Red_deer',
+  peacock:   'Indian_peafowl',
+  butterfly: 'Butterfly',
+  snake:     'Snake',
+  crow:      'Crow',
+  whale:     'Whale',
+  octopus:   'Octopus',
+  dragon:    null, // uses local image below
+};
+
+async function fetchAnimalPhoto(item) {
+  if(item.id in animalPhotoCache) return animalPhotoCache[item.id];
+  const title = ANIMAL_WIKI_TITLE[item.id];
+  if(!title) { animalPhotoCache[item.id] = null; return null; }
+  try {
+    const resp = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
+      { signal: AbortSignal.timeout(4000) }
+    );
+    const data = await resp.json();
+    const url = data.thumbnail?.source || null;
+    animalPhotoCache[item.id] = url;
+    return url;
+  } catch {
+    animalPhotoCache[item.id] = null;
+    return null;
+  }
+}
+
+function showAnimalSvgFallback(el, item) {
+  const svg = ANIMAL_SVGS[item.id];
+  if(svg) {
+    el.innerHTML = `<div class="portrait-svg-wrap">${svg}</div>`;
+  } else {
+    el.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#2e7d32,#1b5e20);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
+  }
+}
+
+async function renderAnimalCard(el, item) {
+  // Show SVG immediately while photo loads (no blank spinner flash)
+  showAnimalSvgFallback(el, item);
+  const url = await fetchAnimalPhoto(item);
+  if(!url) return; // SVG already shown
+  // Only swap in photo if this card is still being displayed
+  if(state.game.currentItem?.id !== item.id) return;
+  const img = new Image();
+  img.onload = () => {
+    if(state.game.currentItem?.id !== item.id) return;
+    el.innerHTML = `
+      <div class="image-card-wrap">
+        <img class="image-card-img" src="${url}" alt="${item.name}">
+        <div class="image-card-overlay"></div>
+        <div class="image-card-label">${item.name}</div>
+      </div>`;
+  };
+  img.onerror = () => {}; // SVG already showing, nothing to do
+  img.src = url;
+}
+const ZODIAC_PHOTOS = {
+  aries:       'Images/Zodiac/Aries.png',
+  taurus:      'Images/Zodiac/taurus.png',
+  gemini:      'Images/Zodiac/Gemini.png',
+  cancer:      'Images/Zodiac/Cancer.png',
+  leo:         'Images/Zodiac/Leo.png',
+  virgo:       'Images/Zodiac/Virgo.png',
+  libra:       'Images/Zodiac/Libra.png',
+  scorpio:     'Images/Zodiac/Scorpio.png',
+  sagittarius: 'Images/Zodiac/Sagittarius.png',
+  capricorn:   'Images/Zodiac/Capricorn.png',
+  aquarius:    'Images/Zodiac/Aquarius.png',
+  pisces:      'Images/Zodiac/Pisces.png',
+};
+
+function renderZodiacCard(el, item) {
+  const src = ZODIAC_PHOTOS[item.id];
+  if(src) {
+    el.innerHTML = `
+      <div class="image-card-wrap">
+        <img class="image-card-img" src="${src}" alt="${item.name}">
+        <div class="image-card-overlay"></div>
+        <div class="image-card-label">${item.name}</div>
+      </div>`;
+    el.querySelector('.image-card-img').onerror = () => {
+      const svg = ZODIAC_SVGS[item.id];
+      el.innerHTML = svg ? `<div class="portrait-svg-wrap">${svg}</div>`
+        : `<div style="width:100%;height:100%;background:linear-gradient(135deg,#1a237e,#4a148c);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
+    };
+  } else {
+    const svg = ZODIAC_SVGS[item.id];
+    el.innerHTML = svg ? `<div class="portrait-svg-wrap">${svg}</div>`
+      : `<div style="width:100%;height:100%;background:linear-gradient(135deg,#1a237e,#4a148c);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
+  }
+}
+function renderBrandCard(el, item) {
+  const svg = BRAND_SVGS[item.id];
+  if(svg) {
+    el.innerHTML = `<div class="portrait-svg-wrap">${svg}</div>`;
+  } else {
+    el.innerHTML = `<div style="width:100%;height:100%;background:#1a1a2e;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
+  }
+}
+async function renderCelebrityCard(el, item) {
+  if(portraitCache[item.id]) {
+    el.innerHTML = `<div class="portrait-svg-wrap">${portraitCache[item.id]}</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="portrait-card-wrap" style="background:#12122a;border-radius:12px;"><div class="portrait-loading"><div class="portrait-spinner"></div><div style="font-size:11px;color:var(--text3);">Generating portrait…</div></div></div>`;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:`Create an SVG portrait illustration of ${item.name} as a stylized celebrity portrait card. The SVG must be exactly viewBox="0 0 180 252". Requirements:
+- Artistic, stylized illustration (NOT realistic photo)
+- Bold graphic style, art-deco or pop-art inspired
+- Strong silhouette that is recognizable
+- Use their signature colors, style, or iconic features
+- Include their name at the bottom in a white serif font at y="240"
+- Dark background
+- NO text except the name label
+- Return ONLY the complete SVG code starting with <svg and ending with </svg>, nothing else`}]
+      })
+    });
+    const data = await resp.json();
+    const svg = data.content?.find(b=>b.type==='text')?.text?.trim();
+    if(svg && svg.startsWith('<svg')) {
+      portraitCache[item.id] = svg;
+      if(state.game.currentItem?.id === item.id) {
+        el.innerHTML = `<div class="portrait-svg-wrap">${svg}</div>`;
+      }
+    } else throw new Error('no svg');
+  } catch(e) {
+    // Fallback to styled card
+    const colors = ['#c0392b','#2980b9','#8e44ad','#d4a843','#16a085'];
+    const bg = colors[Math.abs(item.id.charCodeAt(1)||0) % colors.length];
+    const initials = item.name.split(' ').map(w=>w[0]).join('').slice(0,2);
+    const fallbackSvg = `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="${bg}"/><circle cx="90" cy="105" r="60" fill="rgba(0,0,0,0.2)"/><text x="90" y="125" text-anchor="middle" font-size="52" font-family="Cinzel,serif" fill="#fff" font-weight="bold">${initials}</text><text x="90" y="220" text-anchor="middle" font-size="11" font-family="Cinzel,serif" fill="#fff" font-weight="bold">${item.name.toUpperCase()}</text><rect x="30" y="228" width="120" height="1" fill="rgba(255,255,255,0.3)"/></svg>`;
+    portraitCache[item.id] = fallbackSvg;
+    if(state.game.currentItem?.id === item.id) {
+      el.innerHTML = `<div class="portrait-svg-wrap">${fallbackSvg}</div>`;
+    }
+  }
+}
+function endGame() {
+  const score = state.game.score;
+  const topic = state.game.topic;
+  const correctCount = state.game.correctCount;
+
+  // Check for Top 0.1% badge (10+ correct = score 385+)
+  let earnedBadge = null;
+  if(state.user && correctCount >= 10) {
+    if(!state.user.badges) state.user.badges = [];
+    earnedBadge = {
+      id: 'top01_' + Date.now(),
+      type: 'top01pct',
+      category: topic,
+      categoryName: state.game.topicObj.name,
+      categoryEmoji: state.game.topicObj.emoji,
+      correctCount,
+      score,
+      date: new Date().toISOString(),
+    };
+    state.user.badges.push(earnedBadge);
+  }
+
+  if(state.user) {
+    if(!state.user.scores) state.user.scores={};
+    if(!state.user.scores[topic] || score > state.user.scores[topic]) {
+      state.user.scores[topic] = score;
+    }
+    save();
+    if(api.token()) {
+      api.post('/api/scores', { topicId:topic, score }).then(d => {
+        if(d.bestScores) { state.user.scores = {...state.user.scores, ...d.bestScores}; save(); }
+      }).catch(()=>{});
+    }
+  }
+
+  document.getElementById('gameover-score').textContent = score;
+  const tier = RANK_TIERS.find(r=>score>=r.min)||RANK_TIERS[RANK_TIERS.length-1];
+  document.getElementById('gameover-rank-title').textContent = tier.title;
+  const best = state.user?.scores?.[topic]||score;
+  document.getElementById('gameover-rank-sub').innerHTML =
+    `Your best on ${state.game.topicObj.name}: <strong style="color:var(--gold2)">${best}</strong>`;
+
+  // Show badge notification if earned
+  state.game._earnedBadge = earnedBadge;
+  document.getElementById('gameover-badge').classList.toggle('hidden', !earnedBadge);
+
+  showScreen('gameover');
+}
+function playAgain() { startGame(state.game.topic); }
+function exitGame() { showScreen('topics'); }
+
+// ============================================================
+// PROFILE
+// ============================================================
+function renderProfile() {
+  const u = state.user;
+  if(!u) { showScreen('home'); return; }
+  // Avatar
+  const avEl = document.getElementById('profile-av-display');
+  if(u.avatarData) avEl.innerHTML = `<img src="${u.avatarData}" alt="av">`;
+  else avEl.textContent = (u.displayName||'P').charAt(0).toUpperCase();
+  document.getElementById('profile-name-display').textContent = u.displayName||u.name||'Psychic';
+  document.getElementById('profile-username-display').textContent = u.username ? '@'+u.username : '';
+  document.getElementById('profile-meta-display').textContent =
+    [u.zodiac, u.joinYear?'Member since '+u.joinYear:''].filter(Boolean).join(' · ');
+  const levelObj = PSYCHIC_LEVELS.find(l=>l.id===u.level);
+  document.getElementById('profile-level-badge').innerHTML = levelObj ?
+    `<span class="pill pill-purple">${levelObj.name}</span>` : '';
+
+  // Stats
+  const scores = u.scores||{};
+  const best = Object.values(scores).reduce((a,b)=>Math.max(a,b),0);
+  document.getElementById('pstat-best').textContent = best||'—';
+  document.getElementById('pstat-topics').textContent = Object.keys(scores).length;
+  // Rank
+  const rank = getPlayerRank(u);
+  document.getElementById('pstat-rank').textContent = rank ? '#'+rank : '#—';
+  // Zodiac rank
+  const zr = getZodiacRank(u);
+  document.getElementById('pstat-zodiac').textContent = zr ? '#'+zr : '—';
+
+  // Topic scores
+  const list = document.getElementById('profile-topic-scores');
+  const entries = TOPICS.map(t=>({topic:t, score:scores[t.id]||0})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+  if(entries.length===0) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0;">Take a test to see your scores here!</div>';
+  } else {
+    list.innerHTML = entries.map(e=>`
+      <div class="topic-score-row">
+        <div class="tsr-left">${e.topic.emoji} ${e.topic.name}</div>
+        <div style="text-align:right;">
+          <div class="tsr-score">${e.score}</div>
+          <div class="tsr-rank">${getTopicPercentile(e.topic.id, e.score)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Badges
+  const badges = u.badges||[];
+  const badgeList = document.getElementById('profile-badges-list');
+  if(badges.length===0) {
+    badgeList.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0;">Earn a Top 0.1% badge by getting 10 correct in a row!</div>';
+  } else {
+    badgeList.innerHTML = `<div class="badge-grid">${badges.map((b,i)=>`
+      <div class="badge-item" onclick="showBadgeDetail(state.user.badges[${i}])">
+        <span class="badge-item-orb">🔮</span>
+        <div class="badge-item-label">Top 0.1%</div>
+        <div class="badge-item-sub">${b.categoryEmoji} ${b.categoryName}</div>
+      </div>`).join('')}</div>`;
+  }
+}
+
+function getPlayerRank(u) {
+  const all = getAllPlayersWithBest();
+  const userBest = Math.max(0,...Object.values(u.scores||{}));
+  const sorted = all.sort((a,b)=>b.best-a.best);
+  const idx = sorted.findIndex(p=>p.id===u.id);
+  return idx>=0 ? idx+1 : sorted.filter(p=>p.best>=userBest).length+1;
+}
+function getZodiacRank(u) {
+  if(!u.zodiac) return null;
+  const all = getAllPlayersWithBest().filter(p=>p.zodiac===u.zodiac);
+  const uBest = Math.max(0,...Object.values(u.scores||{}));
+  return all.filter(p=>p.best>uBest).length+1;
+}
+function getTopicPercentile(topicId, score) {
+  const allScores = FAKE_PLAYERS.map(p=>p.scores[topicId]||0).filter(s=>s>0);
+  if(!allScores.length) return 'No data';
+  const below = allScores.filter(s=>s<score).length;
+  const pct = Math.round((below/allScores.length)*100);
+  return pct>=90?'Top 10%':pct>=75?'Top 25%':pct>=50?'Top 50%':'Lower 50%';
+}
+function getAllPlayersWithBest() {
+  const fakes = FAKE_PLAYERS.map(p=>({
+    id:p.id, displayName:p.displayName, username:p.username,
+    zodiac:p.zodiac, level:p.level, joinYear:p.joinYear,
+    lastPlayedMs:p.lastPlayedMs||0,
+    best:Math.max(0,...Object.values(p.scores)), scores:p.scores, avatarData:null,
+  }));
+  if(state.user) {
+    const uBest = Math.max(0,...Object.values(state.user.scores||{}));
+    const uLastPlayed = uBest > 0 ? Date.now() : 0;
+    fakes.push({...state.user, best:uBest, isYou:true, lastPlayedMs:uLastPlayed});
+  }
+  return fakes;
+}
+
+// ============================================================
+// LEADERBOARD
+// ============================================================
+function renderLeaderboard() {
+  // Topic filter chips
+  const topicFilters = document.getElementById('lb-topic-filters');
+  topicFilters.innerHTML = '<div class="filter-chip active" data-filter="all" onclick="setLbFilter(\'topic\',\'all\')">All topics</div>'
+    + TOPICS.map(t=>`<div class="filter-chip" data-filter="${t.id}" onclick="setLbFilter('topic','${t.id}')">${t.emoji} ${t.name}</div>`).join('');
+  // Zodiac filter chips
+  const zodiacFilters = document.getElementById('lb-zodiac-filters');
+  zodiacFilters.innerHTML = '<div class="filter-chip active" data-filter="all" onclick="setLbFilter(\'zodiac\',\'all\')">All signs</div>'
+    + ZODIAC_SIGNS.map(z=>`<div class="filter-chip" data-filter="${z}" onclick="setLbFilter('zodiac','${z}')">${z}</div>`).join('');
+  renderLbList();
+}
+function setLbFilter(type, val) {
+  state.lb[type] = val;
+  const mapId = {time:'lb-time-filters', topic:'lb-topic-filters', zodiac:'lb-zodiac-filters'};
+  document.querySelectorAll('#'+mapId[type]+' .filter-chip').forEach(c=>{
+    c.classList.toggle('active', c.dataset.filter===val);
+  });
+  renderLbList();
+}
+function renderLbList() {
+  let players = getAllPlayersWithBest();
+  // Filter by time
+  const t = state.lb.time;
+  if(t === 'thismonth') {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    players = players.filter(p => p.lastPlayedMs >= start);
+  } else if(t === '90days') {
+    const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+    players = players.filter(p => p.lastPlayedMs >= cutoff);
+  } else if(t !== 'alltime') {
+    const year = parseInt(t);
+    if(!isNaN(year)) players = players.filter(p => p.joinYear === year);
+  }
+  // Filter by zodiac
+  if(state.lb.zodiac!=='all') players=players.filter(p=>p.zodiac===state.lb.zodiac);
+  // Filter by topic
+  if(state.lb.topic!=='all') {
+    players=players.map(p=>({...p, best:p.scores[state.lb.topic]||0})).filter(p=>p.best>0);
+  }
+  // Sort
+  players.sort((a,b)=>b.best-a.best);
+  const list = document.getElementById('leaderboard-list');
+  if(!players.length) {
+    list.innerHTML='<div style="text-align:center;padding:40px 16px;color:var(--text3);font-size:13px;">No scores yet for this filter</div>';
+    return;
+  }
+  list.innerHTML = players.map((p,i)=>{
+    const isYou = p.isYou;
+    const initials = (p.displayName||'P').charAt(0).toUpperCase();
+    const avatarHtml = p.avatarData
+      ? `<img src="${p.avatarData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="av">`
+      : initials;
+    return `<div class="lb-row${isYou?' you':''}">
+      <div class="lb-rank${i<3?' top3':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div class="lb-av">${avatarHtml}</div>
+      <div class="lb-name">
+        <div class="lb-display-name">${p.displayName}${isYou?' (You)':''}</div>
+        <div class="lb-meta">${[p.zodiac,p.level?PSYCHIC_LEVELS.find(l=>l.id===p.level)?.name:''].filter(Boolean).join(' · ')}</div>
+      </div>
+      <div class="lb-score-col">
+        <div class="lb-score">${p.best}</div>
+        <div class="lb-score-sub">${state.lb.topic==='all'?'best ever':TOPICS.find(t=>t.id===state.lb.topic)?.name}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// CERT
+// ============================================================
+function renderCert() {
+  const u = state.user;
+  if(!u) return;
+  const username = u.username||u.id;
+  const url = `psychictest.app/cert/${username}`;
+  document.getElementById('cert-url-display').textContent = url;
+  document.getElementById('cert-footer-url').textContent = url;
+  // Avatar
+  const avEl = document.getElementById('cert-av');
+  if(u.avatarData) avEl.innerHTML=`<img src="${u.avatarData}" alt="av">`;
+  else avEl.textContent=(u.displayName||'P').charAt(0).toUpperCase();
+  document.getElementById('cert-name').textContent=u.displayName||u.name||'Psychic';
+  const levelObj=PSYCHIC_LEVELS.find(l=>l.id===u.level);
+  document.getElementById('cert-level-line').textContent=[levelObj?.name,u.zodiac].filter(Boolean).join(' · ');
+  // Stats
+  const scores=u.scores||{};
+  const best=Object.values(scores).reduce((a,b)=>Math.max(a,b),0);
+  document.getElementById('cert-best').textContent=best||0;
+  document.getElementById('cert-rank').textContent='#'+getPlayerRank(u);
+  const zr=getZodiacRank(u);
+  document.getElementById('cert-zodiac-rank').textContent=zr?'#'+zr:'—';
+  document.getElementById('cert-topics-count').textContent=Object.keys(scores).length;
+  // Topic list
+  const entries=TOPICS.map(t=>({topic:t,score:scores[t.id]||0})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+  document.getElementById('cert-topic-list').innerHTML=entries.length?entries.map(e=>`
+    <div class="cert-topic-row">
+      <span class="cert-topic-name">${e.topic.emoji} ${e.topic.name}</span>
+      <span class="cert-topic-score">${e.score}</span>
+      <span class="cert-topic-rank">${getTopicPercentile(e.topic.id,e.score)}</span>
+    </div>`).join(''):'<div style="color:var(--text3);font-size:12px;padding:8px 0;">No scores yet — take a test first!</div>';
+  // Zodiac pills
+  const pillsEl=document.getElementById('cert-zodiac-pills');
+  if(u.zodiac) {
+    const zRank=getZodiacRank(u);
+    pillsEl.innerHTML=`<span class="pill pill-gold">${u.zodiac}: #${zRank}</span> <span class="pill pill-purple">Global: #${getPlayerRank(u)}</span>`;
+    document.getElementById('cert-zodiac-section').classList.remove('hidden');
+  } else {
+    document.getElementById('cert-zodiac-section').classList.add('hidden');
+  }
+  // Badges
+  const badges = u.badges||[];
+  const certBadgesSection = document.getElementById('cert-badges-section');
+  if(badges.length > 0) {
+    certBadgesSection.classList.remove('hidden');
+    document.getElementById('cert-badges-list').innerHTML = badges.map((b,i) => `
+      <div class="badge-item" onclick="showBadgeDetail(state.user.badges[${i}])">
+        <div class="badge-item-orb">🔮</div>
+        <div class="badge-item-label">Top 0.1%</div>
+        <div class="badge-item-sub">${b.categoryEmoji} ${b.categoryName}</div>
+      </div>`).join('');
+  } else {
+    certBadgesSection.classList.add('hidden');
+  }
+}
+
+// ============================================================
+// SHARING
+// ============================================================
+function getCertUrl() {
+  const u=state.user; if(!u) return window.location.href;
+  return `https://psychictest.app/cert/${u.username||u.id}`;
+}
+function getCertText() {
+  const u=state.user; if(!u) return 'Check out my psychic ability certification!';
+  const best=Object.values(u.scores||{}).reduce((a,b)=>Math.max(a,b),0);
+  const rank=getPlayerRank(u);
+  return `I just proved my psychic ability! Score: ${best}, ranked #${rank} globally. Check my certification:`;
+}
+function shareToX() {
+  const text=encodeURIComponent(getCertText()+' '+getCertUrl());
+  window.open(`https://twitter.com/intent/tweet?text=${text}`,'_blank');
+}
+function shareToFacebook() {
+  const url=encodeURIComponent(getCertUrl());
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`,'_blank');
+}
+function shareToInstagram() {
+  copyProfileLink();
+  showToast('Link copied! Paste in your Instagram bio or story 📸');
+}
+function copyProfileLink() {
+  const url=getCertUrl();
+  if(navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(()=>showToast('Link copied to clipboard!'));
+  } else {
+    const ta=document.createElement('textarea');
+    ta.value=url; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('Link copied to clipboard!');
+  }
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function closeShareModal(e) {
+  if(e.target===document.getElementById('share-modal')) closeModal();
+}
+function closeModal() { document.getElementById('share-modal').classList.remove('open'); }
+
+function showBadgeDetail(badge) {
+  if(!badge) return;
+  const u = state.user;
+  const dateStr = new Date(badge.date).toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
+  document.getElementById('badge-modal-content').innerHTML = `
+    <span class="badge-detail-orb">🔮</span>
+    <div class="badge-detail-eyebrow">Verified Achievement</div>
+    <div class="badge-detail-name">Top 0.1% Result</div>
+    <div style="background:var(--bg);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;">
+      <div class="badge-detail-row">
+        <span class="badge-detail-key">Username</span>
+        <span class="badge-detail-val">@${u?.username||u?.displayName||'Psychic'}</span>
+      </div>
+      <div class="badge-detail-row">
+        <span class="badge-detail-key">Category</span>
+        <span class="badge-detail-val">${badge.categoryEmoji} ${badge.categoryName}</span>
+      </div>
+      <div class="badge-detail-row">
+        <span class="badge-detail-key">Correct answers</span>
+        <span class="badge-detail-val">${badge.correctCount} in a row</span>
+      </div>
+      <div class="badge-detail-row">
+        <span class="badge-detail-key">Score</span>
+        <span class="badge-detail-val">${badge.score}</span>
+      </div>
+      <div class="badge-detail-row">
+        <span class="badge-detail-key">Date earned</span>
+        <span class="badge-detail-val">${dateStr}</span>
+      </div>
+    </div>
+    <div style="background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.25);border-radius:var(--radius-sm);padding:10px 14px;text-align:center;margin-bottom:16px;">
+      <div style="font-size:10px;color:var(--gold2);font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Top 0.1% Psychic</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.6;">Achieved by fewer than 1 in 1,000 players worldwide.<br>A rare demonstration of psychic ability.</div>
+    </div>
+    <button class="btn btn-secondary" onclick="closeBadgeModal()">Close</button>`;
+  document.getElementById('badge-modal').classList.add('open');
+}
+function closeBadgeModal() { document.getElementById('badge-modal').classList.remove('open'); }
+
+// ============================================================
+// INIT
+// ============================================================
+(function init() {
+  if('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+  if(load() && state.user && state.user.level) {
+    afterLogin();
+  }
+})();
+</script>
+</body>
+</html>

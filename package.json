@@ -1,0 +1,11 @@
+{
+  "name": "psychic-iq",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server/server.js",
+    "install": "cd server && npm install"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
