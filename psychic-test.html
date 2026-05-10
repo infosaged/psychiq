@@ -133,6 +133,8 @@ body::before {
 .field input:focus, .field select:focus { border-color: var(--accent); }
 .field input::placeholder { color: var(--text3); }
 .field select option { background: var(--bg2); }
+.dob-row { display: flex; gap: 8px; }
+.dob-row select { flex: 1; min-width: 0; padding-left: 8px; padding-right: 4px; }
 
 /* PILLS / BADGES */
 .pill {
@@ -566,7 +568,13 @@ body::before {
     <div class="auth-form">
       <div id="signup-fields">
         <div class="field"><label>Full name</label><input type="text" id="auth-name" placeholder="Jane Doe"></div>
-        <div class="field"><label>Date of birth <span style="color:var(--text3);font-size:10px;">(sets your zodiac)</span></label><input type="date" id="auth-dob"></div>
+        <div class="field"><label>Date of birth <span style="color:var(--text3);font-size:10px;">(sets your zodiac)</span></label>
+          <div class="dob-row">
+            <select id="auth-dob-m"><option value="">Month</option></select>
+            <select id="auth-dob-d"><option value="">Day</option></select>
+            <select id="auth-dob-y"><option value="">Year</option></select>
+          </div>
+        </div>
       </div>
       <div class="field"><label>Email address</label><input type="email" id="auth-email" placeholder="jane@email.com"></div>
       <div class="field"><label>Password</label><input type="password" id="auth-password" placeholder="••••••••"></div>
@@ -758,7 +766,13 @@ body::before {
       </div>
       <div class="field"><label>Display name</label><input type="text" id="edit-displayname"></div>
       <div class="field"><label>Username</label><input type="text" id="edit-username" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'')"></div>
-      <div class="field"><label>Date of birth</label><input type="date" id="edit-dob"></div>
+      <div class="field"><label>Date of birth</label>
+        <div class="dob-row">
+          <select id="edit-dob-m"><option value="">Month</option></select>
+          <select id="edit-dob-d"><option value="">Day</option></select>
+          <select id="edit-dob-y"><option value="">Year</option></select>
+        </div>
+      </div>
       <div class="field"><label>Psychic level</label><div id="edit-level-options"></div></div>
       <button class="btn btn-primary mt-16" onclick="saveEditProfile()">Save changes</button>
     </div>
@@ -1123,7 +1137,7 @@ async function handleAuth() {
 
   if(isSignup) {
     const name = document.getElementById('auth-name').value.trim() || 'Psychic';
-    const dob = document.getElementById('auth-dob').value;
+    const dob = getDob('auth');
     // Store pending user data; username/level set in setup screens
     state.user = {
       id: 'user_'+Date.now(),
@@ -1262,7 +1276,7 @@ function renderEditProfile() {
   if(!state.user) return;
   document.getElementById('edit-displayname').value = state.user.displayName||'';
   document.getElementById('edit-username').value = state.user.username||'';
-  document.getElementById('edit-dob').value = state.user.dob||'';
+  setDob('edit', state.user.dob||'');
   const circle = document.getElementById('edit-avatar-circle');
   if(state.user.avatarData) {
     document.getElementById('edit-avatar-placeholder').style.display='none';
@@ -1286,7 +1300,7 @@ function saveEditProfile() {
   if(!state.user) return;
   state.user.displayName = document.getElementById('edit-displayname').value.trim()||state.user.displayName;
   state.user.username = document.getElementById('edit-username').value.trim()||state.user.username;
-  const dob = document.getElementById('edit-dob').value;
+  const dob = getDob('edit');
   if(dob) { state.user.dob=dob; state.user.zodiac=getZodiac(dob); }
   const sel = document.querySelector('#edit-level-options .level-option.selected');
   if(sel) {
@@ -2131,12 +2145,48 @@ function showBadgeDetail(badge) {
 function closeBadgeModal() { document.getElementById('badge-modal').classList.remove('open'); }
 
 // ============================================================
+// DOB HELPERS
+// ============================================================
+function buildDobSelects() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const monthOpts = months.map((m,i)=>`<option value="${String(i+1).padStart(2,'0')}">${m}</option>`).join('');
+  const dayOpts = Array.from({length:31},(_,i)=>`<option value="${String(i+1).padStart(2,'0')}">${i+1}</option>`).join('');
+  const curYear = new Date().getFullYear();
+  const yearOpts = Array.from({length:curYear-1919},(_,i)=>`<option value="${curYear-i}">${curYear-i}</option>`).join('');
+  ['auth','edit'].forEach(p=>{
+    const mEl=document.getElementById(p+'-dob-m');
+    const dEl=document.getElementById(p+'-dob-d');
+    const yEl=document.getElementById(p+'-dob-y');
+    if(mEl) mEl.innerHTML='<option value="">Month</option>'+monthOpts;
+    if(dEl) dEl.innerHTML='<option value="">Day</option>'+dayOpts;
+    if(yEl) yEl.innerHTML='<option value="">Year</option>'+yearOpts;
+  });
+}
+function getDob(prefix) {
+  const m=document.getElementById(prefix+'-dob-m')?.value;
+  const d=document.getElementById(prefix+'-dob-d')?.value;
+  const y=document.getElementById(prefix+'-dob-y')?.value;
+  return (m&&d&&y) ? `${y}-${m}-${d}` : '';
+}
+function setDob(prefix, iso) {
+  if(!iso) return;
+  const parts=iso.split('-');
+  if(parts.length<3) return;
+  const [y,m,d]=parts;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+  set(prefix+'-dob-m', m);
+  set(prefix+'-dob-d', d);
+  set(prefix+'-dob-y', y);
+}
+
+// ============================================================
 // INIT
 // ============================================================
 (function init() {
   if('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(()=>{});
   }
+  buildDobSelects();
   if(load() && state.user && state.user.level) {
     afterLogin();
   }
