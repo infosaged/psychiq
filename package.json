@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "node server/server.js",
-    "install": "cd server && npm install"
+    "install": "cd server && npm install",
+    "release": "node -e \"const fs=require('fs');const v='psychic-'+Date.now();const s=fs.readFileSync('sw.js','utf8').replace(/const CACHE = '[^']+'/,\\`const CACHE = '\\${v}'\\`);fs.writeFileSync('sw.js',s);console.log('Cache version set to',v);\""
   },
   "engines": {
     "node": ">=18"
