@@ -484,6 +484,36 @@ body::before {
   border-radius: 20px; padding: 3px 9px; font-size: 10px; color: var(--success);
 }
 
+/* ===================== SCREEN: INSTRUCTIONS ===================== */
+#screen-instructions { justify-content: flex-start; }
+.instructions-body {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 12px 24px 40px; flex: 1;
+}
+.instructions-orb {
+  font-size: 56px; margin-bottom: 12px;
+  animation: pulse 3s ease-in-out infinite;
+}
+.instructions-headline {
+  font-size: 26px; color: var(--accent2); letter-spacing: 0.06em;
+  margin-bottom: 28px;
+}
+.instructions-steps {
+  width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 16px;
+  margin-bottom: 28px;
+}
+.instructions-step {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+}
+.instructions-step-icon { font-size: 26px; flex-shrink: 0; margin-top: 1px; }
+.instructions-step-title { font-family: 'Cinzel', serif; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+.instructions-step-desc { font-size: 12px; color: var(--text3); line-height: 1.5; }
+.instructions-strikes-preview {
+  display: flex; gap: 14px; margin-bottom: 28px;
+}
+
 /* BOTTOM NAV */
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
@@ -637,6 +667,50 @@ body::before {
     <div style="margin: 16px 16px 0; padding: 14px; border-radius: var(--radius); border: 1px dashed var(--border2); text-align:center;">
       <div style="font-size:20px; margin-bottom:4px;">✨</div>
       <div style="font-size:12px; color:var(--text3);">More topics coming soon</div>
+    </div>
+  </div>
+
+  <!-- INSTRUCTIONS -->
+  <div id="screen-instructions" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="showScreen('topics')">←</button>
+      <span class="topbar-title" id="instructions-topic-title">Psychic Test</span>
+      <div style="width:38px;"></div>
+    </div>
+    <div class="instructions-body">
+      <div class="instructions-orb">🔮</div>
+      <div class="instructions-headline display">How to Play</div>
+      <div class="instructions-steps">
+        <div class="instructions-step">
+          <div class="instructions-step-icon">🃏</div>
+          <div class="instructions-step-text">
+            <div class="instructions-step-title">A card is drawn face-down</div>
+            <div class="instructions-step-desc">Focus your mind on the hidden card before you.</div>
+          </div>
+        </div>
+        <div class="instructions-step">
+          <div class="instructions-step-icon">🎯</div>
+          <div class="instructions-step-text">
+            <div class="instructions-step-title">Pick the correct answer</div>
+            <div class="instructions-step-desc">Two choices will appear — trust your instincts and select the one you sense is right.</div>
+          </div>
+        </div>
+        <div class="instructions-step">
+          <div class="instructions-step-icon">💎</div>
+          <div class="instructions-step-text">
+            <div class="instructions-step-title">3 strikes and the test ends</div>
+            <div class="instructions-step-desc">Each wrong guess costs one gem. Lose all three and your session is over.</div>
+          </div>
+        </div>
+      </div>
+      <div class="instructions-strikes-preview">
+        <span style="font-size:26px;">💎</span>
+        <span style="font-size:26px;">💎</span>
+        <span style="font-size:26px;">💎</span>
+      </div>
+      <div class="px-16" style="width:100%; max-width:360px; margin:0 auto;">
+        <button class="btn btn-primary" onclick="beginTest()">Begin Test →</button>
+      </div>
     </div>
   </div>
 
@@ -1337,19 +1411,24 @@ function renderTopics() {
 function startGame(topicId) {
   const t = TOPICS.find(x=>x.id===topicId);
   state.game = { topic:topicId, score:0, correctCount:0, strikes:0, maxStrikes:3, currentItem:null, choices:[], answered:false, topicObj:t };
+  document.getElementById('instructions-topic-title').textContent = `${t.emoji} ${t.name}`;
+  showScreen('instructions');
+}
+function beginTest() {
+  const { topic, topicObj: t } = state.game;
   updateStrikesUI();
   document.getElementById('game-topic-badge').innerHTML = `<span class="pill pill-purple">${t.emoji} ${t.name}</span>`;
   document.getElementById('game-hint').textContent = t.hint;
   showScreen('game');
   // Pre-warm caches in background
-  if(topicId === 'celebrities') {
+  if(topic === 'celebrities') {
     TOPIC_ITEMS.celebrities.slice(0,6).forEach(item => {
       if(!portraitCache[item.id]) {
         setTimeout(()=>preCachePortrait(item), 300);
       }
     });
   }
-  if(topicId === 'animals') {
+  if(topic === 'animals') {
     TOPIC_ITEMS.animals.forEach((item, i) => {
       if(!(item.id in animalPhotoCache)) {
         setTimeout(()=>fetchAnimalPhoto(item), i * 120);
