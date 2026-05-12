@@ -566,6 +566,32 @@ body::before {
 .section-title { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase; padding: 0 16px; margin-bottom: 8px; }
 .divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
 
+/* ===================== SCREEN: CARD BACKS ===================== */
+.cb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 16px 20px; }
+.cb-item {
+  position: relative; border-radius: 10px;
+  border: 2px solid var(--border); overflow: hidden;
+  cursor: pointer; transition: all 0.2s;
+  aspect-ratio: 5 / 7;
+}
+.cb-item:hover { border-color: var(--border2); transform: translateY(-2px); }
+.cb-item.selected { border-color: var(--accent); box-shadow: 0 0 14px rgba(139,111,255,0.5); }
+.cb-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cb-item-default {
+  width: 100%; height: 100%; background: #12122a;
+  display: flex; align-items: center; justify-content: center; font-size: 28px;
+}
+.cb-selected-check {
+  position: absolute; top: 5px; right: 5px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); display: flex; align-items: center;
+  justify-content: center; font-size: 11px; color: #fff; font-weight: bold;
+}
+.cb-level-header {
+  font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.1em;
+  color: var(--text3); text-transform: uppercase; padding: 12px 16px 4px;
+}
+
 .hidden { display: none !important; }
 </style>
 </head>
@@ -768,6 +794,11 @@ body::before {
       <div class="gameover-badge-title">Top 0.1% Result</div>
       <div class="gameover-badge-sub">Tap to view your badge</div>
     </div>
+    <div class="gameover-badge-earned hidden" id="gameover-cardback" onclick="goToCardBacks()">
+      <span class="gameover-badge-orb">🃏</span>
+      <div class="gameover-badge-title" id="gameover-cardback-title">Card Designs Unlocked!</div>
+      <div class="gameover-badge-sub" id="gameover-cardback-body">Tap to choose your card design →</div>
+    </div>
     <div class="gameover-rank" id="gameover-rank">
       <div class="gameover-rank-title" id="gameover-rank-title">Novice</div>
       <div class="gameover-rank-sub" id="gameover-rank-sub"></div>
@@ -808,6 +839,11 @@ body::before {
     <div class="card" id="profile-badges-card">
       <div class="card-title">🔮 Badges</div>
       <div id="profile-badges-list"></div>
+    </div>
+    <div class="card" id="profile-cardbacks-card">
+      <div class="card-title">🃏 Card Designs</div>
+      <div id="profile-cardback-preview"></div>
+      <button class="btn btn-ghost mt-8" onclick="showScreen('card-backs')" style="font-size:12px; padding:10px;">Choose card design →</button>
     </div>
     <div class="card">
       <div class="card-title">Share my certification</div>
@@ -930,6 +966,17 @@ body::before {
         <div class="share-btn-item share-btn-copy" onclick="copyProfileLink()">⎘ Copy link</div>
       </div>
     </div>
+  </div>
+
+  <!-- CARD BACKS -->
+  <div id="screen-card-backs" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="showScreen('profile')">←</button>
+      <span class="topbar-title">Card Designs</span>
+      <div style="width:38px;"></div>
+    </div>
+    <div style="padding: 0 16px 8px; font-size: 12px; color: var(--text3);">Tap a design to use it for the face-down card during your tests.</div>
+    <div id="card-backs-content"></div>
   </div>
 
   <!-- BOTTOM NAV -->
@@ -1143,6 +1190,34 @@ const FAKE_PLAYERS = [
   {id:'f8',displayName:'ThirdEyeTom',username:'third_eye_tom',zodiac:'Sagittarius',level:'some',scores:{cards:35,animals:27,zodiac:19},joinYear:2025,lastPlayedMs:new Date('2026-04-25').getTime()},
 ];
 
+// ============================================================
+// CARD BACKS DATA
+// ============================================================
+const CARD_BACKS = [
+  { id:'basic_faded_blue', name:'Faded Blue', level:1, path:'Images/Card Backs/Basic/100 Level/Basic_Faded_Blue.png' },
+  { id:'basic_light_pink', name:'Light Pink', level:1, path:'Images/Card Backs/Basic/100 Level/Basic_Light_Pink.png' },
+  { id:'basic_yellow',     name:'Yellow',     level:1, path:'Images/Card Backs/Basic/100 Level/Basic_Yellow.png' },
+  { id:'basic_blue',       name:'Blue',       level:2, path:'Images/Card Backs/Basic/200 Level/Basic_Blue.png' },
+  { id:'basic_gray',       name:'Gray',       level:2, path:'Images/Card Backs/Basic/200 Level/Basic_Gray..png' },
+  { id:'basic_pink_2',     name:'Pink 2',     level:2, path:'Images/Card Backs/Basic/200 Level/Basic_Pink_2.png' },
+  { id:'basic_red',        name:'Red',        level:2, path:'Images/Card Backs/Basic/200 Level/Basic_Red.png' },
+  { id:'basic_orange',     name:'Orange',     level:3, path:'Images/Card Backs/Basic/300 Level/Basic_Orange.png' },
+  { id:'basic_pink',       name:'Pink',       level:3, path:'Images/Card Backs/Basic/300 Level/Basic_Pink.png' },
+  { id:'basic_purple',     name:'Purple',     level:3, path:'Images/Card Backs/Basic/300 Level/Basic_Purple.png' },
+  { id:'basic_brown',      name:'Brown',      level:4, path:'Images/Card Backs/Basic/400 Level/Basic_Brown.png' },
+  { id:'basic_dark_pink',  name:'Dark Pink',  level:4, path:'Images/Card Backs/Basic/400 Level/Basic_Dark_Pink.png' },
+  { id:'basic_green',      name:'Green',      level:4, path:'Images/Card Backs/Basic/400 Level/Basic_Green.png' },
+  { id:'basic_gold_brown', name:'Gold Brown', level:5, path:'Images/Card Backs/Basic/500 Level/Basic_Gold_Brown.png' },
+];
+
+const CARD_BACK_UNLOCK_MESSAGES = {
+  1: { title:'First Test Complete!',     body:'You completed your first Test!  You can now select a custom card design.' },
+  2: { title:'More Card Designs!',       body:'You completed a Test in more than one Category!  You have been awarded more card options.' },
+  3: { title:'All Categories Complete!', body:'You completed a Test in all Categories!  You have been awarded more card options.' },
+  4: { title:'Score Over 500!',          body:'You scored over 500!  You have been awarded more card options.' },
+  5: { title:'Score Over 1,000!',        body:'You scored over 1,000!  Amazing!  You have been awarded more card options.' },
+};
+
 let state = {
   currentScreen: 'home',
   user: null,
@@ -1182,6 +1257,7 @@ function showScreen(id) {
   if(id==='profile') renderProfile();
   if(id==='cert') renderCert();
   if(id==='edit-profile') renderEditProfile();
+  if(id==='card-backs') renderCardBacksScreen();
 }
 function updateNav(id) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1435,6 +1511,7 @@ function beginTest() {
       }
     });
   }
+  renderCardBackFaceContent();
   nextCard();
 }
 async function preCachePortrait(item) {
@@ -1836,11 +1913,15 @@ function endGame() {
     state.user.badges.push(earnedBadge);
   }
 
+  const prevUnlockedLevels = getUnlockedCardBackLevels(state.user);
+
   if(state.user) {
     if(!state.user.scores) state.user.scores={};
     if(!state.user.scores[topic] || score > state.user.scores[topic]) {
       state.user.scores[topic] = score;
     }
+    const newUnlockedLevels = getUnlockedCardBackLevels(state.user);
+    state.game._newCardBackLevels = newUnlockedLevels.filter(l => !prevUnlockedLevels.includes(l));
     save();
     if(api.token()) {
       api.post('/api/scores', { topicId:topic, score }).then(d => {
@@ -1859,6 +1940,18 @@ function endGame() {
   // Show badge notification if earned
   state.game._earnedBadge = earnedBadge;
   document.getElementById('gameover-badge').classList.toggle('hidden', !earnedBadge);
+
+  // Show card back unlock notification if new levels just unlocked
+  const newlyUnlocked = state.game._newCardBackLevels || [];
+  if(newlyUnlocked.length > 0) {
+    const highestNew = Math.max(...newlyUnlocked);
+    const msg = CARD_BACK_UNLOCK_MESSAGES[highestNew];
+    document.getElementById('gameover-cardback-title').textContent = msg.title;
+    document.getElementById('gameover-cardback-body').textContent = msg.body;
+    document.getElementById('gameover-cardback').classList.remove('hidden');
+  } else {
+    document.getElementById('gameover-cardback').classList.add('hidden');
+  }
 
   showScreen('gameover');
 }
@@ -1923,6 +2016,27 @@ function renderProfile() {
         <div class="badge-item-label">Top 0.1%</div>
         <div class="badge-item-sub">${b.categoryEmoji} ${b.categoryName}</div>
       </div>`).join('')}</div>`;
+  }
+
+  // Card back preview
+  const cbPreview = document.getElementById('profile-cardback-preview');
+  if(cbPreview) {
+    const unlockedCBs = getUnlockedCardBacks(u);
+    if(unlockedCBs.length === 0) {
+      cbPreview.innerHTML = '<div style="font-size:12px;color:var(--text3);">Complete your first test to unlock custom card designs!</div>';
+    } else {
+      const cb = u.cardBack ? CARD_BACKS.find(c => c.id === u.cardBack) : null;
+      const thumbHtml = cb
+        ? `<img src="${cb.path.replace(/ /g,'%20')}" style="width:100%;height:100%;object-fit:cover;" alt="${cb.name}">`
+        : '<div style="width:100%;height:100%;background:#12122a;display:flex;align-items:center;justify-content:center;font-size:20px;color:rgba(179,157,255,0.6);">🔮</div>';
+      cbPreview.innerHTML = `<div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:45px;height:63px;border-radius:6px;overflow:hidden;border:1px solid var(--border2);flex-shrink:0;">${thumbHtml}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:var(--text);">${cb?cb.name:'Original Design'}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">${unlockedCBs.length} design${unlockedCBs.length===1?'':'s'} available</div>
+        </div>
+      </div>`;
+    }
   }
 }
 
@@ -2070,6 +2184,105 @@ function renderLbList() {
     </div>`;
   }).join('');
 }
+
+// ============================================================
+// CARD BACKS
+// ============================================================
+function getUnlockedCardBackLevels(user) {
+  if(!user || !user.scores) return [];
+  const topics = Object.keys(user.scores).filter(t => (user.scores[t]||0) > 0);
+  const highestScore = topics.length > 0 ? Math.max(...topics.map(t => user.scores[t]||0)) : 0;
+  const levels = [];
+  if(topics.length >= 1) levels.push(1);
+  if(topics.length >= 2) levels.push(2);
+  if(topics.length >= TOPICS.length) levels.push(3);
+  if(highestScore > 500) levels.push(4);
+  if(highestScore > 1000) levels.push(5);
+  return levels;
+}
+
+function getUnlockedCardBacks(user) {
+  const levels = getUnlockedCardBackLevels(user);
+  return CARD_BACKS.filter(cb => levels.includes(cb.level));
+}
+
+function renderCardBacksScreen() {
+  const content = document.getElementById('card-backs-content');
+  if(!content) return;
+  const unlockedLevels = getUnlockedCardBackLevels(state.user);
+  const selectedId = state.user?.cardBack || null;
+  if(unlockedLevels.length === 0) {
+    content.innerHTML = `
+      <div style="text-align:center;padding:40px 24px;color:var(--text3);">
+        <div style="font-size:48px;margin-bottom:12px;">🃏</div>
+        <div style="font-size:14px;font-family:'Cinzel',serif;color:var(--text2);margin-bottom:8px;">No card designs yet</div>
+        <div style="font-size:12px;line-height:1.6;">Complete your first test to unlock<br>custom card designs!</div>
+      </div>`;
+    return;
+  }
+  const levelNames = {1:'100 Level',2:'200 Level',3:'300 Level',4:'400 Level',5:'500 Level'};
+  let html = `<div class="cb-level-header" style="padding-top:4px;">Default</div>
+    <div style="padding:0 16px 16px;display:flex;gap:12px;align-items:center;">
+      <div class="cb-item${!selectedId?' selected':''}" onclick="selectCardBack(null)" style="width:72px;flex-shrink:0;">
+        <div class="cb-item-default">🔮</div>
+        ${!selectedId?'<div class="cb-selected-check">✓</div>':''}
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);">Original Design</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px;">The mystical default pattern</div>
+      </div>
+    </div>`;
+  for(const level of unlockedLevels) {
+    const backs = CARD_BACKS.filter(cb => cb.level === level);
+    html += `<div class="cb-level-header">${levelNames[level]}</div><div class="cb-grid">`;
+    for(const cb of backs) {
+      const isSelected = selectedId === cb.id;
+      const imgUrl = cb.path.replace(/ /g,'%20');
+      html += `<div class="cb-item${isSelected?' selected':''}" onclick="selectCardBack('${cb.id}')">
+        <img src="${imgUrl}" alt="${cb.name}" loading="lazy">
+        ${isSelected?'<div class="cb-selected-check">✓</div>':''}
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  content.innerHTML = html;
+}
+
+function selectCardBack(id) {
+  if(!state.user) return;
+  state.user.cardBack = id || null;
+  save();
+  renderCardBacksScreen();
+  renderCardBackFaceContent();
+  showToast(id ? 'Card design selected!' : 'Default design selected!');
+}
+
+function renderCardBackFaceContent() {
+  const inner = document.querySelector('.card-back-inner');
+  if(!inner) return;
+  const cbId = state.user?.cardBack;
+  if(cbId) {
+    const cb = CARD_BACKS.find(c => c.id === cbId);
+    if(cb) {
+      const url = cb.path.replace(/ /g,'%20');
+      inner.style.backgroundImage = 'none';
+      inner.style.opacity = '1';
+      inner.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt="card back">`;
+      return;
+    }
+  }
+  inner.style.backgroundImage = '';
+  inner.style.opacity = '';
+  inner.innerHTML = `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <defs><pattern id="dp" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M0 10 L10 0 L20 10 L10 20 Z" fill="none" stroke="rgba(179,157,255,0.5)" stroke-width="0.8"/></pattern></defs>
+    <rect width="180" height="252" fill="url(#dp)"/>
+    <circle cx="90" cy="126" r="50" fill="none" stroke="rgba(179,157,255,0.4)" stroke-width="1.5"/>
+    <circle cx="90" cy="126" r="35" fill="none" stroke="rgba(179,157,255,0.3)" stroke-width="1"/>
+    <text x="90" y="140" text-anchor="middle" font-size="40" fill="rgba(179,157,255,0.6)">🔮</text>
+  </svg>`;
+}
+
+function goToCardBacks() { showScreen('card-backs'); }
 
 // ============================================================
 // CERT
