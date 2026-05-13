@@ -419,6 +419,13 @@ body::before {
   cursor: pointer; white-space: nowrap; transition: all 0.2s; flex-shrink: 0;
 }
 .filter-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.lb-location-row { display: flex; gap: 8px; padding: 0 16px 12px; }
+.lb-location-row select {
+  flex: 1; background: var(--bg2); border: 1px solid var(--border2); color: var(--text);
+  border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 600;
+  cursor: pointer; appearance: none; -webkit-appearance: none;
+}
+.lb-location-row select option { background: var(--bg2); }
 
 .lb-row {
   display: flex; align-items: center; gap: 10px;
@@ -884,6 +891,16 @@ body::before {
         </div>
       </div>
       <div class="field"><label>Psychic level</label><div id="edit-level-options"></div></div>
+      <div class="field"><label>Country</label>
+        <select id="edit-country" onchange="onEditCountryChange()">
+          <option value="">Select country…</option>
+        </select>
+      </div>
+      <div class="field" id="edit-state-field" style="display:none;"><label>State</label>
+        <select id="edit-state">
+          <option value="">Select state…</option>
+        </select>
+      </div>
       <button class="btn btn-primary mt-16" onclick="saveEditProfile()">Save changes</button>
     </div>
   </div>
@@ -913,6 +930,14 @@ body::before {
       <div class="filter-row" id="lb-zodiac-filters">
         <div class="filter-chip active" data-filter="all" onclick="setLbFilter('zodiac','all')">All signs</div>
       </div>
+    </div>
+    <div class="lb-location-row">
+      <select id="lb-country-sel" onchange="setLbLocation()">
+        <option value="all">🌍 All countries</option>
+      </select>
+      <select id="lb-state-sel" style="display:none;" onchange="setLbLocation()">
+        <option value="all">All states</option>
+      </select>
     </div>
     <div id="leaderboard-list"></div>
   </div>
@@ -1154,6 +1179,49 @@ const TOPIC_ITEMS = {
   ],
 };
 
+const COUNTRIES = [
+  {code:'US',name:'United States'},{code:'GB',name:'United Kingdom'},{code:'CA',name:'Canada'},
+  {code:'AU',name:'Australia'},{code:'NZ',name:'New Zealand'},{code:'IE',name:'Ireland'},
+  {code:'ZA',name:'South Africa'},{code:'IN',name:'India'},{code:'PH',name:'Philippines'},
+  {code:'NG',name:'Nigeria'},{code:'GH',name:'Ghana'},{code:'KE',name:'Kenya'},
+  {code:'DE',name:'Germany'},{code:'FR',name:'France'},{code:'ES',name:'Spain'},
+  {code:'IT',name:'Italy'},{code:'NL',name:'Netherlands'},{code:'BE',name:'Belgium'},
+  {code:'PT',name:'Portugal'},{code:'SE',name:'Sweden'},{code:'NO',name:'Norway'},
+  {code:'DK',name:'Denmark'},{code:'FI',name:'Finland'},{code:'CH',name:'Switzerland'},
+  {code:'AT',name:'Austria'},{code:'PL',name:'Poland'},{code:'RU',name:'Russia'},
+  {code:'BR',name:'Brazil'},{code:'MX',name:'Mexico'},{code:'AR',name:'Argentina'},
+  {code:'CO',name:'Colombia'},{code:'CL',name:'Chile'},{code:'PE',name:'Peru'},
+  {code:'JP',name:'Japan'},{code:'CN',name:'China'},{code:'KR',name:'South Korea'},
+  {code:'SG',name:'Singapore'},{code:'MY',name:'Malaysia'},{code:'ID',name:'Indonesia'},
+  {code:'TH',name:'Thailand'},{code:'VN',name:'Vietnam'},{code:'PK',name:'Pakistan'},
+  {code:'BD',name:'Bangladesh'},{code:'EG',name:'Egypt'},{code:'MA',name:'Morocco'},
+  {code:'TR',name:'Turkey'},{code:'SA',name:'Saudi Arabia'},{code:'AE',name:'UAE'},
+  {code:'IL',name:'Israel'},{code:'UA',name:'Ukraine'},{code:'GR',name:'Greece'},
+  {code:'RO',name:'Romania'},{code:'HU',name:'Hungary'},{code:'CZ',name:'Czech Republic'},
+  {code:'JM',name:'Jamaica'},{code:'TT',name:'Trinidad & Tobago'},{code:'BB',name:'Barbados'},
+  {code:'DO',name:'Dominican Republic'},{code:'GT',name:'Guatemala'},{code:'CR',name:'Costa Rica'},
+  {code:'HN',name:'Honduras'},{code:'PA',name:'Panama'},{code:'EC',name:'Ecuador'},
+];
+const US_STATES = [
+  {code:'AL',name:'Alabama'},{code:'AK',name:'Alaska'},{code:'AZ',name:'Arizona'},
+  {code:'AR',name:'Arkansas'},{code:'CA',name:'California'},{code:'CO',name:'Colorado'},
+  {code:'CT',name:'Connecticut'},{code:'DC',name:'Washington D.C.'},{code:'DE',name:'Delaware'},
+  {code:'FL',name:'Florida'},{code:'GA',name:'Georgia'},{code:'HI',name:'Hawaii'},
+  {code:'ID',name:'Idaho'},{code:'IL',name:'Illinois'},{code:'IN',name:'Indiana'},
+  {code:'IA',name:'Iowa'},{code:'KS',name:'Kansas'},{code:'KY',name:'Kentucky'},
+  {code:'LA',name:'Louisiana'},{code:'ME',name:'Maine'},{code:'MD',name:'Maryland'},
+  {code:'MA',name:'Massachusetts'},{code:'MI',name:'Michigan'},{code:'MN',name:'Minnesota'},
+  {code:'MS',name:'Mississippi'},{code:'MO',name:'Missouri'},{code:'MT',name:'Montana'},
+  {code:'NE',name:'Nebraska'},{code:'NV',name:'Nevada'},{code:'NH',name:'New Hampshire'},
+  {code:'NJ',name:'New Jersey'},{code:'NM',name:'New Mexico'},{code:'NY',name:'New York'},
+  {code:'NC',name:'North Carolina'},{code:'ND',name:'North Dakota'},{code:'OH',name:'Ohio'},
+  {code:'OK',name:'Oklahoma'},{code:'OR',name:'Oregon'},{code:'PA',name:'Pennsylvania'},
+  {code:'RI',name:'Rhode Island'},{code:'SC',name:'South Carolina'},{code:'SD',name:'South Dakota'},
+  {code:'TN',name:'Tennessee'},{code:'TX',name:'Texas'},{code:'UT',name:'Utah'},
+  {code:'VT',name:'Vermont'},{code:'VA',name:'Virginia'},{code:'WA',name:'Washington'},
+  {code:'WV',name:'West Virginia'},{code:'WI',name:'Wisconsin'},{code:'WY',name:'Wyoming'},
+];
+
 const ZODIAC_SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 const ZODIAC_DATES = [[3,21],[4,20],[5,21],[6,21],[7,23],[8,23],[9,23],[10,23],[11,22],[12,22],[1,20],[2,19]];
 
@@ -1223,7 +1291,7 @@ let state = {
   user: null,
   guest: false,
   game: { topic:null, score:0, strikes:0, maxStrikes:3, currentItem:null, choices:[], answered:false },
-  lb: { time:'alltime', topic:'all', zodiac:'all' },
+  lb: { time:'alltime', topic:'all', zodiac:'all', country:'all', stateCode:'all' },
 };
 
 // ============================================================
@@ -1238,6 +1306,30 @@ function load() {
     if(d) { state.user = JSON.parse(d); return true; }
   } catch(e){}
   return false;
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function avatarHtml(u) {
+  return u?.avatarData
+    ? `<img src="${u.avatarData}" alt="av">`
+    : (u?.displayName||'P').charAt(0).toUpperCase();
+}
+function locationStr(country, stateCode) {
+  if(!country) return '';
+  const cName = COUNTRIES.find(c=>c.code===country)?.name || country;
+  const sName = country==='US' && stateCode ? (US_STATES.find(s=>s.code===stateCode)?.name || stateCode) : '';
+  return sName ? `${sName}, ${cName}` : cName;
+}
+function bestScore(scores) {
+  return Object.values(scores||{}).reduce((a,b)=>Math.max(a,b), 0);
+}
+function levelName(levelId) {
+  return PSYCHIC_LEVELS.find(l=>l.id===levelId)?.name || '';
+}
+function topicLabel() {
+  return state.lb.topic==='all' ? 'best ever' : (TOPICS.find(t=>t.id===state.lb.topic)?.name || '');
 }
 
 // ============================================================
@@ -1329,14 +1421,7 @@ async function handleAuth() {
     }
   }
 }
-function handleGoogleAuth() {
-  state.user = {
-    id:'user_'+Date.now(), email:'user@gmail.com', name:'Google User',
-    displayName:'Google User', username:'', dob:'', zodiac:'',
-    level:'', avatarData:null, scores:{}, joinYear:new Date().getFullYear(),
-  };
-  renderSetup1(); showScreen('setup1');
-}
+
 function playAsGuest() {
   state.guest = true; state.user = null;
   renderTopics(); showScreen('topics');
@@ -1389,6 +1474,12 @@ function handleAvatarUpload(e) {
   };
   reader.readAsDataURL(file);
 }
+function onEditCountryChange() {
+  const code = document.getElementById('edit-country').value;
+  const stateField = document.getElementById('edit-state-field');
+  stateField.style.display = code === 'US' ? '' : 'none';
+  if(code !== 'US') document.getElementById('edit-state').value = '';
+}
 function goToSetup2() {
   const dn = document.getElementById('setup-displayname').value.trim();
   const un = document.getElementById('setup-username').value.trim();
@@ -1427,13 +1518,21 @@ function renderEditProfile() {
   document.getElementById('edit-displayname').value = state.user.displayName||'';
   document.getElementById('edit-username').value = state.user.username||'';
   setDob('edit', state.user.dob||'');
-  const circle = document.getElementById('edit-avatar-circle');
   if(state.user.avatarData) {
     document.getElementById('edit-avatar-placeholder').style.display='none';
     const img = document.getElementById('edit-avatar-preview');
     img.src = state.user.avatarData; img.style.display='block';
   }
   renderLevelOptions('edit-level-options', state.user.level||'');
+  // Populate country select
+  const cSel = document.getElementById('edit-country');
+  cSel.innerHTML = '<option value="">Select country…</option>'
+    + COUNTRIES.map(c=>`<option value="${c.code}"${state.user.country===c.code?' selected':''}>${c.name}</option>`).join('');
+  // Populate state select if US
+  const sSel = document.getElementById('edit-state');
+  sSel.innerHTML = '<option value="">Select state…</option>'
+    + US_STATES.map(s=>`<option value="${s.code}"${state.user.stateCode===s.code?' selected':''}>${s.name}</option>`).join('');
+  document.getElementById('edit-state-field').style.display = state.user.country==='US' ? '' : 'none';
 }
 function handleEditAvatarUpload(e) {
   const file = e.target.files[0]; if(!file) return;
@@ -1446,7 +1545,7 @@ function handleEditAvatarUpload(e) {
   };
   reader.readAsDataURL(file);
 }
-function saveEditProfile() {
+async function saveEditProfile() {
   if(!state.user) return;
   state.user.displayName = document.getElementById('edit-displayname').value.trim()||state.user.displayName;
   state.user.username = document.getElementById('edit-username').value.trim()||state.user.username;
@@ -1457,7 +1556,24 @@ function saveEditProfile() {
     const idx = [...document.querySelectorAll('#edit-level-options .level-option')].indexOf(sel);
     state.user.level = PSYCHIC_LEVELS[idx].id;
   }
-  save(); showToast('Profile saved!'); showScreen('profile');
+  const selectedCountry = document.getElementById('edit-country').value || null;
+  const selectedState = selectedCountry === 'US' ? (document.getElementById('edit-state').value || null) : null;
+  state.user.country = selectedCountry;
+  state.user.stateCode = selectedState;
+  save();
+  if(api.token()) {
+    await api.put('/api/users/me', {
+      displayName: state.user.displayName,
+      username: state.user.username,
+      dob: state.user.dob,
+      zodiac: state.user.zodiac,
+      level: state.user.level,
+      avatarData: state.user.avatarData||null,
+      country: state.user.country,
+      stateCode: state.user.stateCode,
+    });
+  }
+  showToast('Profile saved!'); showScreen('profile');
 }
 
 // ============================================================
@@ -1465,13 +1581,9 @@ function saveEditProfile() {
 // ============================================================
 function renderTopics() {
   const u = state.user;
-  document.getElementById('topics-greeting').textContent = u ? `Hello, ${u.displayName||u.name||'Psychic'}` : 'Testing as guest';
+  document.getElementById('topics-greeting').textContent = u ? `Hello, ${u.displayName||'Psychic'}` : 'Testing as guest';
   const avEl = document.getElementById('topics-avatar');
-  if(u && u.avatarData) {
-    avEl.innerHTML = `<img src="${u.avatarData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="av">`;
-  } else {
-    avEl.textContent = u ? (u.displayName||'P').charAt(0).toUpperCase() : '👤';
-  }
+  avEl.innerHTML = u ? avatarHtml(u) : '👤';
   const grid = document.getElementById('topic-grid');
   grid.innerHTML = TOPICS.map(t => `
     <div class="topic-card" onclick="startGame('${t.id}')">
@@ -1965,20 +2077,18 @@ function renderProfile() {
   const u = state.user;
   if(!u) { showScreen('home'); return; }
   // Avatar
-  const avEl = document.getElementById('profile-av-display');
-  if(u.avatarData) avEl.innerHTML = `<img src="${u.avatarData}" alt="av">`;
-  else avEl.textContent = (u.displayName||'P').charAt(0).toUpperCase();
-  document.getElementById('profile-name-display').textContent = u.displayName||u.name||'Psychic';
+  document.getElementById('profile-av-display').innerHTML = avatarHtml(u);
+  document.getElementById('profile-name-display').textContent = u.displayName||'Psychic';
   document.getElementById('profile-username-display').textContent = u.username ? '@'+u.username : '';
   document.getElementById('profile-meta-display').textContent =
-    [u.zodiac, u.joinYear?'Member since '+u.joinYear:''].filter(Boolean).join(' · ');
-  const levelObj = PSYCHIC_LEVELS.find(l=>l.id===u.level);
-  document.getElementById('profile-level-badge').innerHTML = levelObj ?
-    `<span class="pill pill-purple">${levelObj.name}</span>` : '';
+    [u.zodiac, locationStr(u.country, u.stateCode), u.joinYear?'Member since '+u.joinYear:''].filter(Boolean).join(' · ');
+  const lName = levelName(u.level);
+  document.getElementById('profile-level-badge').innerHTML = lName ?
+    `<span class="pill pill-purple">${lName}</span>` : '';
 
   // Stats
   const scores = u.scores||{};
-  const best = Object.values(scores).reduce((a,b)=>Math.max(a,b),0);
+  const best = bestScore(scores);
   document.getElementById('pstat-best').textContent = best||'—';
   document.getElementById('pstat-topics').textContent = Object.keys(scores).length;
   // Rank
@@ -2087,6 +2197,15 @@ async function renderLeaderboard() {
   const zodiacFilters = document.getElementById('lb-zodiac-filters');
   zodiacFilters.innerHTML = '<div class="filter-chip active" data-filter="all" onclick="setLbFilter(\'zodiac\',\'all\')">All signs</div>'
     + ZODIAC_SIGNS.map(z=>`<div class="filter-chip" data-filter="${z}" onclick="setLbFilter('zodiac','${z}')">${z}</div>`).join('');
+  // Country select
+  const cSel = document.getElementById('lb-country-sel');
+  cSel.innerHTML = '<option value="all">🌍 All countries</option>'
+    + COUNTRIES.map(c=>`<option value="${c.code}"${state.lb.country===c.code?' selected':''}>${c.name}</option>`).join('');
+  // State select
+  const sSel = document.getElementById('lb-state-sel');
+  sSel.innerHTML = '<option value="all">All states</option>'
+    + US_STATES.map(s=>`<option value="${s.code}"${state.lb.stateCode===s.code?' selected':''}>${s.name}</option>`).join('');
+  sSel.style.display = state.lb.country === 'US' ? '' : 'none';
   await fetchAndRenderLb();
 }
 async function setLbFilter(type, val) {
@@ -2097,14 +2216,31 @@ async function setLbFilter(type, val) {
   });
   await fetchAndRenderLb();
 }
+async function setLbLocation() {
+  const newCountry = document.getElementById('lb-country-sel').value;
+  const sSel = document.getElementById('lb-state-sel');
+  if(newCountry === 'US') {
+    sSel.style.display = '';
+    state.lb.country = 'US';
+    state.lb.stateCode = sSel.value || 'all';
+  } else {
+    sSel.style.display = 'none';
+    sSel.value = 'all';
+    state.lb.country = newCountry;
+    state.lb.stateCode = 'all';
+  }
+  await fetchAndRenderLb();
+}
 async function fetchAndRenderLb() {
   const list = document.getElementById('leaderboard-list');
   list.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--text3);font-size:13px);">Loading rankings…</div>';
   try {
     const params = new URLSearchParams({
-      topic: state.lb.topic || 'all',
-      zodiac: state.lb.zodiac || 'all',
-      time:   state.lb.time  || 'alltime',
+      topic:     state.lb.topic     || 'all',
+      zodiac:    state.lb.zodiac    || 'all',
+      time:      state.lb.time      || 'alltime',
+      country:   state.lb.country   || 'all',
+      stateCode: state.lb.stateCode || 'all',
       limit: 50,
     });
     const data = await api.get('/api/leaderboard?' + params);
@@ -2113,73 +2249,56 @@ async function fetchAndRenderLb() {
   renderLbList(); // fallback to demo players when API is empty or unreachable
 }
 function renderLbFromEntries(entries) {
-  const list = document.getElementById('leaderboard-list');
-  if(!entries.length) {
-    list.innerHTML='<div style="text-align:center;padding:40px 16px;color:var(--text3);font-size:13px;">No scores yet for this filter</div>';
-    return;
-  }
-  const topicLabel = state.lb.topic==='all' ? 'best ever' : TOPICS.find(t=>t.id===state.lb.topic)?.name;
-  list.innerHTML = entries.map((p,i)=>{
-    const isYou = state.user && p.userId === state.user.id;
-    const initials = (p.displayName||'P').charAt(0).toUpperCase();
-    const avatarHtml = p.avatarData
-      ? `<img src="${p.avatarData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="av">`
-      : initials;
-    const levelName = PSYCHIC_LEVELS.find(l=>l.id===p.level)?.name||'';
-    return `<div class="lb-row${isYou?' you':''}">
-      <div class="lb-rank${i<3?' top3':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':p.rank}</div>
-      <div class="lb-av">${avatarHtml}</div>
-      <div class="lb-name">
-        <div class="lb-display-name">${p.displayName}${isYou?' (You)':''}</div>
-        <div class="lb-meta">${[p.zodiac,levelName].filter(Boolean).join(' · ')}</div>
-      </div>
-      <div class="lb-score-col">
-        <div class="lb-score">${p.bestScore}</div>
-        <div class="lb-score-sub">${topicLabel}</div>
-      </div>
-    </div>`;
-  }).join('');
+  renderLeaderboardRows(entries.map(p => ({
+    ...p,
+    score: p.bestScore,
+    isYou: !!(state.user && p.userId === state.user.id),
+  })));
 }
 function renderLbList() {
   let players = getAllPlayersWithBest();
   const t = state.lb.time;
   if(t === 'thismonth') {
     const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-    players = players.filter(p => p.lastPlayedMs >= start);
+    players = players.filter(p => p.lastPlayedMs >= new Date(now.getFullYear(), now.getMonth(), 1).getTime());
   } else if(t === '90days') {
-    const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
-    players = players.filter(p => p.lastPlayedMs >= cutoff);
+    players = players.filter(p => p.lastPlayedMs >= Date.now() - 90*24*60*60*1000);
   } else if(t !== 'alltime') {
     const year = parseInt(t);
     if(!isNaN(year)) players = players.filter(p => p.joinYear === year);
   }
-  if(state.lb.zodiac!=='all') players=players.filter(p=>p.zodiac===state.lb.zodiac);
-  if(state.lb.topic!=='all') {
-    players=players.map(p=>({...p, best:p.scores[state.lb.topic]||0})).filter(p=>p.best>0);
+  if(state.lb.zodiac !== 'all') players = players.filter(p => p.zodiac === state.lb.zodiac);
+  if(state.lb.country !== 'all') {
+    players = players.filter(p => p.country === state.lb.country);
+    if(state.lb.stateCode !== 'all') players = players.filter(p => p.stateCode === state.lb.stateCode);
   }
-  players.sort((a,b)=>b.best-a.best);
+  if(state.lb.topic !== 'all') {
+    players = players.map(p=>({...p, score:p.scores[state.lb.topic]||0})).filter(p=>p.score>0);
+  } else {
+    players = players.map(p=>({...p, score:p.best}));
+  }
+  players.sort((a,b) => b.score - a.score);
+  renderLeaderboardRows(players);
+}
+function renderLeaderboardRows(players) {
   const list = document.getElementById('leaderboard-list');
   if(!players.length) {
-    list.innerHTML='<div style="text-align:center;padding:40px 16px;color:var(--text3);font-size:13px;">No scores yet for this filter</div>';
+    list.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--text3);font-size:13px;">No scores yet for this filter</div>';
     return;
   }
-  list.innerHTML = players.map((p,i)=>{
-    const isYou = p.isYou;
-    const initials = (p.displayName||'P').charAt(0).toUpperCase();
-    const avatarHtml = p.avatarData
-      ? `<img src="${p.avatarData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="av">`
-      : initials;
-    return `<div class="lb-row${isYou?' you':''}">
-      <div class="lb-rank${i<3?' top3':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
-      <div class="lb-av">${avatarHtml}</div>
+  const label = topicLabel();
+  list.innerHTML = players.map((p, i) => {
+    const rank = p.rank || i + 1;
+    return `<div class="lb-row${p.isYou?' you':''}">
+      <div class="lb-rank${i<3?' top3':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':rank}</div>
+      <div class="lb-av">${avatarHtml(p)}</div>
       <div class="lb-name">
-        <div class="lb-display-name">${p.displayName}${isYou?' (You)':''}</div>
-        <div class="lb-meta">${[p.zodiac,p.level?PSYCHIC_LEVELS.find(l=>l.id===p.level)?.name:''].filter(Boolean).join(' · ')}</div>
+        <div class="lb-display-name">${p.displayName}${p.isYou?' (You)':''}</div>
+        <div class="lb-meta">${[p.zodiac, levelName(p.level), locationStr(p.country, p.stateCode)].filter(Boolean).join(' · ')}</div>
       </div>
       <div class="lb-score-col">
-        <div class="lb-score">${p.best}</div>
-        <div class="lb-score-sub">${state.lb.topic==='all'?'best ever':TOPICS.find(t=>t.id===state.lb.topic)?.name}</div>
+        <div class="lb-score">${p.score}</div>
+        <div class="lb-score-sub">${label}</div>
       </div>
     </div>`;
   }).join('');
@@ -2295,15 +2414,12 @@ function renderCert() {
   document.getElementById('cert-url-display').textContent = url;
   document.getElementById('cert-footer-url').textContent = url;
   // Avatar
-  const avEl = document.getElementById('cert-av');
-  if(u.avatarData) avEl.innerHTML=`<img src="${u.avatarData}" alt="av">`;
-  else avEl.textContent=(u.displayName||'P').charAt(0).toUpperCase();
-  document.getElementById('cert-name').textContent=u.displayName||u.name||'Psychic';
-  const levelObj=PSYCHIC_LEVELS.find(l=>l.id===u.level);
-  document.getElementById('cert-level-line').textContent=[levelObj?.name,u.zodiac].filter(Boolean).join(' · ');
+  document.getElementById('cert-av').innerHTML = avatarHtml(u);
+  document.getElementById('cert-name').textContent = u.displayName||'Psychic';
+  document.getElementById('cert-level-line').textContent = [levelName(u.level), u.zodiac].filter(Boolean).join(' · ');
   // Stats
-  const scores=u.scores||{};
-  const best=Object.values(scores).reduce((a,b)=>Math.max(a,b),0);
+  const scores = u.scores||{};
+  const best = bestScore(scores);
   document.getElementById('cert-best').textContent=best||0;
   document.getElementById('cert-rank').textContent='#'+getPlayerRank(u);
   const zr=getZodiacRank(u);
@@ -2351,7 +2467,7 @@ function getCertUrl() {
 }
 function getCertText() {
   const u=state.user; if(!u) return 'Check out my psychic ability certification!';
-  const best=Object.values(u.scores||{}).reduce((a,b)=>Math.max(a,b),0);
+  const best=bestScore(u.scores);
   const rank=getPlayerRank(u);
   return `I just proved my psychic ability! Score: ${best}, ranked #${rank} globally. Check my certification:`;
 }

@@ -18,7 +18,9 @@ db.exec(`
     level         TEXT,
     avatar_data   TEXT,
     join_year     INTEGER NOT NULL,
-    created_at    INTEGER NOT NULL
+    created_at    INTEGER NOT NULL,
+    country       TEXT,
+    state_code    TEXT
   );
 
   CREATE TABLE IF NOT EXISTS scores (
@@ -33,6 +35,10 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_scores_topic  ON scores(topic_id);
   CREATE INDEX IF NOT EXISTS idx_scores_played ON scores(played_at);
 `);
+
+// Migrate existing databases that predate these columns
+try { db.exec(`ALTER TABLE users ADD COLUMN country    TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN state_code TEXT`); } catch {}
 
 // Returns best score per topic for a user
 const stmtBestByTopic = db.prepare(`
@@ -61,6 +67,8 @@ function publicUser(u) {
     zodiac: u.zodiac,
     level: u.level,
     joinYear: u.join_year,
+    country: u.country || null,
+    stateCode: u.state_code || null,
     scores: getBestScores(u.id),
   };
 }

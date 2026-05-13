@@ -94,7 +94,7 @@ app.get('/api/users/me', requireAuth, (req, res) => {
 
 // PUT /api/users/me
 app.put('/api/users/me', requireAuth, (req, res) => {
-  const { displayName, username, dob, zodiac, level, avatarData } = req.body;
+  const { displayName, username, dob, zodiac, level, avatarData, country, stateCode } = req.body;
   const user = db.prepare('SELECT * FROM users WHERE id=?').get(req.user.sub);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -113,11 +113,14 @@ app.put('/api/users/me', requireAuth, (req, res) => {
       dob          = COALESCE(?, dob),
       zodiac       = COALESCE(?, zodiac),
       level        = COALESCE(?, level),
-      avatar_data  = COALESCE(?, avatar_data)
+      avatar_data  = COALESCE(?, avatar_data),
+      country      = COALESCE(?, country),
+      state_code   = COALESCE(?, state_code)
     WHERE id = ?
   `).run(
     displayName || null, username || null, dob || null,
-    zodiac || null, level || null, avatarData || null, user.id
+    zodiac || null, level || null, avatarData || null,
+    country || null, stateCode || null, user.id
   );
 
   const updated = db.prepare('SELECT * FROM users WHERE id=?').get(user.id);
@@ -171,11 +174,13 @@ app.get('/api/scores/me', requireAuth, (req, res) => {
     offset  = 0
 */
 app.get('/api/leaderboard', (req, res) => {
-  const topic   = req.query.topic  || 'all';
-  const zodiac  = req.query.zodiac || 'all';
-  const time    = req.query.time   || 'alltime';
-  const limit   = Math.min(parseInt(req.query.limit)  || 50, 100);
-  const offset  = parseInt(req.query.offset) || 0;
+  const topic     = req.query.topic     || 'all';
+  const zodiac    = req.query.zodiac    || 'all';
+  const time      = req.query.time      || 'alltime';
+  const country   = req.query.country   || 'all';
+  const stateCode = req.query.stateCode || 'all';
+  const limit     = Math.min(parseInt(req.query.limit)  || 50, 100);
+  const offset    = parseInt(req.query.offset) || 0;
 
   // Build time filter on scores.played_at
   let timeClause = '';
@@ -195,38 +200,52 @@ app.get('/api/leaderboard', (req, res) => {
     }
   }
 
-  // Build topic filter
+  // Build parameterised filter clauses
+  const filterParams = [];
+  const VALID_ZODIAC = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+
   let topicClause = '';
   if (topic !== 'all' && VALID_TOPICS.includes(topic)) {
-    topicClause = `AND s.topic_id = '${topic}'`;
+    topicClause = 'AND s.topic_id = ?';
+    filterParams.push(topic);
   }
 
-  // Build zodiac filter on users table
   let zodiacClause = '';
-  const VALID_ZODIAC = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
   if (zodiac !== 'all' && VALID_ZODIAC.includes(zodiac)) {
-    zodiacClause = `AND u.zodiac = '${zodiac}'`;
+    zodiacClause = 'AND u.zodiac = ?';
+    filterParams.push(zodiac);
+  }
+
+  let locationClause = '';
+  if (country !== 'all' && /^[A-Z]{2}$/.test(country)) {
+    locationClause += ' AND u.country = ?';
+    filterParams.push(country);
+    if (stateCode !== 'all' && /^[A-Z]{2}$/.test(stateCode)) {
+      locationClause += ' AND u.state_code = ?';
+      filterParams.push(stateCode);
+    }
   }
 
   const rows = db.prepare(`
     SELECT
       u.id, u.display_name, u.username, u.zodiac, u.level, u.join_year, u.avatar_data,
+      u.country, u.state_code,
       MAX(s.score) AS best_score,
       s.topic_id   AS best_topic
     FROM scores s
     JOIN users u ON u.id = s.user_id
-    WHERE 1=1 ${timeClause} ${topicClause} ${zodiacClause}
+    WHERE 1=1 ${timeClause} ${topicClause} ${zodiacClause} ${locationClause}
     GROUP BY u.id
     ORDER BY best_score DESC
     LIMIT ? OFFSET ?
-  `).all(limit, offset);
+  `).all(...filterParams, limit, offset);
 
   const total = db.prepare(`
     SELECT COUNT(DISTINCT s.user_id) AS cnt
     FROM scores s
     JOIN users u ON u.id = s.user_id
-    WHERE 1=1 ${timeClause} ${topicClause} ${zodiacClause}
-  `).get().cnt;
+    WHERE 1=1 ${timeClause} ${topicClause} ${zodiacClause} ${locationClause}
+  `).get(...filterParams).cnt;
 
   res.json({
     total,
@@ -241,6 +260,8 @@ app.get('/api/leaderboard', (req, res) => {
       level: r.level,
       joinYear: r.join_year,
       avatarData: r.avatar_data,
+      country: r.country || null,
+      stateCode: r.state_code || null,
       bestScore: r.best_score,
     })),
   });
