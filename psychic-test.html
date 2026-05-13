@@ -1309,6 +1309,32 @@ function load() {
 }
 
 // ============================================================
+// ADS
+// ============================================================
+//
+// PsychicBridge is injected by the native TWA/WebView shell at runtime.
+// In a browser it never exists, so all calls below silently no-op.
+// The Android wrapper must expose this interface via addJavascriptInterface():
+//
+//   window.PsychicBridge = {
+//     showInterstitialAd()  — display a preloaded AdMob full-screen interstitial
+//     loadInterstitialAd()  — preload the next interstitial after one is shown
+//   }
+//
+const AD_TESTS_INTERVAL = 7;
+
+function maybeShowAd() {
+  let count = (parseInt(localStorage.getItem('psychic_ad_counter')) || 0) + 1;
+  if (count >= AD_TESTS_INTERVAL) {
+    count = 0;
+    window.PsychicBridge?.showInterstitialAd?.();
+    // Preload the next ad immediately after showing one
+    setTimeout(() => window.PsychicBridge?.loadInterstitialAd?.(), 500);
+  }
+  localStorage.setItem('psychic_ad_counter', count);
+}
+
+// ============================================================
 // HELPERS
 // ============================================================
 function avatarHtml(u) {
@@ -2065,6 +2091,7 @@ function endGame() {
     document.getElementById('gameover-cardback').classList.add('hidden');
   }
 
+  maybeShowAd();
   showScreen('gameover');
 }
 function playAgain() { startGame(state.game.topic); }

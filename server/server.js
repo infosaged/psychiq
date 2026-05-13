@@ -271,6 +271,26 @@ app.get('/api/leaderboard', (req, res) => {
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
+// Required for TWA (Trusted Web Activity) Play Store verification.
+// Before submitting to Play Store:
+//   1. Choose a package name (e.g. com.psychiciq.app) and add it below.
+//   2. Generate a release keystore and get its SHA-256 fingerprint:
+//        keytool -list -v -keystore release.keystore -alias release
+//      Or copy it from Play Console → Setup → App integrity → App signing key certificate.
+//   3. Paste the fingerprint string into sha256_cert_fingerprints below.
+app.get('/.well-known/assetlinks.json', (_req, res) => {
+  res.json([{
+    relation: ['delegate_permission/common.handle_all_urls'],
+    target: {
+      namespace: 'android_app',
+      package_name: 'com.psychiciq.app',         // ← update before TWA launch
+      sha256_cert_fingerprints: [
+        // 'AA:BB:CC:DD:...'                      // ← paste fingerprint here
+      ],
+    },
+  }]);
+});
+
 app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', 'psychic-test.html')));
 
 // ── Start ─────────────────────────────────────────────────────────────────────

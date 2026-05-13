@@ -2,6 +2,7 @@
   "name": "Psychic Test",
   "short_name": "Psychic Test",
   "description": "Discover your sixth sense – test your psychic abilities across cards, colors, animals, and more.",
+  "id": "/psychic-test.html",
   "start_url": "/psychic-test.html",
   "display": "standalone",
   "orientation": "portrait",
