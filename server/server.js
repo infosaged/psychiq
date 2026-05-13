@@ -267,6 +267,37 @@ app.get('/api/leaderboard', (req, res) => {
   });
 });
 
+// ── In-App Purchases ──────────────────────────────────────────────────────────
+
+// Records a completed purchase for the authenticated user.
+// The native TWA shell is responsible for verifying the receipt with Google/Apple
+// before calling this endpoint — do not grant entitlements based solely on this call
+// without adding server-side receipt verification when going live.
+const VALID_PRODUCT_IDS = [
+  'special_vibrant_mystics',
+  'special_celestial_powers',
+  'special_mages_knowledge',
+  'special_supreme_psychic',
+];
+
+app.post('/api/purchases', requireAuth, (req, res) => {
+  const { productId } = req.body;
+  if (!VALID_PRODUCT_IDS.includes(productId)) {
+    return res.status(400).json({ error: 'Invalid product ID' });
+  }
+  const user = db.prepare('SELECT * FROM users WHERE id=?').get(req.user.sub);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  let purchases = [];
+  try { purchases = JSON.parse(user.purchases || '[]'); } catch {}
+  if (!purchases.includes(productId)) {
+    purchases.push(productId);
+    db.prepare('UPDATE users SET purchases=? WHERE id=?')
+      .run(JSON.stringify(purchases), user.id);
+  }
+  res.json({ purchases });
+});
+
 // ── Health ────────────────────────────────────────────────────────────────────
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));

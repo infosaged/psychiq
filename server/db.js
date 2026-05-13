@@ -39,6 +39,7 @@ db.exec(`
 // Migrate existing databases that predate these columns
 try { db.exec(`ALTER TABLE users ADD COLUMN country    TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN state_code TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN purchases  TEXT`); } catch {}
 
 // Returns best score per topic for a user
 const stmtBestByTopic = db.prepare(`
@@ -60,6 +61,8 @@ function getBestScores(userId) {
 }
 
 function publicUser(u) {
+  let purchases = [];
+  try { purchases = JSON.parse(u.purchases || '[]'); } catch {}
   return {
     id: u.id,
     displayName: u.display_name,
@@ -69,6 +72,7 @@ function publicUser(u) {
     joinYear: u.join_year,
     country: u.country || null,
     stateCode: u.state_code || null,
+    purchases,
     scores: getBestScores(u.id),
   };
 }

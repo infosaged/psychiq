@@ -598,6 +598,23 @@ body::before {
   font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.1em;
   color: var(--text3); text-transform: uppercase; padding: 12px 16px 4px;
 }
+.cb-special-set {
+  margin: 0 16px 10px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--bg2);
+  display: flex; gap: 12px; padding: 12px; align-items: center;
+}
+.cb-special-previews { display: flex; gap: 5px; flex-shrink: 0; }
+.cb-special-thumb {
+  width: 38px; height: 53px; border-radius: 6px; overflow: hidden;
+  border: 1px solid var(--border2); flex-shrink: 0;
+}
+.cb-special-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cb-buy-btn {
+  display: inline-block; background: var(--accent); color: #fff; border: none;
+  border-radius: 20px; padding: 7px 16px; font-size: 12px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; letter-spacing: 0.03em;
+}
+.cb-buy-btn:active { opacity: 0.8; }
 
 .hidden { display: none !important; }
 </style>
@@ -642,8 +659,6 @@ body::before {
       <div class="field"><label>Email address</label><input type="email" id="auth-email" placeholder="jane@email.com"></div>
       <div class="field"><label>Password</label><input type="password" id="auth-password" placeholder="••••••••"></div>
       <button class="btn btn-primary" onclick="handleAuth()">Continue</button>
-      <div class="auth-divider">or</div>
-      <button class="btn btn-secondary" onclick="handleGoogleAuth()">Continue with Google</button>
     </div>
   </div>
 
@@ -1286,6 +1301,31 @@ const CARD_BACK_UNLOCK_MESSAGES = {
   5: { title:'Score Over 1,000!',        body:'You scored over 1,000!  Amazing!  You have been awarded more card options.' },
 };
 
+const SPECIAL_CARD_BACKS = [
+  { id:'special_cosmic_weave',   name:'Cosmic Weave',    productId:'special_vibrant_mystics',  path:'Images/Card Backs/Special/Level 100/Cosmic_Weave.png' },
+  { id:'special_elements_3',     name:'Elements III',    productId:'special_vibrant_mystics',  path:'Images/Card Backs/Special/Level 100/Elements_3.png' },
+  { id:'special_pantheon',       name:'Pantheon',        productId:'special_vibrant_mystics',  path:'Images/Card Backs/Special/Level 100/Pantheon.png' },
+  { id:'special_wizard_twins',   name:'Wizard Twins',    productId:'special_vibrant_mystics',  path:'Images/Card Backs/Special/Level 100/Wizard_Twins.png' },
+  { id:'special_elements_2',     name:'Elements II',     productId:'special_celestial_powers', path:'Images/Card Backs/Special/Level 200/Elements_2.png' },
+  { id:'special_fame',           name:'Fame',            productId:'special_celestial_powers', path:'Images/Card Backs/Special/Level 200/Fame.png' },
+  { id:'special_famous_people',  name:'Famous People',   productId:'special_celestial_powers', path:'Images/Card Backs/Special/Level 200/Famous_People.png' },
+  { id:'special_psychic_1',      name:'Psychic',         productId:'special_celestial_powers', path:'Images/Card Backs/Special/Level 200/Psychic_1.png' },
+  { id:'special_lion',           name:'Lion',            productId:'special_mages_knowledge',  path:'Images/Card Backs/Special/Level 300/Lion.png' },
+  { id:'special_wizard_female',  name:'Wizard (Female)', productId:'special_mages_knowledge',  path:'Images/Card Backs/Special/Level 300/Wizard_Female_1.png' },
+  { id:'special_wizard_male',    name:'Wizard (Male)',   productId:'special_mages_knowledge',  path:'Images/Card Backs/Special/Level 300/Wizard_Male_1.png' },
+  { id:'special_zodiac_1',       name:'Zodiac',          productId:'special_mages_knowledge',  path:'Images/Card Backs/Special/Level 300/Zodiac_1.png' },
+  { id:'special_elements',       name:'Elements',        productId:'special_supreme_psychic',  path:'Images/Card Backs/Special/Level 400/Elements.png' },
+  { id:'special_lion_king',      name:'Lion King',       productId:'special_supreme_psychic',  path:'Images/Card Backs/Special/Level 400/Lion_King.png' },
+  { id:'special_prism',          name:'Prism',           productId:'special_supreme_psychic',  path:'Images/Card Backs/Special/Level 400/Prism.png' },
+];
+
+const IAP_PRODUCTS = [
+  { id:'special_vibrant_mystics',  name:'Vibrant Mystics Set',  price:'$0.99', cardCount:4 },
+  { id:'special_celestial_powers', name:'Celestial Powers Set', price:'$1.19', cardCount:4 },
+  { id:'special_mages_knowledge',  name:'Mages Knowledge Set',  price:'$1.39', cardCount:4 },
+  { id:'special_supreme_psychic',  name:'Supreme Psychic Set',  price:'$1.49', cardCount:3 },
+];
+
 let state = {
   currentScreen: 'home',
   user: null,
@@ -1317,9 +1357,19 @@ function load() {
 // The Android wrapper must expose this interface via addJavascriptInterface():
 //
 //   window.PsychicBridge = {
-//     showInterstitialAd()  — display a preloaded AdMob full-screen interstitial
-//     loadInterstitialAd()  — preload the next interstitial after one is shown
+//     // Ads
+//     showInterstitialAd()        — display a preloaded AdMob full-screen interstitial
+//     loadInterstitialAd()        — preload the next interstitial after one is shown
+//     // IAP
+//     purchaseProduct(productId)  — initiate a Google Play / App Store purchase flow
+//     restorePurchases()          — restore previously purchased products (App Store required)
 //   }
+//
+// After purchaseProduct(), the native side calls back into JS:
+//   onPurchaseResult(productId, success)  — purchase completed or cancelled
+//
+// After restorePurchases(), the native side calls:
+//   onRestorePurchases(productIdsArray)   — array of all owned product IDs
 //
 const AD_TESTS_INTERVAL = 7;
 
@@ -1332,6 +1382,37 @@ function maybeShowAd() {
     setTimeout(() => window.PsychicBridge?.loadInterstitialAd?.(), 500);
   }
   localStorage.setItem('psychic_ad_counter', count);
+}
+
+function purchaseProduct(productId) {
+  if(window.PsychicBridge?.purchaseProduct) {
+    window.PsychicBridge.purchaseProduct(productId);
+  } else {
+    showToast('Purchases are available in the app');
+  }
+}
+
+// Called by the native bridge after a purchase completes or is cancelled
+function onPurchaseResult(productId, success) {
+  if(!success) { showToast('Purchase cancelled'); return; }
+  if(!state.user) return;
+  if(!state.user.purchases) state.user.purchases = [];
+  if(!state.user.purchases.includes(productId)) state.user.purchases.push(productId);
+  save();
+  if(api.token()) api.post('/api/purchases', { productId }).catch(()=>{});
+  const product = IAP_PRODUCTS.find(p => p.id === productId);
+  showToast(`${product?.name || 'Purchase'} unlocked! Check your card designs.`);
+  renderCardBacksScreen();
+}
+
+// Called by the native bridge to restore previously purchased products (App Store requirement)
+function onRestorePurchases(productIds) {
+  if(!state.user || !Array.isArray(productIds)) return;
+  state.user.purchases = [...new Set([...(state.user.purchases||[]), ...productIds])];
+  save();
+  if(api.token()) productIds.forEach(id => api.post('/api/purchases', { productId:id }).catch(()=>{}));
+  showToast(productIds.length ? `${productIds.length} purchase(s) restored!` : 'No purchases to restore');
+  renderCardBacksScreen();
 }
 
 // ============================================================
@@ -1356,6 +1437,10 @@ function levelName(levelId) {
 }
 function topicLabel() {
   return state.lb.topic==='all' ? 'best ever' : (TOPICS.find(t=>t.id===state.lb.topic)?.name || '');
+}
+function findCardBack(id) {
+  if(!id) return null;
+  return CARD_BACKS.find(c=>c.id===id) || SPECIAL_CARD_BACKS.find(c=>c.id===id) || null;
 }
 
 // ============================================================
@@ -2162,7 +2247,7 @@ function renderProfile() {
     if(unlockedCBs.length === 0) {
       cbPreview.innerHTML = '<div style="font-size:12px;color:var(--text3);">Complete your first test to unlock custom card designs!</div>';
     } else {
-      const cb = u.cardBack ? CARD_BACKS.find(c => c.id === u.cardBack) : null;
+      const cb = findCardBack(u.cardBack);
       const thumbHtml = cb
         ? `<img src="${cb.path.replace(/ /g,'%20')}" style="width:100%;height:100%;object-fit:cover;" alt="${cb.name}">`
         : '<div style="width:100%;height:100%;background:#12122a;display:flex;align-items:center;justify-content:center;font-size:20px;color:rgba(179,157,255,0.6);">🔮</div>';
@@ -2391,6 +2476,39 @@ function renderCardBacksScreen() {
     }
     html += `</div>`;
   }
+
+  // Special Sets (IAP)
+  const purchases = state.user?.purchases || [];
+  html += `<div class="cb-level-header" style="margin-top:8px;">✨ Special Sets</div>`;
+  for(const product of IAP_PRODUCTS) {
+    const owned = purchases.includes(product.id);
+    const setCards = SPECIAL_CARD_BACKS.filter(cb => cb.productId === product.id);
+    if(owned) {
+      html += `<div class="cb-grid">`;
+      for(const cb of setCards) {
+        const isSelected = selectedId === cb.id;
+        const imgUrl = cb.path.replace(/ /g,'%20');
+        html += `<div class="cb-item${isSelected?' selected':''}" onclick="selectCardBack('${cb.id}')">
+          <img src="${imgUrl}" alt="${cb.name}" loading="lazy">
+          ${isSelected?'<div class="cb-selected-check">✓</div>':''}
+        </div>`;
+      }
+      html += `</div>`;
+    } else {
+      const previews = setCards.slice(0,3).map(cb =>
+        `<div class="cb-special-thumb"><img src="${cb.path.replace(/ /g,'%20')}" alt="${cb.name}" loading="lazy"></div>`
+      ).join('');
+      html += `<div class="cb-special-set">
+        <div class="cb-special-previews">${previews}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);">${product.name}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">${product.cardCount} designs</div>
+          <button class="cb-buy-btn" onclick="purchaseProduct('${product.id}')">${product.price} · Unlock</button>
+        </div>
+      </div>`;
+    }
+  }
+
   content.innerHTML = html;
 }
 
@@ -2408,7 +2526,7 @@ function renderCardBackFaceContent() {
   if(!inner) return;
   const cbId = state.user?.cardBack;
   if(cbId) {
-    const cb = CARD_BACKS.find(c => c.id === cbId);
+    const cb = findCardBack(cbId);
     if(cb) {
       const url = cb.path.replace(/ /g,'%20');
       inner.style.backgroundImage = 'none';
