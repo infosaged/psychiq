@@ -10,6 +10,7 @@ const { db, stmtInsertScore, getBestScores, publicUser } = require('./db');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+if (!process.env.JWT_SECRET) console.warn('WARNING: JWT_SECRET env var not set — using insecure default. Set it in Railway variables.');
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
 
 app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
@@ -94,7 +95,7 @@ app.get('/api/users/me', requireAuth, (req, res) => {
 
 // PUT /api/users/me
 app.put('/api/users/me', requireAuth, (req, res) => {
-  const { displayName, username, dob, zodiac, level, avatarData, country, stateCode } = req.body;
+  const { displayName, username, dob, zodiac, level, avatarData, country, stateCode, cardBack, badges } = req.body;
   const user = db.prepare('SELECT * FROM users WHERE id=?').get(req.user.sub);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -106,21 +107,27 @@ app.put('/api/users/me', requireAuth, (req, res) => {
     if (clash) return res.status(409).json({ error: 'Username already taken' });
   }
 
+  const badgesJson = Array.isArray(badges) ? JSON.stringify(badges) : null;
+
   db.prepare(`
     UPDATE users SET
-      display_name = COALESCE(?, display_name),
-      username     = COALESCE(?, username),
-      dob          = COALESCE(?, dob),
-      zodiac       = COALESCE(?, zodiac),
-      level        = COALESCE(?, level),
-      avatar_data  = COALESCE(?, avatar_data),
-      country      = COALESCE(?, country),
-      state_code   = COALESCE(?, state_code)
+      display_name  = COALESCE(?, display_name),
+      username      = COALESCE(?, username),
+      dob           = COALESCE(?, dob),
+      zodiac        = COALESCE(?, zodiac),
+      level         = COALESCE(?, level),
+      avatar_data   = COALESCE(?, avatar_data),
+      country       = COALESCE(?, country),
+      state_code    = COALESCE(?, state_code),
+      card_back_id  = COALESCE(?, card_back_id),
+      badges        = COALESCE(?, badges)
     WHERE id = ?
   `).run(
     displayName || null, username || null, dob || null,
     zodiac || null, level || null, avatarData || null,
-    country || null, stateCode || null, user.id
+    country || null, stateCode || null,
+    cardBack !== undefined ? (cardBack || null) : null,
+    badgesJson, user.id
   );
 
   const updated = db.prepare('SELECT * FROM users WHERE id=?').get(user.id);

@@ -37,9 +37,11 @@ db.exec(`
 `);
 
 // Migrate existing databases that predate these columns
-try { db.exec(`ALTER TABLE users ADD COLUMN country    TEXT`); } catch {}
-try { db.exec(`ALTER TABLE users ADD COLUMN state_code TEXT`); } catch {}
-try { db.exec(`ALTER TABLE users ADD COLUMN purchases  TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN country     TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN state_code  TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN purchases   TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN card_back_id TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN badges      TEXT`); } catch {}
 
 // Returns best score per topic for a user
 const stmtBestByTopic = db.prepare(`
@@ -61,18 +63,21 @@ function getBestScores(userId) {
 }
 
 function publicUser(u) {
-  let purchases = [];
+  let purchases = [], badges = [];
   try { purchases = JSON.parse(u.purchases || '[]'); } catch {}
+  try { badges    = JSON.parse(u.badges    || '[]'); } catch {}
   return {
     id: u.id,
     displayName: u.display_name,
-    username: u.username,
-    zodiac: u.zodiac,
-    level: u.level,
-    joinYear: u.join_year,
-    country: u.country || null,
-    stateCode: u.state_code || null,
+    username:    u.username,
+    zodiac:      u.zodiac,
+    level:       u.level,
+    joinYear:    u.join_year,
+    country:     u.country       || null,
+    stateCode:   u.state_code    || null,
+    cardBack:    u.card_back_id  || null,
     purchases,
+    badges,
     scores: getBestScores(u.id),
   };
 }

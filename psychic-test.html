@@ -1281,7 +1281,7 @@ const CARD_BACKS = [
   { id:'basic_light_pink', name:'Light Pink', level:1, path:'Images/Card Backs/Basic/100 Level/Basic_Light_Pink.png' },
   { id:'basic_yellow',     name:'Yellow',     level:1, path:'Images/Card Backs/Basic/100 Level/Basic_Yellow.png' },
   { id:'basic_blue',       name:'Blue',       level:2, path:'Images/Card Backs/Basic/200 Level/Basic_Blue.png' },
-  { id:'basic_gray',       name:'Gray',       level:2, path:'Images/Card Backs/Basic/200 Level/Basic_Gray..png' },
+  { id:'basic_gray',       name:'Gray',       level:2, path:'Images/Card Backs/Basic/200 Level/Basic_Gray.png' },
   { id:'basic_pink_2',     name:'Pink 2',     level:2, path:'Images/Card Backs/Basic/200 Level/Basic_Pink_2.png' },
   { id:'basic_red',        name:'Red',        level:2, path:'Images/Card Backs/Basic/200 Level/Basic_Red.png' },
   { id:'basic_orange',     name:'Orange',     level:3, path:'Images/Card Backs/Basic/300 Level/Basic_Orange.png' },
@@ -1408,7 +1408,8 @@ function onPurchaseResult(productId, success) {
 // Called by the native bridge to restore previously purchased products (App Store requirement)
 function onRestorePurchases(productIds) {
   if(!state.user || !Array.isArray(productIds)) return;
-  state.user.purchases = [...new Set([...(state.user.purchases||[]), ...productIds])];
+  const validIds = productIds.filter(id => IAP_PRODUCTS.some(p => p.id === id));
+  state.user.purchases = [...new Set([...(state.user.purchases||[]), ...validIds])];
   save();
   if(api.token()) productIds.forEach(id => api.post('/api/purchases', { productId:id }).catch(()=>{}));
   showToast(productIds.length ? `${productIds.length} purchase(s) restored!` : 'No purchases to restore');
@@ -1441,6 +1442,11 @@ function topicLabel() {
 function findCardBack(id) {
   if(!id) return null;
   return CARD_BACKS.find(c=>c.id===id) || SPECIAL_CARD_BACKS.find(c=>c.id===id) || null;
+}
+function esc(str) {
+  return String(str||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 // ============================================================
@@ -1507,12 +1513,21 @@ async function handleAuth() {
       if(data.token) {
         api.setToken(data.token);
         state.user = {
-          id:data.user.id, email,
-          name:data.user.displayName, displayName:data.user.displayName,
-          username:data.user.username, dob:'',
-          zodiac:data.user.zodiac||'', level:data.user.level||'believer',
-          avatarData:null, scores:data.user.scores||{},
-          joinYear:data.user.joinYear||new Date().getFullYear(),
+          id:          data.user.id,
+          email,
+          displayName: data.user.displayName,
+          username:    data.user.username,
+          dob:         '',
+          zodiac:      data.user.zodiac    || '',
+          level:       data.user.level     || 'believer',
+          country:     data.user.country   || null,
+          stateCode:   data.user.stateCode || null,
+          cardBack:    data.user.cardBack  || null,
+          purchases:   data.user.purchases || [],
+          badges:      data.user.badges    || [],
+          avatarData:  null,
+          scores:      data.user.scores    || {},
+          joinYear:    data.user.joinYear  || new Date().getFullYear(),
         };
         save(); afterLogin(); return;
       }
@@ -2150,6 +2165,9 @@ function endGame() {
       api.post('/api/scores', { topicId:topic, score }).then(d => {
         if(d.bestScores) { state.user.scores = {...state.user.scores, ...d.bestScores}; save(); }
       }).catch(()=>{});
+      if(earnedBadge) {
+        api.put('/api/users/me', { badges: state.user.badges }).catch(()=>{});
+      }
     }
   }
 
@@ -2405,7 +2423,7 @@ function renderLeaderboardRows(players) {
       <div class="lb-rank${i<3?' top3':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':rank}</div>
       <div class="lb-av">${avatarHtml(p)}</div>
       <div class="lb-name">
-        <div class="lb-display-name">${p.displayName}${p.isYou?' (You)':''}</div>
+        <div class="lb-display-name">${esc(p.displayName)}${p.isYou?' (You)':''}</div>
         <div class="lb-meta">${[p.zodiac, levelName(p.level), locationStr(p.country, p.stateCode)].filter(Boolean).join(' · ')}</div>
       </div>
       <div class="lb-score-col">
@@ -2516,6 +2534,7 @@ function selectCardBack(id) {
   if(!state.user) return;
   state.user.cardBack = id || null;
   save();
+  if(api.token()) api.put('/api/users/me', { cardBack: state.user.cardBack }).catch(()=>{});
   renderCardBacksScreen();
   renderCardBackFaceContent();
   showToast(id ? 'Card design selected!' : 'Default design selected!');
@@ -2741,6 +2760,7 @@ function setDob(prefix, iso) {
     navigator.serviceWorker.register('sw.js').catch(()=>{});
   }
   buildDobSelects();
+  window.PsychicBridge?.loadInterstitialAd?.();
   if(load() && state.user && state.user.level) {
     afterLogin();
   }
