@@ -333,6 +333,10 @@ app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', 'psychic-tes
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 
-app.listen(PORT, () => {
-  console.log(`Psychic Test API running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Psychic Test API running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = { app };
