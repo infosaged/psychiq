@@ -36,7 +36,7 @@ function signToken(userId) {
   return jwt.sign({ sub: userId }, JWT_SECRET, { expiresIn: '90d' });
 }
 
-const VALID_TOPICS = ['cards', 'colors', 'animals', 'zodiac', 'celebrities', 'brands'];
+const VALID_TOPICS = ['cards', 'colors', 'animals', 'zodiac', 'planets', 'gems'];
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 

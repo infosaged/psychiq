@@ -1101,12 +1101,12 @@ const api = {
 // DATA & STATE
 // ============================================================
 const TOPICS = [
-  { id:'cards', name:'Cards', emoji:'♠', count:52, hint:'Feel the card…' },
-  { id:'colors', name:'Colors', emoji:'🎨', count:12, hint:'See with your mind…' },
-  { id:'animals', name:'Animals', emoji:'🐾', count:40, hint:'Sense the creature…' },
-  { id:'zodiac', name:'Zodiac', emoji:'♈', count:12, hint:'Read the stars…' },
-  { id:'celebrities', name:'Celebrities', emoji:'⭐', count:50, hint:'Channel the energy…' },
-  { id:'brands', name:'Brands', emoji:'◉', count:30, hint:'Feel the logo…' },
+  { id:'cards',   name:'Cards',         emoji:'♠',  count:52, hint:'Feel the card…' },
+  { id:'colors',  name:'Colors',        emoji:'🎨', count:12, hint:'See with your mind…' },
+  { id:'animals', name:'Animals',       emoji:'🐾', count:40, hint:'Sense the creature…' },
+  { id:'zodiac',  name:'Zodiac',        emoji:'♈',  count:12, hint:'Read the stars…' },
+  { id:'planets', name:'Planets',       emoji:'🪐', count:10, hint:'Feel the cosmos…' },
+  { id:'gems',    name:'Gems & Crystals', emoji:'💎', count:10, hint:'Sense the energy…' },
 ];
 
 const TOPIC_ITEMS = {
@@ -1178,21 +1178,19 @@ const TOPIC_ITEMS = {
     {id:'sagittarius',name:'Sagittarius',emoji:'♐'},{id:'capricorn',name:'Capricorn',emoji:'♑'},
     {id:'aquarius',name:'Aquarius',emoji:'♒'},{id:'pisces',name:'Pisces',emoji:'♓'},
   ],
-  celebrities: [
-    {id:'c1',name:'Oprah Winfrey',emoji:'📺'},{id:'c2',name:'Elon Musk',emoji:'🚀'},
-    {id:'c3',name:'Taylor Swift',emoji:'🎵'},{id:'c4',name:'Leonardo DiCaprio',emoji:'🎬'},
-    {id:'c5',name:'Beyoncé',emoji:'👑'},{id:'c6',name:'Barack Obama',emoji:'🗣️'},
-    {id:'c7',name:'Lady Gaga',emoji:'🎤'},{id:'c8',name:'Will Smith',emoji:'🎭'},
-    {id:'c9',name:'Rihanna',emoji:'💎'},{id:'c10',name:'Jeff Bezos',emoji:'📦'},
-    {id:'c11',name:'Serena Williams',emoji:'🎾'},{id:'c12',name:'Tom Hanks',emoji:'🎥'},
+  planets: [
+    {id:'mercury',name:'Mercury',emoji:'☿'},{id:'venus',name:'Venus',emoji:'♀'},
+    {id:'earth',name:'Earth',emoji:'🌍'},{id:'mars',name:'Mars',emoji:'♂'},
+    {id:'jupiter',name:'Jupiter',emoji:'♃'},{id:'saturn',name:'Saturn',emoji:'♄'},
+    {id:'uranus',name:'Uranus',emoji:'⛢'},{id:'neptune',name:'Neptune',emoji:'♆'},
+    {id:'pluto',name:'Pluto',emoji:'♇'},{id:'sun',name:'The Sun',emoji:'☀'},
   ],
-  brands: [
-    {id:'b1',name:'Apple',emoji:'🍎'},{id:'b2',name:'Nike',emoji:'👟'},
-    {id:'b3',name:'Google',emoji:'🔍'},{id:'b4',name:'McDonald\'s',emoji:'🍔'},
-    {id:'b5',name:'Amazon',emoji:'📦'},{id:'b6',name:'Tesla',emoji:'⚡'},
-    {id:'b7',name:'Coca-Cola',emoji:'🥤'},{id:'b8',name:'LEGO',emoji:'🧱'},
-    {id:'b9',name:'Disney',emoji:'🏰'},{id:'b10',name:'Adidas',emoji:'⚽'},
-    {id:'b11',name:'Spotify',emoji:'🎵'},{id:'b12',name:'Netflix',emoji:'🎬'},
+  gems: [
+    {id:'amethyst',name:'Amethyst',emoji:'💜'},{id:'ruby',name:'Ruby',emoji:'❤'},
+    {id:'sapphire',name:'Sapphire',emoji:'💙'},{id:'diamond',name:'Diamond',emoji:'💎'},
+    {id:'topaz',name:'Topaz',emoji:'💛'},{id:'opal',name:'Opal',emoji:'🌈'},
+    {id:'garnet',name:'Garnet',emoji:'🔴'},{id:'turquoise',name:'Turquoise',emoji:'🩵'},
+    {id:'rosequartz',name:'Rose Quartz',emoji:'🩷'},{id:'obsidian',name:'Obsidian',emoji:'🖤'},
   ],
 };
 
@@ -1265,13 +1263,13 @@ const RANK_TIERS = [
 
 // Seeded fake leaderboard players
 const FAKE_PLAYERS = [
-  {id:'f1',displayName:'Madame Celeste',username:'madame_celeste',zodiac:'Scorpio',level:'professional',scores:{cards:47,colors:22,animals:31,zodiac:28,celebrities:19,brands:15},joinYear:2025,lastPlayedMs:new Date('2026-05-07').getTime()},
+  {id:'f1',displayName:'Madame Celeste',username:'madame_celeste',zodiac:'Scorpio',level:'professional',scores:{cards:47,colors:22,animals:31,zodiac:28,planets:24,gems:19},joinYear:2025,lastPlayedMs:new Date('2026-05-07').getTime()},
   {id:'f2',displayName:'The Oracle',username:'the_oracle',zodiac:'Pisces',level:'amateur',scores:{cards:38,animals:29,colors:18,zodiac:35},joinYear:2025,lastPlayedMs:new Date('2026-04-18').getTime()},
   {id:'f3',displayName:'StarReader99',username:'starreader99',zodiac:'Aquarius',level:'some',scores:{zodiac:41,colors:25,animals:22},joinYear:2025,lastPlayedMs:new Date('2026-03-05').getTime()},
-  {id:'f4',displayName:'MysticMike',username:'mystic_mike',zodiac:'Leo',level:'believer',scores:{animals:33,cards:24,brands:19},joinYear:2026,lastPlayedMs:new Date('2026-05-02').getTime()},
-  {id:'f5',displayName:'PsychicSarah',username:'psychic_sarah',zodiac:'Aries',level:'professional',scores:{cards:29,celebrities:28,colors:21},joinYear:2026,lastPlayedMs:new Date('2026-02-15').getTime()},
+  {id:'f4',displayName:'MysticMike',username:'mystic_mike',zodiac:'Leo',level:'believer',scores:{animals:33,cards:24,gems:19},joinYear:2026,lastPlayedMs:new Date('2026-05-02').getTime()},
+  {id:'f5',displayName:'PsychicSarah',username:'psychic_sarah',zodiac:'Aries',level:'professional',scores:{cards:29,planets:28,colors:21},joinYear:2026,lastPlayedMs:new Date('2026-02-15').getTime()},
   {id:'f6',displayName:'CosmicCarla',username:'cosmic_carla',zodiac:'Libra',level:'amateur',scores:{zodiac:26,colors:30,animals:20},joinYear:2025,lastPlayedMs:new Date('2025-11-20').getTime()},
-  {id:'f7',displayName:'GutFeeling_J',username:'gut_feeling_j',zodiac:'Virgo',level:'skeptic',scores:{cards:18,brands:22,celebrities:17},joinYear:2026,lastPlayedMs:new Date('2026-05-09').getTime()},
+  {id:'f7',displayName:'GutFeeling_J',username:'gut_feeling_j',zodiac:'Virgo',level:'skeptic',scores:{cards:18,gems:22,planets:17},joinYear:2026,lastPlayedMs:new Date('2026-05-09').getTime()},
   {id:'f8',displayName:'ThirdEyeTom',username:'third_eye_tom',zodiac:'Sagittarius',level:'some',scores:{cards:35,animals:27,zodiac:19},joinYear:2025,lastPlayedMs:new Date('2026-04-25').getTime()},
 ];
 
@@ -1737,13 +1735,6 @@ function beginTest() {
   document.getElementById('game-hint').textContent = t.hint;
   showScreen('game');
   // Pre-warm caches in background
-  if(topic === 'celebrities') {
-    TOPIC_ITEMS.celebrities.slice(0,6).forEach(item => {
-      if(!portraitCache[item.id]) {
-        setTimeout(()=>preCachePortrait(item), 300);
-      }
-    });
-  }
   if(topic === 'animals') {
     TOPIC_ITEMS.animals.forEach((item, i) => {
       if(!(item.id in animalPhotoCache)) {
@@ -1753,29 +1744,6 @@ function beginTest() {
   }
   renderCardBackFaceContent();
   nextCard();
-}
-async function preCachePortrait(item) {
-  if(portraitCache[item.id]) return;
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-20250514', max_tokens:1000,
-        messages:[{role:'user',content:`Create an SVG portrait illustration of ${item.name} as a stylized celebrity portrait card. The SVG must be exactly viewBox="0 0 180 252". Requirements:
-- Artistic, stylized illustration (NOT realistic photo)
-- Bold graphic style, art-deco or pop-art inspired
-- Strong silhouette recognizable as their vibe/field
-- Use their signature colors or iconic features
-- Include their name at y="240" in white serif font, text-anchor middle, x="90"
-- Dark background
-- Return ONLY the complete SVG code starting with <svg and ending with </svg>, nothing else`}]
-      })
-    });
-    const data = await resp.json();
-    const svg = data.content?.find(b=>b.type==='text')?.text?.trim();
-    if(svg && svg.startsWith('<svg')) portraitCache[item.id] = svg;
-  } catch(e) {}
 }
 function getRandomItems(topicId, count) {
   const items = [...(TOPIC_ITEMS[topicId]||[])];
@@ -1860,8 +1828,8 @@ function renderCardFront(item) {
   else if(topic==='colors') renderColorCard(el, item);
   else if(topic==='animals') renderAnimalCard(el, item);
   else if(topic==='zodiac') renderZodiacCard(el, item);
-  else if(topic==='celebrities') renderCelebrityCard(el, item);
-  else if(topic==='brands') renderBrandCard(el, item);
+  else if(topic==='planets') renderPlanetCard(el, item);
+  else if(topic==='gems') renderGemCard(el, item);
   else el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface);padding:16px;"><div style="font-size:56px;margin-bottom:10px;">${item.emoji}</div><div style="font-size:15px;font-family:'Cinzel',serif;color:var(--text);text-align:center;">${item.name}</div></div>`;
 }
 
@@ -1950,23 +1918,31 @@ const ZODIAC_SVGS = {
   pisces:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1a237e"/><text x="90" y="148" text-anchor="middle" font-size="88" fill="#b3e5fc">♓</text><text x="90" y="210" text-anchor="middle" font-size="13" font-family="Cinzel,serif" fill="#fff" letter-spacing="3">PISCES</text><text x="90" y="230" text-anchor="middle" font-size="10" font-family="sans-serif" fill="rgba(255,255,255,0.6)">Feb 19 – Mar 20</text></svg>`,
 };
 
-const BRAND_SVGS = {
-  b1:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1a1a1a"/><rect x="30" y="70" width="120" height="120" rx="26" fill="#555"/><rect x="35" y="75" width="110" height="110" rx="22" fill="#222"/><text x="90" y="152" text-anchor="middle" font-size="72" fill="#aaa">🍎</text><text x="90" y="220" text-anchor="middle" font-size="14" font-family="Helvetica,Arial,sans-serif" fill="#aaa" font-weight="300" letter-spacing="4">apple</text></svg>`,
-  b2:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#111"/><path d="M55 170 L90 80 L125 170 L145 100 L165 170" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><text x="90" y="220" text-anchor="middle" font-size="14" font-family="Arial,sans-serif" fill="#fff" font-weight="bold" letter-spacing="4">NIKE</text></svg>`,
-  b3:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#fff"/><circle cx="90" cy="110" r="55" fill="#4285f4"/><circle cx="90" cy="110" r="55" fill="url(#gg)" opacity="0.9"/><defs><radialGradient id="gg" cx="30%" cy="30%"><stop offset="0%" stop-color="#ea4335"/><stop offset="40%" stop-color="#fbbc05"/><stop offset="70%" stop-color="#34a853"/><stop offset="100%" stop-color="#4285f4"/></radialGradient></defs><circle cx="90" cy="110" r="30" fill="#fff"/><rect x="90" y="85" width="55" height="25" fill="#fff"/><text x="90" y="220" text-anchor="middle" font-size="14" font-family="Arial,sans-serif" fill="#4285f4" font-weight="bold">Google</text></svg>`,
-  b4:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#DA291C"/><rect x="25" y="65" width="130" height="130" rx="20" fill="#DA291C"/><path d="M50 90 L50 175 M90 90 L90 175 M130 90 L130 175" stroke="#FFC72C" stroke-width="18" stroke-linecap="round"/><path d="M50 90 Q70 60 90 90 Q110 60 130 90" fill="none" stroke="#FFC72C" stroke-width="10" stroke-linecap="round"/><text x="90" y="225" text-anchor="middle" font-size="11" font-family="Arial,sans-serif" fill="#FFC72C" font-weight="bold" letter-spacing="1">McDONALD'S</text></svg>`,
-  b5:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#ff9900"/><text x="90" y="148" text-anchor="middle" font-size="72" fill="#fff">📦</text><text x="90" y="210" text-anchor="middle" font-size="16" font-family="Arial,sans-serif" fill="#fff" font-weight="bold">amazon</text><path d="M55 220 Q90 235 125 220" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>`,
-  b6:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#cc0000"/><text x="90" y="148" text-anchor="middle" font-size="72" fill="#fff">⚡</text><text x="90" y="210" text-anchor="middle" font-size="14" font-family="Arial,sans-serif" fill="#fff" font-weight="bold" letter-spacing="4">TESLA</text></svg>`,
-  b7:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#F40009"/><ellipse cx="90" cy="115" rx="55" ry="65" fill="#F40009" stroke="#fff" stroke-width="4"/><ellipse cx="90" cy="115" rx="42" ry="52" fill="#F40009" stroke="#fff" stroke-width="2"/><text x="90" y="105" text-anchor="middle" font-size="13" font-family="serif" fill="#fff" font-weight="bold">Coca</text><text x="90" y="125" text-anchor="middle" font-size="13" font-family="serif" fill="#fff" font-weight="bold">Cola</text><text x="90" y="215" text-anchor="middle" font-size="10" font-family="sans-serif" fill="#fff" letter-spacing="2">EST. 1886</text></svg>`,
-  b8:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#006DB7"/><rect x="30" y="70" width="30" height="25" rx="4" fill="#E3000B"/><rect x="65" y="70" width="30" height="25" rx="4" fill="#fff"/><rect x="100" y="70" width="30" height="25" rx="4" fill="#F7D117"/><rect x="30" y="100" width="30" height="25" rx="4" fill="#fff"/><rect x="65" y="100" width="30" height="25" rx="4" fill="#E3000B"/><rect x="100" y="100" width="30" height="25" rx="4" fill="#006DB7" stroke="#fff" stroke-width="1"/><rect x="30" y="130" width="30" height="25" rx="4" fill="#F7D117"/><rect x="65" y="130" width="30" height="25" rx="4" fill="#006DB7" stroke="#fff" stroke-width="1"/><rect x="100" y="130" width="30" height="25" rx="4" fill="#E3000B"/><text x="90" y="210" text-anchor="middle" font-size="14" font-family="Arial,sans-serif" fill="#fff" font-weight="bold" letter-spacing="4">LEGO</text></svg>`,
-  b9:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#002868"/><path d="M90 50 L110 90 L155 90 L120 115 L132 158 L90 133 L48 158 L60 115 L25 90 L70 90 Z" fill="#FFD700" opacity="0.9"/><text x="90" y="210" text-anchor="middle" font-size="14" font-family="serif" fill="#fff" font-weight="bold" letter-spacing="2">DISNEY</text></svg>`,
-  b10:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#000"/><text x="90" y="148" text-anchor="middle" font-size="72" fill="#fff">⚽</text><rect x="40" y="175" width="100" height="18" fill="#fff"/><rect x="40" y="175" width="33" height="18" fill="#000"/><rect x="107" y="175" width="33" height="18" fill="#000"/><text x="90" y="225" text-anchor="middle" font-size="13" font-family="Arial,sans-serif" fill="#fff" font-weight="bold" letter-spacing="4">ADIDAS</text></svg>`,
-  b11:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#1DB954"/><circle cx="90" cy="110" r="55" fill="#191414"/><circle cx="90" cy="110" r="22" fill="#1DB954"/><path d="M48 88 Q90 76 132 88" fill="none" stroke="#1DB954" stroke-width="6" stroke-linecap="round"/><path d="M38 108 Q90 92 142 108" fill="none" stroke="#1DB954" stroke-width="7" stroke-linecap="round"/><path d="M48 128 Q90 116 132 128" fill="none" stroke="#1DB954" stroke-width="6" stroke-linecap="round"/><text x="90" y="215" text-anchor="middle" font-size="13" font-family="Arial,sans-serif" fill="#fff" font-weight="bold" letter-spacing="2">SPOTIFY</text></svg>`,
-  b12:`<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="#141414"/><rect x="25" y="75" width="130" height="90" rx="8" fill="#e50914"/><text x="90" y="138" text-anchor="middle" font-size="22" font-family="Arial,sans-serif" fill="#fff" font-weight="900" letter-spacing="1">NETFLIX</text><text x="90" y="215" text-anchor="middle" font-size="10" font-family="sans-serif" fill="#e50914" letter-spacing="3">ORIGINAL</text></svg>`,
+const PLANET_PHOTOS = {
+  mercury:  'Images/Planets/Mercury.jpg',
+  venus:    'Images/Planets/Venus.jpg',
+  earth:    'Images/Planets/Earth.jpg',
+  mars:     'Images/Planets/Mars.jpg',
+  jupiter:  'Images/Planets/Jupiter.jpg',
+  saturn:   'Images/Planets/Saturn.jpg',
+  uranus:   'Images/Planets/Uranus.jpg',
+  neptune:  'Images/Planets/Neptune.jpg',
+  pluto:    'Images/Planets/Pluto.jpg',
+  sun:      'Images/Planets/Sun.jpg',
 };
 
-// AI portrait cache
-const portraitCache = {};
+const GEM_PHOTOS = {
+  amethyst:   'Images/Gems/Amethyst.jpg',
+  ruby:       'Images/Gems/Ruby.jpg',
+  sapphire:   'Images/Gems/Sapphire.jpg',
+  diamond:    'Images/Gems/Diamond.jpg',
+  topaz:      'Images/Gems/Topaz.jpg',
+  opal:       'Images/Gems/Opal.jpg',
+  garnet:     'Images/Gems/Garnet.jpg',
+  turquoise:  'Images/Gems/Turquoise.jpg',
+  rosequartz: 'Images/Gems/RoseQuartz.jpg',
+  obsidian:   'Images/Gems/Obsidian.jpg',
+};
 const animalPhotoCache = {
   dragon: 'Images/Animals/Dargo.png',
   panther: 'Images/Animals/panther.jpg',
@@ -2079,56 +2055,36 @@ function renderZodiacCard(el, item) {
       : `<div style="width:100%;height:100%;background:linear-gradient(135deg,#1a237e,#4a148c);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
   }
 }
-function renderBrandCard(el, item) {
-  const svg = BRAND_SVGS[item.id];
-  if(svg) {
-    el.innerHTML = `<div class="portrait-svg-wrap">${svg}</div>`;
+function renderPlanetCard(el, item) {
+  const src = PLANET_PHOTOS[item.id];
+  if(src) {
+    el.innerHTML = `
+      <div class="image-card-wrap">
+        <img class="image-card-img" src="${src}" alt="${item.name}">
+        <div class="image-card-overlay"></div>
+        <div class="image-card-label">${item.name}</div>
+      </div>`;
+    el.querySelector('.image-card-img').onerror = () => {
+      el.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#0d0d2b,#1a1a4e);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
+    };
   } else {
-    el.innerHTML = `<div style="width:100%;height:100%;background:#1a1a2e;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
+    el.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#0d0d2b,#1a1a4e);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
   }
 }
-async function renderCelebrityCard(el, item) {
-  if(portraitCache[item.id]) {
-    el.innerHTML = `<div class="portrait-svg-wrap">${portraitCache[item.id]}</div>`;
-    return;
-  }
-  el.innerHTML = `<div class="portrait-card-wrap" style="background:#12122a;border-radius:12px;"><div class="portrait-loading"><div class="portrait-spinner"></div><div style="font-size:11px;color:var(--text3);">Generating portrait…</div></div></div>`;
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        messages:[{role:'user',content:`Create an SVG portrait illustration of ${item.name} as a stylized celebrity portrait card. The SVG must be exactly viewBox="0 0 180 252". Requirements:
-- Artistic, stylized illustration (NOT realistic photo)
-- Bold graphic style, art-deco or pop-art inspired
-- Strong silhouette that is recognizable
-- Use their signature colors, style, or iconic features
-- Include their name at the bottom in a white serif font at y="240"
-- Dark background
-- NO text except the name label
-- Return ONLY the complete SVG code starting with <svg and ending with </svg>, nothing else`}]
-      })
-    });
-    const data = await resp.json();
-    const svg = data.content?.find(b=>b.type==='text')?.text?.trim();
-    if(svg && svg.startsWith('<svg')) {
-      portraitCache[item.id] = svg;
-      if(state.game.currentItem?.id === item.id) {
-        el.innerHTML = `<div class="portrait-svg-wrap">${svg}</div>`;
-      }
-    } else throw new Error('no svg');
-  } catch(e) {
-    // Fallback to styled card
-    const colors = ['#c0392b','#2980b9','#8e44ad','#d4a843','#16a085'];
-    const bg = colors[Math.abs(item.id.charCodeAt(1)||0) % colors.length];
-    const initials = item.name.split(' ').map(w=>w[0]).join('').slice(0,2);
-    const fallbackSvg = `<svg viewBox="0 0 180 252" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="252" fill="${bg}"/><circle cx="90" cy="105" r="60" fill="rgba(0,0,0,0.2)"/><text x="90" y="125" text-anchor="middle" font-size="52" font-family="Cinzel,serif" fill="#fff" font-weight="bold">${initials}</text><text x="90" y="220" text-anchor="middle" font-size="11" font-family="Cinzel,serif" fill="#fff" font-weight="bold">${item.name.toUpperCase()}</text><rect x="30" y="228" width="120" height="1" fill="rgba(255,255,255,0.3)"/></svg>`;
-    portraitCache[item.id] = fallbackSvg;
-    if(state.game.currentItem?.id === item.id) {
-      el.innerHTML = `<div class="portrait-svg-wrap">${fallbackSvg}</div>`;
-    }
+function renderGemCard(el, item) {
+  const src = GEM_PHOTOS[item.id];
+  if(src) {
+    el.innerHTML = `
+      <div class="image-card-wrap">
+        <img class="image-card-img" src="${src}" alt="${item.name}">
+        <div class="image-card-overlay"></div>
+        <div class="image-card-label">${item.name}</div>
+      </div>`;
+    el.querySelector('.image-card-img').onerror = () => {
+      el.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#1a0a2e,#3d1a6e);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
+    };
+  } else {
+    el.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#1a0a2e,#3d1a6e);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
   }
 }
 function endGame() {

@@ -247,10 +247,10 @@ describe('POST /api/scores', () => {
     const res = await request(app)
       .post('/api/scores')
       .set('Authorization', `Bearer ${token}`)
-      .send({ topicId: 'cards', score: 75 });
+      .send({ topicId: 'planets', score: 75 });
     expect(res.status).toBe(200);
     expect(res.body.ok).toBe(true);
-    expect(res.body.bestScores.cards).toBe(75);
+    expect(res.body.bestScores.planets).toBe(75);
   });
 
   it('rejects an invalid topic', async () => {
@@ -287,13 +287,13 @@ describe('GET /api/scores/me', () => {
     await request(app)
       .post('/api/scores')
       .set('Authorization', `Bearer ${token}`)
-      .send({ topicId: 'colors', score: 60 });
+      .send({ topicId: 'gems', score: 60 });
     const res = await request(app)
       .get('/api/scores/me')
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body[0].topic_id).toBe('colors');
+    expect(res.body[0].topic_id).toBe('gems');
     expect(res.body[0].score).toBe(60);
   });
 });
@@ -310,7 +310,7 @@ async function seedLeaderboard() {
   await request(app)
     .post('/api/scores')
     .set('Authorization', `Bearer ${token}`)
-    .send({ topicId: 'cards', score: 80 });
+    .send({ topicId: 'planets', score: 80 });
   return { token, username: u.username };
 }
 
@@ -327,7 +327,7 @@ describe('GET /api/leaderboard', () => {
   });
 
   it('filters by topic', async () => {
-    const res = await request(app).get('/api/leaderboard?topic=cards');
+    const res = await request(app).get('/api/leaderboard?topic=planets');
     expect(res.status).toBe(200);
     expect(res.body.entries.length).toBeGreaterThan(0);
   });
