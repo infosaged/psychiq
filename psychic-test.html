@@ -94,6 +94,9 @@ body::before {
   margin: 0 16px 12px;
 }
 .card-title { font-family: 'Cinzel', serif; font-size: 14px; color: var(--accent2); margin-bottom: 12px; letter-spacing: 0.05em; }
+.credit-row { display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:5px 0; border-bottom:1px solid var(--border); font-size:12px; }
+.credit-subject { color:var(--text); font-weight:500; white-space:nowrap; }
+.credit-info { color:var(--text3); text-align:right; }
 
 /* BUTTONS */
 .btn {
@@ -882,6 +885,9 @@ body::before {
       </div>
       <button class="btn btn-ghost mt-8" onclick="showScreen('cert')" style="font-size:12px; padding:10px;">View my certificate →</button>
     </div>
+    <div style="text-align:center; padding:8px 0 4px;">
+      <button class="btn btn-ghost" onclick="showScreen('credits')" style="font-size:11px; padding:8px 16px; color:var(--text3);">📷 Photo credits &amp; licenses</button>
+    </div>
   </div>
 
   <!-- EDIT PROFILE -->
@@ -1021,6 +1027,50 @@ body::before {
     </div>
     <div style="padding: 0 16px 8px; font-size: 12px; color: var(--text3);">Tap a design to use it for the face-down card during your tests.</div>
     <div id="card-backs-content"></div>
+  </div>
+
+  <!-- PHOTO CREDITS -->
+  <div id="screen-credits" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="showScreen('profile')">←</button>
+      <span class="topbar-title">Photo Credits</span>
+      <div style="width:38px;"></div>
+    </div>
+    <div class="px-16" style="padding-bottom:32px;">
+      <div style="font-size:12px; color:var(--text3); margin:0 0 20px;">Psychic IQ uses photographs shared under Creative Commons and public domain licenses. We are grateful to all contributing photographers.</div>
+
+      <div class="card-title" style="margin-bottom:10px;">🪐 Planets</div>
+      <div class="credit-row"><span class="credit-subject">Mercury</span><span class="credit-info">NASA / MESSENGER mission · Public domain</span></div>
+      <div class="credit-row"><span class="credit-subject">Venus</span><span class="credit-info">Image processing: R. Nunes · astrosurf.com/nunes</span></div>
+      <div class="credit-row"><span class="credit-subject">Earth</span><span class="credit-info">NASA · Public domain</span></div>
+      <div class="credit-row"><span class="credit-subject">Mars</span><span class="credit-info">ESA &amp; MPS / OSIRIS Team · CC BY-SA 3.0 IGO</span></div>
+      <div class="credit-row"><span class="credit-subject">Jupiter</span><span class="credit-info">NASA / JPL-Caltech · Public domain</span></div>
+      <div class="credit-row"><span class="credit-subject">Saturn</span><span class="credit-info">NASA / JPL-Caltech · Public domain</span></div>
+      <div class="credit-row"><span class="credit-subject">Uranus</span><span class="credit-info">NASA / JPL-Caltech · Public domain</span></div>
+      <div class="credit-row"><span class="credit-subject">Neptune</span><span class="credit-info">NASA / JPL · Public domain</span></div>
+      <div class="credit-row"><span class="credit-subject">Pluto</span><span class="credit-info">NASA / JHUAPL / SwRI · Public domain</span></div>
+      <div class="credit-row"><span class="credit-subject">The Sun</span><span class="credit-info">NASA / SDO · Public domain</span></div>
+
+      <div class="card-title" style="margin:20px 0 10px;">💎 Gems &amp; Crystals</div>
+      <div class="credit-row"><span class="credit-subject">Amethyst</span><span class="credit-info">Wela49 · Wikimedia Commons · CC BY-SA 3.0</span></div>
+      <div class="credit-row"><span class="credit-subject">Ruby</span><span class="credit-info">Gaumania / Sasaki kijinuko · Wikimedia Commons · CC BY-SA 4.0</span></div>
+      <div class="credit-row"><span class="credit-subject">Sapphire</span><span class="credit-info">Sapphiredge · Wikimedia Commons · CC BY-SA 3.0</span></div>
+      <div class="credit-row"><span class="credit-subject">Diamond</span><span class="credit-info">Petragems · Wikimedia Commons · CC BY-SA 4.0</span></div>
+      <div class="credit-row"><span class="credit-subject">Topaz</span><span class="credit-info">Michelle Jo · Wikimedia Commons · CC BY 3.0</span></div>
+      <div class="credit-row"><span class="credit-subject">Opal</span><span class="credit-info">James St. John · Wikimedia Commons · CC BY 2.0</span></div>
+      <div class="credit-row"><span class="credit-subject">Garnet</span><span class="credit-info">W.carter / Ann-Sophie Qvarnström · Wikimedia Commons · CC BY 4.0</span></div>
+      <div class="credit-row"><span class="credit-subject">Turquoise</span><span class="credit-info">Géry Parent · Wikimedia Commons · CC0 / Public domain</span></div>
+      <div class="credit-row"><span class="credit-subject">Rose Quartz</span><span class="credit-info">Mauro Cateb · Wikimedia Commons · CC BY-SA 3.0</span></div>
+      <div class="credit-row"><span class="credit-subject">Obsidian</span><span class="credit-info">Benjamint444 · Wikimedia Commons · CC BY-SA 3.0</span></div>
+
+      <div class="card-title" style="margin:20px 0 10px;">🐾 Animals</div>
+      <div class="credit-row"><span class="credit-subject">Black Panther</span><span class="credit-info">Darshan Ganapathy, "Tryst with Black Panther" · Wikimedia Commons · CC BY-SA 4.0</span></div>
+
+      <div style="margin-top:20px; font-size:11px; color:var(--text3); line-height:1.6;">
+        Creative Commons licenses: <strong>CC BY</strong> = credit required · <strong>CC BY-SA</strong> = credit + share alike · <strong>CC0</strong> = public domain dedication.
+        NASA images are works of the U.S. Government and are not subject to copyright.
+      </div>
+    </div>
   </div>
 
   <!-- BOTTOM NAV -->
