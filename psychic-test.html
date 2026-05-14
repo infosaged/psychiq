@@ -2576,7 +2576,7 @@ function renderCert() {
   const u = state.user;
   if(!u) return;
   const username = u.username||u.id;
-  const url = `psychictest.app/cert/${username}`;
+  const url = `${window.location.origin}/cert/${username}`;
   document.getElementById('cert-url-display').textContent = url;
   document.getElementById('cert-footer-url').textContent = url;
   // Avatar
@@ -2629,7 +2629,7 @@ function renderCert() {
 // ============================================================
 function getCertUrl() {
   const u=state.user; if(!u) return window.location.href;
-  return `https://psychictest.app/cert/${u.username||u.id}`;
+  return `${window.location.origin}/cert/${u.username||u.id}`;
 }
 function getCertText() {
   const u=state.user; if(!u) return 'Check out my psychic ability certification!';
