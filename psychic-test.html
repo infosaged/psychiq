@@ -324,6 +324,16 @@ body::before {
 
 .next-btn-wrap { padding: 0 16px; }
 
+.correct-flash { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; z-index:999; }
+.correct-flash-text { font-size:56px; font-weight:900; color:#4ade80; text-shadow:0 2px 40px rgba(74,222,128,0.7), 0 0 80px rgba(74,222,128,0.35); animation:correctPop 2.2s ease-out forwards; }
+@keyframes correctPop {
+  0%   { opacity:0; transform:scale(0.4); }
+  12%  { opacity:1; transform:scale(1.18); }
+  22%  { opacity:1; transform:scale(1); }
+  65%  { opacity:1; transform:scale(1); }
+  100% { opacity:0; transform:scale(1); }
+}
+
 /* ===================== SCREEN: GAME OVER ===================== */
 #screen-gameover { justify-content: center; align-items: center; text-align: center; padding: 40px 24px; }
 .gameover-title { font-family: 'Cinzel', serif; font-size: 24px; color: var(--error); margin-bottom: 6px; }
@@ -1850,9 +1860,14 @@ function makeChoice(choiceId) {
     state.game.correctCount++;
     state.game.score += state.game.correctCount ** 2;
     document.getElementById('game-score').textContent = state.game.score;
-    const msg = document.getElementById('result-msg');
-    msg.textContent = '✓ Correct!'; msg.className='result-msg correct';
-    setTimeout(()=>{ document.getElementById('next-btn').classList.remove('hidden'); }, 800);
+    navigator.vibrate?.(80);
+    const flash = document.getElementById('correct-flash');
+    const flashText = flash.querySelector('.correct-flash-text');
+    flash.style.display = 'flex';
+    flashText.style.animation = 'none';
+    void flashText.offsetWidth;
+    flashText.style.animation = '';
+    setTimeout(()=>{ flash.style.display = 'none'; nextCard(); }, 2200);
   } else {
     state.game.strikes++;
     updateStrikesUI();
@@ -2776,5 +2791,6 @@ function setDob(prefix, iso) {
   }
 })();
 </script>
+<div id="correct-flash" class="correct-flash" style="display:none"><span class="correct-flash-text">✓ Correct!</span></div>
 </body>
 </html>
