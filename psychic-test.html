@@ -672,6 +672,16 @@ body::before {
             <select id="auth-dob-y"><option value="">Year</option></select>
           </div>
         </div>
+        <div class="field"><label>Country <span style="color:var(--text3);font-size:10px;">(optional)</span></label>
+          <select id="auth-country" onchange="onAuthCountryChange()">
+            <option value="">Select country…</option>
+          </select>
+        </div>
+        <div class="field" id="auth-state-field" style="display:none;"><label>State</label>
+          <select id="auth-state">
+            <option value="">Select state…</option>
+          </select>
+        </div>
       </div>
       <div class="field"><label>Email address</label><input type="email" id="auth-email" placeholder="jane@email.com"></div>
       <div class="field"><label>Password</label><input type="password" id="auth-password" placeholder="••••••••"></div>
@@ -1543,6 +1553,12 @@ function navTo(id) { showScreen(id); }
 function showAuth(tab) {
   showScreen('auth');
   switchAuthTab(tab);
+  const cSel = document.getElementById('auth-country');
+  cSel.innerHTML = '<option value="">Select country…</option>'
+    + COUNTRIES.map(c=>`<option value="${c.code}">${c.name}</option>`).join('');
+  const sSel = document.getElementById('auth-state');
+  sSel.innerHTML = '<option value="">Select state…</option>'
+    + US_STATES.map(s=>`<option value="${s.code}">${s.name}</option>`).join('');
 }
 function switchAuthTab(tab) {
   document.getElementById('tab-signup').classList.toggle('active', tab==='signup');
@@ -1559,11 +1575,14 @@ async function handleAuth() {
   if(isSignup) {
     const name = document.getElementById('auth-name').value.trim() || 'Psychic';
     const dob = getDob('auth');
+    const country = document.getElementById('auth-country').value || null;
+    const stateCode = country === 'US' ? (document.getElementById('auth-state').value || null) : null;
     // Store pending user data; username/level set in setup screens
     state.user = {
       id: 'user_'+Date.now(),
       email, name, displayName:name, username:'',
       dob, zodiac: dob ? getZodiac(dob) : '',
+      country, stateCode,
       level:'', avatarData:null, _password:password,
       scores:{}, joinYear: new Date().getFullYear(),
     };
@@ -1622,6 +1641,7 @@ async function registerWithBackend() {
       email:u.email, password:u._password,
       displayName:u.displayName, username:u.username,
       dob:u.dob||'', zodiac:u.zodiac||'', level:u.level||'believer',
+      country:u.country||null, stateCode:u.stateCode||null,
     });
     if(data.token) {
       api.setToken(data.token);
@@ -1661,6 +1681,11 @@ function handleAvatarUpload(e) {
     if(state.user) state.user.avatarData = ev.target.result;
   };
   reader.readAsDataURL(file);
+}
+function onAuthCountryChange() {
+  const code = document.getElementById('auth-country').value;
+  document.getElementById('auth-state-field').style.display = code === 'US' ? '' : 'none';
+  if(code !== 'US') document.getElementById('auth-state').value = '';
 }
 function onEditCountryChange() {
   const code = document.getElementById('edit-country').value;
