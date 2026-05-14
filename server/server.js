@@ -63,13 +63,14 @@ app.post('/api/auth/register', (req, res) => {
   const id = 'u_' + crypto.randomBytes(8).toString('hex');
   const now = Date.now();
 
+  const certToken = crypto.randomBytes(16).toString('hex');
   db.prepare(`
-    INSERT INTO users (id,email,password_hash,display_name,username,dob,zodiac,level,avatar_data,join_year,created_at)
-    VALUES (?,?,?,?,?,?,?,?,NULL,?,?)
-  `).run(id, email.toLowerCase(), hash, displayName, username, dob || null, zodiac || null, level || 'believer', new Date().getFullYear(), now);
+    INSERT INTO users (id,email,password_hash,display_name,username,dob,zodiac,level,avatar_data,join_year,created_at,cert_token)
+    VALUES (?,?,?,?,?,?,?,?,NULL,?,?,?)
+  `).run(id, email.toLowerCase(), hash, displayName, username, dob || null, zodiac || null, level || 'believer', new Date().getFullYear(), now, certToken);
 
   const user = db.prepare('SELECT * FROM users WHERE id=?').get(id);
-  res.status(201).json({ token: signToken(id), user: publicUser(user) });
+  res.status(201).json({ token: signToken(id), user: { ...publicUser(user), certToken: user.cert_token } });
 });
 
 // POST /api/auth/login
@@ -81,7 +82,7 @@ app.post('/api/auth/login', (req, res) => {
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
     return res.status(401).json({ error: 'Invalid email or password' });
   }
-  res.json({ token: signToken(user.id), user: publicUser(user) });
+  res.json({ token: signToken(user.id), user: { ...publicUser(user), certToken: user.cert_token } });
 });
 
 // ── Current user ──────────────────────────────────────────────────────────────
@@ -90,7 +91,7 @@ app.post('/api/auth/login', (req, res) => {
 app.get('/api/users/me', requireAuth, (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id=?').get(req.user.sub);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json(publicUser(user));
+  res.json({ ...publicUser(user), certToken: user.cert_token });
 });
 
 // PUT /api/users/me
@@ -131,10 +132,17 @@ app.put('/api/users/me', requireAuth, (req, res) => {
   );
 
   const updated = db.prepare('SELECT * FROM users WHERE id=?').get(user.id);
-  res.json(publicUser(updated));
+  res.json({ ...publicUser(updated), certToken: updated.cert_token });
 });
 
 // ── Public profile / cert ─────────────────────────────────────────────────────
+
+// GET /api/users/by-token/:token  (used for public cert viewing — token is not guessable)
+app.get('/api/users/by-token/:token', (req, res) => {
+  const user = db.prepare('SELECT * FROM users WHERE cert_token=?').get(req.params.token);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json(publicUser(user));
+});
 
 // GET /api/users/:username
 app.get('/api/users/:username', (req, res) => {

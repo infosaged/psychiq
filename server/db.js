@@ -42,6 +42,13 @@ try { db.exec(`ALTER TABLE users ADD COLUMN state_code  TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN purchases   TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN card_back_id TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN badges      TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN cert_token  TEXT`); } catch {}
+
+// Backfill cert_token for any existing users that don't have one
+const { randomBytes } = require('crypto');
+const missingTokens = db.prepare(`SELECT id FROM users WHERE cert_token IS NULL`).all();
+const fillToken = db.prepare(`UPDATE users SET cert_token=? WHERE id=?`);
+for (const row of missingTokens) fillToken.run(randomBytes(16).toString('hex'), row.id);
 
 // Returns best score per topic for a user
 const stmtBestByTopic = db.prepare(`
