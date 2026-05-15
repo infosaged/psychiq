@@ -214,7 +214,10 @@ app.get('/api/leaderboard', (req, res) => {
 
   // Build time filter on scores.played_at
   let timeClause = '';
-  if (time === 'thismonth') {
+  if (time === 'today') {
+    const { start, end } = todayUTCRange();
+    timeClause = `AND s.played_at >= ${start} AND s.played_at < ${end}`;
+  } else if (time === 'thismonth') {
     const now = new Date();
     const from = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
     timeClause = `AND s.played_at >= ${from}`;

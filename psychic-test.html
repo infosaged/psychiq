@@ -975,6 +975,7 @@ body::before {
     <div class="filter-scroll-wrap">
       <div class="filter-row" id="lb-time-filters">
         <div class="filter-chip active" data-filter="alltime" onclick="setLbFilter('time','alltime')">All time</div>
+        <div class="filter-chip" data-filter="today" onclick="setLbFilter('time','today')">Today</div>
         <div class="filter-chip" data-filter="thismonth" onclick="setLbFilter('time','thismonth')">This month</div>
         <div class="filter-chip" data-filter="90days" onclick="setLbFilter('time','90days')">Last 90 days</div>
         <div class="filter-chip" data-filter="2026" onclick="setLbFilter('time','2026')">2026</div>
@@ -2473,7 +2474,11 @@ function renderLbFromEntries(entries) {
 function renderLbList() {
   let players = getAllPlayersWithBest();
   const t = state.lb.time;
-  if(t === 'thismonth') {
+  if(t === 'today') {
+    const now = new Date();
+    const startOfToday = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    players = players.filter(p => p.lastPlayedMs >= startOfToday);
+  } else if(t === 'thismonth') {
     const now = new Date();
     players = players.filter(p => p.lastPlayedMs >= new Date(now.getFullYear(), now.getMonth(), 1).getTime());
   } else if(t === '90days') {
