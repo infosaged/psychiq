@@ -337,7 +337,7 @@ app.get('/.well-known/assetlinks.json', (_req, res) => {
   }]);
 });
 
-app.get('/', (_req, res) => res.sendFile(path.join(__dirname, '..', 'psychic-test.html')));
+app.get('*', (_req, res) => res.sendFile(path.join(__dirname, '..', 'psychic-test.html')));
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 
