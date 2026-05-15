@@ -2465,11 +2465,15 @@ async function fetchAndRenderLb() {
   renderLbList(); // fallback to demo players when API is empty or unreachable
 }
 function renderLbFromEntries(entries) {
-  renderLeaderboardRows(entries.map(p => ({
-    ...p,
-    score: p.bestScore,
-    isYou: !!(state.user && p.userId === state.user.id),
-  })));
+  renderLeaderboardRows(entries.map(p => {
+    const isYou = !!(state.user && p.userId === state.user.id);
+    return {
+      ...p,
+      score: p.bestScore,
+      isYou,
+      avatarData: isYou ? (state.user.avatarData || p.avatarData) : p.avatarData,
+    };
+  }));
 }
 function renderLbList() {
   let players = getAllPlayersWithBest();
