@@ -2623,7 +2623,7 @@ function goToCardBacks() { showScreen('card-backs'); }
 function renderCert() {
   const u = state.user;
   if(!u) return;
-  const url = `${window.location.origin}/cert/${u.certToken||u.id}`;
+  const url = `https://psychicscores.com/cert/${u.certToken||u.id}`;
   document.getElementById('cert-url-display').textContent = url;
   document.getElementById('cert-footer-url').textContent = url;
   // Avatar
@@ -2676,7 +2676,7 @@ function renderCert() {
 // ============================================================
 function getCertUrl() {
   const u=state.user; if(!u) return window.location.href;
-  return `${window.location.origin}/cert/${u.certToken||u.id}`;
+  return `https://psychicscores.com/cert/${u.certToken||u.id}`;
 }
 function getCertText() {
   const u=state.user; if(!u) return 'Check out my psychic ability certification!';
