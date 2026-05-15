@@ -1,9 +1,34 @@
-const CACHE = 'psychic-1747178400000';
+const CACHE = 'psychic-1747267200000';
 const PRECACHE = [
   './psychic-test.html',
   './manifest.json',
   './icon.svg',
   'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500;600&display=swap',
+  // Gems (~576KB) — pre-cached so gems topic works offline from first install
+  './Images/Gems/Amethyst.jpg',
+  './Images/Gems/Diamond.jpg',
+  './Images/Gems/Garnet.jpg',
+  './Images/Gems/Obsidian.jpg',
+  './Images/Gems/Opal.jpg',
+  './Images/Gems/RoseQuartz.jpg',
+  './Images/Gems/Ruby.jpg',
+  './Images/Gems/Sapphire.jpg',
+  './Images/Gems/Topaz.jpg',
+  './Images/Gems/Turquoise.jpg',
+  // Planets (~880KB)
+  './Images/Planets/Earth.jpg',
+  './Images/Planets/Jupiter.jpg',
+  './Images/Planets/Mars.jpg',
+  './Images/Planets/Mercury.jpg',
+  './Images/Planets/Neptune.jpg',
+  './Images/Planets/Pluto.jpg',
+  './Images/Planets/Saturn.jpg',
+  './Images/Planets/Sun.jpg',
+  './Images/Planets/Uranus.jpg',
+  './Images/Planets/Venus.jpg',
+  // Animals (~2.8MB)
+  './Images/Animals/Dargo.png',
+  './Images/Animals/panther.jpg',
 ];
 
 self.addEventListener('install', e => {
