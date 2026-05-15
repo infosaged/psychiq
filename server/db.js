@@ -36,6 +36,16 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_scores_played ON scores(played_at);
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS daily_champions (
+    date    TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    topic_id TEXT NOT NULL,
+    score   INTEGER NOT NULL,
+    awarded_at INTEGER NOT NULL
+  )
+`);
+
 // Migrate existing databases that predate these columns
 try { db.exec(`ALTER TABLE users ADD COLUMN country     TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN state_code  TEXT`); } catch {}

@@ -350,6 +350,16 @@ body::before {
 .gameover-badge-title { font-family: 'Cinzel', serif; font-size: 13px; color: var(--gold2); letter-spacing: 0.08em; }
 .gameover-badge-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
 
+#gameover-daily-leader {
+  background: linear-gradient(135deg, rgba(212,168,67,0.2), rgba(255,200,50,0.1));
+  border-color: rgba(212,168,67,0.7);
+  animation: dailyLeaderPulse 1.5s ease-in-out 3;
+}
+@keyframes dailyLeaderPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(212,168,67,0); }
+  50%      { box-shadow: 0 0 18px 4px rgba(212,168,67,0.45); }
+}
+
 /* ===================== BADGES (profile) ===================== */
 .badge-grid { display: flex; flex-wrap: wrap; gap: 10px; }
 .badge-item {
@@ -842,6 +852,11 @@ body::before {
       <span class="gameover-badge-orb">🔮</span>
       <div class="gameover-badge-title">Top 0.1% Result</div>
       <div class="gameover-badge-sub">Tap to view your badge</div>
+    </div>
+    <div class="gameover-badge-earned hidden" id="gameover-daily-leader">
+      <span class="gameover-badge-orb">🏆</span>
+      <div class="gameover-badge-title">Daily Leader!</div>
+      <div class="gameover-badge-sub">You have the highest score today</div>
     </div>
     <div class="gameover-badge-earned hidden" id="gameover-cardback" onclick="goToCardBacks()">
       <span class="gameover-badge-orb">🃏</span>
@@ -2221,6 +2236,9 @@ function endGame() {
     if(api.token()) {
       api.post('/api/scores', { topicId:topic, score }).then(d => {
         if(d.bestScores) { state.user.scores = {...state.user.scores, ...d.bestScores}; save(); }
+        if(d.dailyLeader) {
+          document.getElementById('gameover-daily-leader').classList.remove('hidden');
+        }
       }).catch(()=>{});
       if(earnedBadge) {
         api.put('/api/users/me', { badges: state.user.badges }).catch(()=>{});
@@ -2228,6 +2246,7 @@ function endGame() {
     }
   }
 
+  document.getElementById('gameover-daily-leader').classList.add('hidden');
   document.getElementById('gameover-score').textContent = score;
   const tier = RANK_TIERS.find(r=>score>=r.min)||RANK_TIERS[RANK_TIERS.length-1];
   document.getElementById('gameover-rank-title').textContent = tier.title;
@@ -2305,14 +2324,23 @@ function renderProfile() {
   const badges = u.badges||[];
   const badgeList = document.getElementById('profile-badges-list');
   if(badges.length===0) {
-    badgeList.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0;">Earn a Top 0.1% badge by getting 10 correct in a row!</div>';
+    badgeList.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0;">Earn a Top 0.1% badge by getting 10 correct in a row, or be the daily top scorer!</div>';
   } else {
-    badgeList.innerHTML = `<div class="badge-grid">${badges.map((b,i)=>`
-      <div class="badge-item" onclick="showBadgeDetail(state.user.badges[${i}])">
+    badgeList.innerHTML = `<div class="badge-grid">${badges.map((b,i)=>{
+      if(b.type==='daily_champion') {
+        const TOPIC_NAMES = {cards:'Cards',colors:'Colors',animals:'Animals',zodiac:'Zodiac',planets:'Planets',gems:'Gems & Crystals'};
+        return `<div class="badge-item" onclick="showBadgeDetail(state.user.badges[${i}])">
+          <span class="badge-item-orb">🏆</span>
+          <div class="badge-item-label">Daily #1</div>
+          <div class="badge-item-sub">${b.date}</div>
+        </div>`;
+      }
+      return `<div class="badge-item" onclick="showBadgeDetail(state.user.badges[${i}])">
         <span class="badge-item-orb">🔮</span>
         <div class="badge-item-label">Top 0.1%</div>
         <div class="badge-item-sub">${b.categoryEmoji} ${b.categoryName}</div>
-      </div>`).join('')}</div>`;
+      </div>`;
+    }).join('')}</div>`;
   }
 
   // Card back preview
@@ -2668,12 +2696,20 @@ function renderCert(u) {
   const certBadgesSection = document.getElementById('cert-badges-section');
   if(badges.length > 0) {
     certBadgesSection.classList.remove('hidden');
-    document.getElementById('cert-badges-list').innerHTML = badges.map((b,i) => `
-      <div class="badge-item" onclick="showBadgeDetail(state._certBadges[${i}])">
-        <div class="badge-item-orb">🔮</div>
-        <div class="badge-item-label">Top 0.1%</div>
-        <div class="badge-item-sub">${b.categoryEmoji} ${b.categoryName}</div>
-      </div>`).join('');
+    document.getElementById('cert-badges-list').innerHTML = badges.map((b,i) => {
+      if(b.type==='daily_champion') return `
+        <div class="badge-item" onclick="showBadgeDetail(state._certBadges[${i}])">
+          <div class="badge-item-orb">🏆</div>
+          <div class="badge-item-label">Daily #1</div>
+          <div class="badge-item-sub">${b.date}</div>
+        </div>`;
+      return `
+        <div class="badge-item" onclick="showBadgeDetail(state._certBadges[${i}])">
+          <div class="badge-item-orb">🔮</div>
+          <div class="badge-item-label">Top 0.1%</div>
+          <div class="badge-item-sub">${b.categoryEmoji} ${b.categoryName}</div>
+        </div>`;
+    }).join('');
   } else {
     certBadgesSection.classList.add('hidden');
   }

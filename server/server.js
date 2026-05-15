@@ -38,6 +38,12 @@ function signToken(userId) {
 
 const VALID_TOPICS = ['cards', 'colors', 'animals', 'zodiac', 'planets', 'gems'];
 
+function todayUTCRange() {
+  const now = new Date();
+  const start = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return { start, end: start + 86400000, date: now.toISOString().slice(0, 10) };
+}
+
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 // POST /api/auth/register
@@ -164,10 +170,18 @@ app.post('/api/scores', requireAuth, (req, res) => {
     return res.status(400).json({ error: 'Invalid score' });
   }
 
-  stmtInsertScore.run(req.user.sub, topicId, Math.floor(score), Date.now());
+  const playedAt = Date.now();
+  stmtInsertScore.run(req.user.sub, topicId, Math.floor(score), playedAt);
 
   const best = getBestScores(req.user.sub);
-  res.json({ ok: true, bestScores: best });
+
+  const { start, end } = todayUTCRange();
+  const topToday = db.prepare(
+    'SELECT MAX(score) AS top FROM scores WHERE played_at >= ? AND played_at < ?'
+  ).get(start, end);
+  const dailyLeader = score >= topToday.top;
+
+  res.json({ ok: true, bestScores: best, dailyLeader });
 });
 
 // GET /api/scores/me  – full history for the current user
@@ -312,6 +326,43 @@ app.post('/api/purchases', requireAuth, (req, res) => {
       .run(JSON.stringify(purchases), user.id);
   }
   res.json({ purchases });
+});
+
+// ── Daily Champion Cron ───────────────────────────────────────────────────────
+
+// Called by cron-job.org at 00:00 UTC every day.
+// Awards a daily_champion badge to yesterday's top scorer.
+app.post('/api/cron/daily-award', (req, res) => {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || req.headers['x-cron-secret'] !== secret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const yesterday = new Date(Date.now() - 86400000);
+  const date = yesterday.toISOString().slice(0, 10);
+  const start = Date.UTC(yesterday.getUTCFullYear(), yesterday.getUTCMonth(), yesterday.getUTCDate());
+  const end = start + 86400000;
+
+  const already = db.prepare('SELECT 1 FROM daily_champions WHERE date=?').get(date);
+  if (already) return res.json({ ok: true, already: true, date });
+
+  const winner = db.prepare(`
+    SELECT user_id, topic_id, MAX(score) AS score
+    FROM scores WHERE played_at >= ? AND played_at < ?
+  `).get(start, end);
+
+  if (!winner || !winner.user_id) return res.json({ ok: true, noWinner: true, date });
+
+  db.prepare('INSERT INTO daily_champions (date,user_id,topic_id,score,awarded_at) VALUES (?,?,?,?,?)')
+    .run(date, winner.user_id, winner.topic_id, winner.score, Date.now());
+
+  const user = db.prepare('SELECT * FROM users WHERE id=?').get(winner.user_id);
+  let badges = [];
+  try { badges = JSON.parse(user.badges || '[]'); } catch {}
+  badges.push({ type: 'daily_champion', date, topicId: winner.topic_id, score: winner.score });
+  db.prepare('UPDATE users SET badges=? WHERE id=?').run(JSON.stringify(badges), winner.user_id);
+
+  res.json({ ok: true, date, winner: winner.user_id, score: winner.score });
 });
 
 // ── Health ────────────────────────────────────────────────────────────────────
