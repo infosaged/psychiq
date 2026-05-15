@@ -1536,7 +1536,14 @@ function showScreen(id) {
   if(id==='topics') renderTopics();
   if(id==='leaderboard') renderLeaderboard();
   if(id==='profile') renderProfile();
-  if(id==='cert') renderCert();
+  if(id==='cert') {
+    // Reset share section and back button to defaults (may be overridden by showPublicCert)
+    const shareDiv = document.querySelector('#screen-cert > div:last-of-type');
+    if(shareDiv) shareDiv.style.display = '';
+    const backBtn = document.querySelector('#screen-cert .icon-btn');
+    if(backBtn) backBtn.onclick = () => showScreen('profile');
+    renderCert();
+  }
   if(id==='edit-profile') renderEditProfile();
   if(id==='card-backs') renderCardBacksScreen();
 }
@@ -2620,8 +2627,8 @@ function goToCardBacks() { showScreen('card-backs'); }
 // ============================================================
 // CERT
 // ============================================================
-function renderCert() {
-  const u = state.user;
+function renderCert(u) {
+  u = u || state.user;
   if(!u) return;
   const url = `https://psychicscore.com/cert/${u.certToken||u.id}`;
   document.getElementById('cert-url-display').textContent = url;
@@ -2657,17 +2664,40 @@ function renderCert() {
   }
   // Badges
   const badges = u.badges||[];
+  state._certBadges = badges;
   const certBadgesSection = document.getElementById('cert-badges-section');
   if(badges.length > 0) {
     certBadgesSection.classList.remove('hidden');
     document.getElementById('cert-badges-list').innerHTML = badges.map((b,i) => `
-      <div class="badge-item" onclick="showBadgeDetail(state.user.badges[${i}])">
+      <div class="badge-item" onclick="showBadgeDetail(state._certBadges[${i}])">
         <div class="badge-item-orb">🔮</div>
         <div class="badge-item-label">Top 0.1%</div>
         <div class="badge-item-sub">${b.categoryEmoji} ${b.categoryName}</div>
       </div>`).join('');
   } else {
     certBadgesSection.classList.add('hidden');
+  }
+}
+
+async function showPublicCert(token) {
+  showScreen('cert');
+  document.getElementById('cert-name').textContent = 'Loading…';
+  // Back button: go to topics if logged in, auth if not
+  document.querySelector('#screen-cert .icon-btn').onclick =
+    () => state.user ? showScreen('topics') : showAuth('login');
+  try {
+    const resp = await fetch(`/api/users/by-token/${token}`);
+    if(!resp.ok) { document.getElementById('cert-name').textContent = 'Certificate not found'; return; }
+    const u = await resp.json();
+    renderCert(u);
+    // Hide the share section — the viewer isn't the cert owner
+    if(!state.user || state.user.id !== u.id) {
+      const shareSection = document.querySelector('#screen-cert .share-row')?.closest('div[style]') ||
+                           document.querySelector('#screen-cert > div:last-of-type');
+      if(shareSection) shareSection.style.display = 'none';
+    }
+  } catch {
+    document.getElementById('cert-name').textContent = 'Could not load certificate';
   }
 }
 
@@ -2810,6 +2840,13 @@ function setDob(prefix, iso) {
   }
   buildDobSelects();
   window.PsychicBridge?.loadInterstitialAd?.();
+  // If the URL is a public cert link, show it without requiring login
+  const certMatch = window.location.pathname.match(/^\/cert\/(.+)/);
+  if(certMatch) {
+    load(); // restore session if available (so the back button goes to topics, not auth)
+    showPublicCert(certMatch[1]);
+    return;
+  }
   if(load() && state.user && state.user.level) {
     afterLogin();
   }

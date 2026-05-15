@@ -139,7 +139,8 @@ app.put('/api/users/me', requireAuth, (req, res) => {
 
 // GET /api/users/by-token/:token  (used for public cert viewing — token is not guessable)
 app.get('/api/users/by-token/:token', (req, res) => {
-  const user = db.prepare('SELECT * FROM users WHERE cert_token=?').get(req.params.token);
+  const t = req.params.token;
+  const user = db.prepare('SELECT * FROM users WHERE cert_token=? OR id=?').get(t, t);
   if (!user) return res.status(404).json({ error: 'User not found' });
   res.json(publicUser(user));
 });
