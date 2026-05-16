@@ -1043,7 +1043,7 @@ body::before {
         </div>
       </div>
     </div>
-    <div style="padding: 0 16px 16px;">
+    <div id="cert-share-section" style="padding: 0 16px 16px;">
       <div class="card-title" style="padding:0; margin-bottom:10px;">Share this certificate</div>
       <div class="share-row">
         <div class="share-btn-item share-btn-x" onclick="shareToX()">𝕏 Post</div>
@@ -1554,7 +1554,7 @@ function showScreen(id) {
   if(id==='profile') renderProfile();
   if(id==='cert') {
     // Reset share section and back button to defaults (may be overridden by showPublicCert)
-    const shareDiv = document.querySelector('#screen-cert > div:last-of-type');
+    const shareDiv = document.getElementById('cert-share-section');
     if(shareDiv) shareDiv.style.display = '';
     const backBtn = document.querySelector('#screen-cert .icon-btn');
     if(backBtn) backBtn.onclick = () => showScreen('profile');
@@ -2737,8 +2737,7 @@ async function showPublicCert(token) {
     renderCert(u);
     // Hide the share section — the viewer isn't the cert owner
     if(!state.user || state.user.id !== u.id) {
-      const shareSection = document.querySelector('#screen-cert .share-row')?.closest('div[style]') ||
-                           document.querySelector('#screen-cert > div:last-of-type');
+      const shareSection = document.getElementById('cert-share-section');
       if(shareSection) shareSection.style.display = 'none';
     }
   } catch {

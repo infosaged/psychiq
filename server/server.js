@@ -145,8 +145,7 @@ app.put('/api/users/me', requireAuth, (req, res) => {
 
 // GET /api/users/by-token/:token  (used for public cert viewing — token is not guessable)
 app.get('/api/users/by-token/:token', (req, res) => {
-  const t = req.params.token;
-  const user = db.prepare('SELECT * FROM users WHERE cert_token=? OR id=?').get(t, t);
+  const user = db.prepare('SELECT * FROM users WHERE cert_token=?').get(req.params.token);
   if (!user) return res.status(404).json({ error: 'User not found' });
   res.json(publicUser(user));
 });
@@ -350,8 +349,9 @@ app.post('/api/cron/daily-award', (req, res) => {
   if (already) return res.json({ ok: true, already: true, date });
 
   const winner = db.prepare(`
-    SELECT user_id, topic_id, MAX(score) AS score
+    SELECT user_id, topic_id, score
     FROM scores WHERE played_at >= ? AND played_at < ?
+    ORDER BY score DESC LIMIT 1
   `).get(start, end);
 
   if (!winner || !winner.user_id) return res.json({ ok: true, noWinner: true, date });
