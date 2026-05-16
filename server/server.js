@@ -415,7 +415,7 @@ app.get('/.well-known/assetlinks.json', (_req, res) => {
     relation: ['delegate_permission/common.handle_all_urls'],
     target: {
       namespace: 'android_app',
-      package_name: 'com.psychiciq.app',         // ← update before TWA launch
+      package_name: 'com.psychicscore.app',
       sha256_cert_fingerprints: [
         // 'AA:BB:CC:DD:...'                      // ← paste fingerprint here
       ],

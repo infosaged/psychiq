@@ -45,7 +45,7 @@ describe('GET /.well-known/assetlinks.json', () => {
     const res = await request(app).get('/.well-known/assetlinks.json');
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body[0].target.package_name).toBe('com.psychiciq.app');
+    expect(res.body[0].target.package_name).toBe('com.psychicscore.app');
   });
 });
 
