@@ -1249,6 +1249,8 @@ const TOPICS = [
   { id:'zodiac',  name:'Zodiac',        emoji:'♈',  count:12, hint:'Read the stars…' },
   { id:'planets', name:'Planets',       emoji:'🪐', count:10, hint:'Feel the cosmos…' },
   { id:'gems',    name:'Gems & Crystals', emoji:'💎', count:10, hint:'Sense the energy…' },
+  { id:'mythical', name:'Mythical Creatures', emoji:'🦄', count:12, hint:'Sense the magic…', kids:true },
+  { id:'places',   name:'Places',             emoji:'🏛️', count:8,  hint:'Picture the place…', kids:true },
 ];
 
 const TOPIC_ITEMS = {
@@ -1333,6 +1335,30 @@ const TOPIC_ITEMS = {
     {id:'topaz',name:'Topaz',emoji:'💛'},{id:'opal',name:'Opal',emoji:'🌈'},
     {id:'garnet',name:'Garnet',emoji:'🔴'},{id:'turquoise',name:'Turquoise',emoji:'🩵'},
     {id:'rosequartz',name:'Rose Quartz',emoji:'🩷'},{id:'obsidian',name:'Obsidian',emoji:'🖤'},
+  ],
+  mythical: [
+    {id:'centaur',   name:'Centaur',    emoji:'🏇'},
+    {id:'dragon',    name:'Dragon',     emoji:'🐉'},
+    {id:'dryad',     name:'Dryad',      emoji:'🌳'},
+    {id:'fairy',     name:'Fairy',      emoji:'🧚'},
+    {id:'gnome',     name:'Gnome',      emoji:'🍄'},
+    {id:'griffin',   name:'Griffin',    emoji:'🦁'},
+    {id:'jackalope', name:'Jackalope',  emoji:'🐰'},
+    {id:'mermaid',   name:'Mermaid',    emoji:'🧜'},
+    {id:'pegasus',   name:'Pegasus',    emoji:'🐴'},
+    {id:'phoenix',   name:'Phoenix',    emoji:'🔥'},
+    {id:'selkie',    name:'Selkie',     emoji:'🦭'},
+    {id:'unicorn',   name:'Unicorn',    emoji:'🦄'},
+  ],
+  places: [
+    {id:'beach',         name:'Beach',         emoji:'🏖️'},
+    {id:'library',       name:'Library',        emoji:'📚'},
+    {id:'park',          name:'Park',           emoji:'🌳'},
+    {id:'policestation', name:'Police Station', emoji:'🚔'},
+    {id:'restaurant',    name:'Restaurant',     emoji:'🍽️'},
+    {id:'school',        name:'School',         emoji:'🏫'},
+    {id:'stores',        name:'Stores',         emoji:'🏪'},
+    {id:'zoo',           name:'Zoo',            emoji:'🦁'},
   ],
 };
 
@@ -1885,12 +1911,21 @@ function renderTopics() {
   const avEl = document.getElementById('topics-avatar');
   avEl.innerHTML = u ? avatarHtml(u) : '👤';
   const grid = document.getElementById('topic-grid');
-  grid.innerHTML = TOPICS.map(t => `
+  const topicCard = t => `
     <div class="topic-card" onclick="startGame('${t.id}')">
       <span class="topic-emoji">${t.emoji}</span>
       <div class="topic-name">${t.name}</div>
       <div class="topic-count">${t.count} items</div>
-    </div>`).join('');
+    </div>`;
+  const mainTopics = TOPICS.filter(t => !t.kids);
+  const kidsTopics = TOPICS.filter(t => t.kids);
+  grid.innerHTML =
+    mainTopics.map(topicCard).join('') +
+    `<div style="grid-column:1/-1;text-align:center;margin-top:8px;padding:8px 0 4px;">
+      <div style="height:1px;background:linear-gradient(to right,transparent,rgba(179,157,255,0.4),transparent);margin-bottom:12px;"></div>
+      <div style="font-family:'Cinzel',serif;font-size:13px;color:rgba(179,157,255,0.8);letter-spacing:3px;">✨ Fun for Kids ✨</div>
+    </div>` +
+    kidsTopics.map(topicCard).join('');
 }
 
 // ============================================================
@@ -2019,6 +2054,8 @@ function renderCardFront(item) {
   else if(topic==='zodiac') renderZodiacCard(el, item);
   else if(topic==='planets') renderPlanetCard(el, item);
   else if(topic==='gems') renderGemCard(el, item);
+  else if(topic==='mythical') renderMythicalCard(el, item);
+  else if(topic==='places') renderPlacesCard(el, item);
   else el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface);padding:16px;"><div style="font-size:56px;margin-bottom:10px;">${item.emoji}</div><div style="font-size:15px;font-family:'Cinzel',serif;color:var(--text);text-align:center;">${item.name}</div></div>`;
 }
 
@@ -2131,6 +2168,30 @@ const GEM_PHOTOS = {
   turquoise:  'Images/Gems/Turquoise.jpg',
   rosequartz: 'Images/Gems/RoseQuartz.jpg',
   obsidian:   'Images/Gems/Obsidian.jpg',
+};
+const MYTHICAL_PHOTOS = {
+  centaur:   'Images/Mythical Creatures/centaur.png',
+  dragon:    'Images/Mythical Creatures/dragon.png',
+  dryad:     'Images/Mythical Creatures/dryad.png',
+  fairy:     'Images/Mythical Creatures/fairy.png',
+  gnome:     'Images/Mythical Creatures/gnome.png',
+  griffin:   'Images/Mythical Creatures/griffin.png',
+  jackalope: 'Images/Mythical Creatures/jackalope.png',
+  mermaid:   'Images/Mythical Creatures/mermaid.png',
+  pegasus:   'Images/Mythical Creatures/pegasus.png',
+  phoenix:   'Images/Mythical Creatures/phoenix.png',
+  selkie:    'Images/Mythical Creatures/selkie.png',
+  unicorn:   'Images/Mythical Creatures/unicorn.png',
+};
+const PLACES_PHOTOS = {
+  beach:         'Images/Places/beach.png',
+  library:       'Images/Places/library.png',
+  park:          'Images/Places/park.png',
+  policestation: 'Images/Places/policestation.png',
+  restaurant:    'Images/Places/restaurant.png',
+  school:        'Images/Places/school.png',
+  stores:        'Images/Places/stores.png',
+  zoo:           'Images/Places/zoo.png',
 };
 const animalPhotoCache = {
   dragon: 'Images/Animals/Dargo.png',
@@ -2274,6 +2335,38 @@ function renderGemCard(el, item) {
     };
   } else {
     el.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#1a0a2e,#3d1a6e);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
+  }
+}
+function renderMythicalCard(el, item) {
+  const src = MYTHICAL_PHOTOS[item.id];
+  if(src) {
+    el.innerHTML = `
+      <div class="image-card-wrap">
+        <img class="image-card-img" src="${src}" alt="${item.name}">
+        <div class="image-card-overlay"></div>
+        <div class="image-card-label">${item.name}</div>
+      </div>`;
+    el.querySelector('.image-card-img').onerror = () => {
+      el.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#4a0080,#1a0050);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
+    };
+  } else {
+    el.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#4a0080,#1a0050);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
+  }
+}
+function renderPlacesCard(el, item) {
+  const src = PLACES_PHOTOS[item.id];
+  if(src) {
+    el.innerHTML = `
+      <div class="image-card-wrap">
+        <img class="image-card-img" src="${src}" alt="${item.name}">
+        <div class="image-card-overlay"></div>
+        <div class="image-card-label">${item.name}</div>
+      </div>`;
+    el.querySelector('.image-card-img').onerror = () => {
+      el.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#0d4a1a,#1a5e2e);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
+    };
+  } else {
+    el.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#0d4a1a,#1a5e2e);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;"><div style="font-size:64px;margin-bottom:8px;">${item.emoji}</div><div style="font-family:'Cinzel',serif;font-size:14px;color:#fff;">${item.name}</div></div>`;
   }
 }
 function endGame() {

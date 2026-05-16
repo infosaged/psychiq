@@ -36,7 +36,7 @@ function signToken(userId) {
   return jwt.sign({ sub: userId }, JWT_SECRET, { expiresIn: '90d' });
 }
 
-const VALID_TOPICS = ['cards', 'colors', 'animals', 'zodiac', 'planets', 'gems'];
+const VALID_TOPICS = ['cards', 'colors', 'animals', 'zodiac', 'planets', 'gems', 'mythical', 'places'];
 
 function todayUTCRange() {
   const now = new Date();
