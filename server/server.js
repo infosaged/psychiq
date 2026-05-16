@@ -417,7 +417,7 @@ app.get('/.well-known/assetlinks.json', (_req, res) => {
       namespace: 'android_app',
       package_name: 'com.psychicscore.app',
       sha256_cert_fingerprints: [
-        // 'AA:BB:CC:DD:...'                      // ← paste fingerprint here
+        'E5:28:55:29:8A:17:AC:79:CF:51:D8:77:86:9A:4C:44:C2:FE:3F:B6:FF:A0:4B:F6:1E:10:E9:6E:D3:90:71:A2',
       ],
     },
   }]);
