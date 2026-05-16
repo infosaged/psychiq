@@ -627,6 +627,15 @@ body::before {
 .an-cal-i3 { background:rgba(139,111,255,0.65); }
 .an-cal-i4 { background:var(--accent); }
 .an-cal-legend { display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+.an-phase-row { cursor:pointer; border-radius:var(--radius-sm); padding:8px 6px; margin-bottom:6px; transition:background 0.15s; }
+.an-phase-row:last-child { margin-bottom:0; }
+.an-phase-row:hover { background:var(--surface2); }
+.an-phase-chevron { font-size:16px; color:var(--text3); margin-left:6px; flex-shrink:0; transition:transform 0.2s; line-height:1; }
+.an-phase-detail { padding:8px 0 2px 4px; border-top:1px solid var(--border); margin-top:8px; }
+.an-phase-topic-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid var(--border); }
+.an-phase-topic-row:last-child { border-bottom:none; }
+.an-phase-topic-name { font-size:12px; color:var(--text2); }
+.an-phase-topic-val { font-size:13px; font-weight:700; color:var(--text); font-family:'Cinzel',serif; }
 .section-title { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase; padding: 0 16px; margin-bottom: 8px; }
 .divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
 
@@ -2516,29 +2525,48 @@ async function renderAnalytics() {
     return `<div class="an-cal-day an-cal-i${intensity}" title="${d.label}: ${d.count} test${d.count!==1?'s':''}"></div>`;
   }).join('');
 
-  // Moon phase breakdown
+  // Moon phase breakdown — best score overall + best per topic per phase
   const MOON_PHASES = [
     { key:'new',   label:'New Moon',      emoji:'🌑' },
     { key:'first', label:'First Quarter', emoji:'🌓' },
     { key:'full',  label:'Full Moon',     emoji:'🌕' },
     { key:'last',  label:'Last Quarter',  emoji:'🌗' },
   ];
-  const phaseGroups = { new:[], first:[], full:[], last:[] };
-  rows.forEach(r => { phaseGroups[getMoonPhase(r.played_at)].push(r.score); });
-  const phaseAvgs = MOON_PHASES.map(p => ({
+  // phaseData[key] = { scores:[], byTopic:{ topicId: maxScore } }
+  const phaseData = { new:{scores:[],byTopic:{}}, first:{scores:[],byTopic:{}}, full:{scores:[],byTopic:{}}, last:{scores:[],byTopic:{}} };
+  rows.forEach(r => {
+    const ph = getMoonPhase(r.played_at);
+    phaseData[ph].scores.push(r.score);
+    if(!phaseData[ph].byTopic[r.topic_id] || r.score > phaseData[ph].byTopic[r.topic_id])
+      phaseData[ph].byTopic[r.topic_id] = r.score;
+  });
+  const phaseStats = MOON_PHASES.map(p => ({
     ...p,
-    avg: phaseGroups[p.key].length ? Math.round(phaseGroups[p.key].reduce((a,b)=>a+b,0)/phaseGroups[p.key].length) : null,
-    count: phaseGroups[p.key].length,
+    best:  phaseData[p.key].scores.length ? Math.max(...phaseData[p.key].scores) : null,
+    count: phaseData[p.key].scores.length,
+    byTopic: phaseData[p.key].byTopic,
   }));
-  const phaseMax = Math.max(...phaseAvgs.map(p=>p.avg||0), 1);
-  const phaseBars = phaseAvgs.map(p => {
-    const pct = p.avg ? ((p.avg/phaseMax)*100).toFixed(1) : '0';
-    return `<div class="an-bar-row">
-      <div class="an-bar-label">${p.emoji} ${p.label}</div>
-      <div class="an-bar-track"><div class="an-bar-fill" style="width:${pct}%"></div></div>
-      <div style="text-align:right;flex-shrink:0;width:52px;">
-        <div class="an-bar-val">${p.avg||'—'}</div>
-        <div style="font-size:9px;color:var(--text3);">${p.count} session${p.count!==1?'s':''}</div>
+  const phaseMax = Math.max(...phaseStats.map(p=>p.best||0), 1);
+  const phaseBars = phaseStats.map(p => {
+    const pct = p.best ? ((p.best/phaseMax)*100).toFixed(1) : '0';
+    const topicRows = TOPICS.filter(t=>p.byTopic[t.id]).map(t =>
+      `<div class="an-phase-topic-row">
+        <span class="an-phase-topic-name">${t.emoji} ${t.name}</span>
+        <span class="an-phase-topic-val">${p.byTopic[t.id]}</span>
+      </div>`
+    ).join('');
+    return `<div class="an-phase-row" onclick="togglePhase('${p.key}')">
+      <div class="an-bar-row" style="margin-bottom:0;pointer-events:none;">
+        <div class="an-bar-label">${p.emoji} ${p.label}</div>
+        <div class="an-bar-track"><div class="an-bar-fill" style="width:${pct}%"></div></div>
+        <div style="text-align:right;flex-shrink:0;width:52px;">
+          <div class="an-bar-val">${p.best||'—'}</div>
+          <div style="font-size:9px;color:var(--text3);">${p.count} session${p.count!==1?'s':''}</div>
+        </div>
+        <div class="an-phase-chevron" id="an-chev-${p.key}">›</div>
+      </div>
+      <div class="an-phase-detail hidden" id="an-phase-${p.key}">
+        ${topicRows||'<div class="an-empty" style="padding:10px 0 4px;">No scores for this phase yet</div>'}
       </div>
     </div>`;
   }).join('');
@@ -2585,7 +2613,7 @@ async function renderAnalytics() {
       <div class="an-section-title">Score by Moon Phase</div>
       <div class="an-chart-wrap">
         ${rows.length ? phaseBars : '<div class="an-empty">Play some games to see moon phase data!</div>'}
-        <div style="font-size:10px;color:var(--text3);margin-top:10px;text-align:center;">Average score per session · Algorithmic calculation</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:10px;text-align:center;">Tap a phase to see scores by topic · Best score shown</div>
       </div>
     </div>
     <div class="an-section">
@@ -2597,6 +2625,14 @@ async function renderAnalytics() {
         <div class="stat-box"><div class="stat-val">${favTopic?favTopic.emoji:'—'}</div><div class="stat-label">${favTopic?favTopic.name:'Favorite topic'}</div></div>
       </div>
     </div>`;
+}
+
+function togglePhase(key) {
+  const detail = document.getElementById('an-phase-'+key);
+  const chev   = document.getElementById('an-chev-'+key);
+  const opening = detail.classList.contains('hidden');
+  detail.classList.toggle('hidden', !opening);
+  chev.style.transform = opening ? 'rotate(90deg)' : '';
 }
 
 function getMoonPhase(timestamp) {
