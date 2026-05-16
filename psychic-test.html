@@ -1380,6 +1380,7 @@ const US_STATES = [
 
 const ZODIAC_SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 const ZODIAC_DATES = [[3,21],[4,20],[5,21],[6,21],[7,23],[8,23],[9,23],[10,23],[11,22],[12,22],[1,20],[2,19]];
+const ZODIAC_EMOJIS = {Aries:'♈',Taurus:'♉',Gemini:'♊',Cancer:'♋',Leo:'♌',Virgo:'♍',Libra:'♎',Scorpio:'♏',Sagittarius:'♐',Capricorn:'♑',Aquarius:'♒',Pisces:'♓'};
 
 const PSYCHIC_LEVELS = [
   {id:'professional', name:'Professional psychic', desc:'I do readings for others'},
@@ -2571,6 +2572,53 @@ async function renderAnalytics() {
     </div>`;
   }).join('');
 
+  // Zodiac season breakdown — same structure as moon phases
+  const zodiacData = {};
+  ZODIAC_SIGNS.forEach(z => { zodiacData[z] = { scores:[], byTopic:{} }; });
+  rows.forEach(r => {
+    const d = new Date(r.played_at);
+    const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const z = getZodiac(iso);
+    if(!z) return;
+    zodiacData[z].scores.push(r.score);
+    if(!zodiacData[z].byTopic[r.topic_id] || r.score > zodiacData[z].byTopic[r.topic_id])
+      zodiacData[z].byTopic[r.topic_id] = r.score;
+  });
+  const zodiacStats = ZODIAC_SIGNS
+    .map(z => ({
+      key:   z,
+      label: z,
+      emoji: ZODIAC_EMOJIS[z],
+      best:  zodiacData[z].scores.length ? Math.max(...zodiacData[z].scores) : null,
+      count: zodiacData[z].scores.length,
+      byTopic: zodiacData[z].byTopic,
+    }))
+    .filter(z => z.count > 0);
+  const zodiacMax = Math.max(...zodiacStats.map(z=>z.best||0), 1);
+  const zodiacBars = zodiacStats.map(z => {
+    const pct = z.best ? ((z.best/zodiacMax)*100).toFixed(1) : '0';
+    const topicRows = TOPICS.filter(t=>z.byTopic[t.id]).map(t =>
+      `<div class="an-phase-topic-row">
+        <span class="an-phase-topic-name">${t.emoji} ${t.name}</span>
+        <span class="an-phase-topic-val">${z.byTopic[t.id]}</span>
+      </div>`
+    ).join('');
+    return `<div class="an-phase-row" onclick="toggleZodiacSign('${z.key}')">
+      <div class="an-bar-row" style="margin-bottom:0;pointer-events:none;">
+        <div class="an-bar-label">${z.emoji} ${z.label}</div>
+        <div class="an-bar-track"><div class="an-bar-fill" style="width:${pct}%"></div></div>
+        <div style="text-align:right;flex-shrink:0;width:52px;">
+          <div class="an-bar-val">${z.best||'—'}</div>
+          <div style="font-size:9px;color:var(--text3);">${z.count} session${z.count!==1?'s':''}</div>
+        </div>
+        <div class="an-phase-chevron" id="an-zchev-${z.key}">›</div>
+      </div>
+      <div class="an-phase-detail hidden" id="an-zodiac-${z.key}">
+        ${topicRows||'<div class="an-empty" style="padding:10px 0 4px;">No topic scores for this sign yet</div>'}
+      </div>
+    </div>`;
+  }).join('');
+
   // Insights
   const totalSessions = rows.length;
   const bestEver = rows.length ? Math.max(...rows.map(r=>r.score)) : 0;
@@ -2617,6 +2665,13 @@ async function renderAnalytics() {
       </div>
     </div>
     <div class="an-section">
+      <div class="an-section-title">Score by Zodiac Season</div>
+      <div class="an-chart-wrap">
+        ${zodiacBars||'<div class="an-empty">Play some games to see zodiac season data!</div>'}
+        <div style="font-size:10px;color:var(--text3);margin-top:10px;text-align:center;">Tap a sign to see scores by topic · Best score shown</div>
+      </div>
+    </div>
+    <div class="an-section">
       <div class="an-section-title">Insights</div>
       <div class="stat-grid">
         <div class="stat-box"><div class="stat-val">${totalSessions}</div><div class="stat-label">Total sessions</div></div>
@@ -2625,6 +2680,14 @@ async function renderAnalytics() {
         <div class="stat-box"><div class="stat-val">${favTopic?favTopic.emoji:'—'}</div><div class="stat-label">${favTopic?favTopic.name:'Favorite topic'}</div></div>
       </div>
     </div>`;
+}
+
+function toggleZodiacSign(key) {
+  const detail = document.getElementById('an-zodiac-'+key);
+  const chev   = document.getElementById('an-zchev-'+key);
+  const opening = detail.classList.contains('hidden');
+  detail.classList.toggle('hidden', !opening);
+  chev.style.transform = opening ? 'rotate(90deg)' : '';
 }
 
 function togglePhase(key) {
