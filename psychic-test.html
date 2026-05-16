@@ -2644,20 +2644,6 @@ async function renderAnalytics() {
       </div>
     </div>
     <div class="an-section">
-      <div class="an-section-title">Activity — Last 30 Days</div>
-      <div class="an-chart-wrap">
-        <div class="an-cal-grid">${calCells}</div>
-        <div class="an-cal-legend">
-          <span style="font-size:10px;color:var(--text3);">Each square = one day</span>
-          <div style="display:flex;gap:3px;align-items:center;">
-            <span style="font-size:10px;color:var(--text3);">Less</span>
-            ${[0,1,2,3,4].map(i=>`<div class="an-cal-day an-cal-i${i}" style="width:10px;height:10px;border-radius:2px;flex-shrink:0;"></div>`).join('')}
-            <span style="font-size:10px;color:var(--text3);">More</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="an-section">
       <div class="an-section-title">Score by Moon Phase</div>
       <div class="an-chart-wrap">
         ${rows.length ? phaseBars : '<div class="an-empty">Play some games to see moon phase data!</div>'}
@@ -2669,6 +2655,20 @@ async function renderAnalytics() {
       <div class="an-chart-wrap">
         ${zodiacBars||'<div class="an-empty">Play some games to see zodiac season data!</div>'}
         <div style="font-size:10px;color:var(--text3);margin-top:10px;text-align:center;">Tap a sign to see scores by topic · Best score shown</div>
+      </div>
+    </div>
+    <div class="an-section">
+      <div class="an-section-title">Activity — Last 30 Days</div>
+      <div class="an-chart-wrap">
+        <div class="an-cal-grid">${calCells}</div>
+        <div class="an-cal-legend">
+          <span style="font-size:10px;color:var(--text3);">Each square = one day</span>
+          <div style="display:flex;gap:3px;align-items:center;">
+            <span style="font-size:10px;color:var(--text3);">Less</span>
+            ${[0,1,2,3,4].map(i=>`<div class="an-cal-day an-cal-i${i}" style="width:10px;height:10px;border-radius:2px;flex-shrink:0;"></div>`).join('')}
+            <span style="font-size:10px;color:var(--text3);">More</span>
+          </div>
+        </div>
       </div>
     </div>
     <div class="an-section">
