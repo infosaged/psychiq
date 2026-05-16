@@ -1,4 +1,4 @@
-const CACHE = 'psychic-1747267200000';
+const CACHE = 'psychic-1747440000000';
 const PRECACHE = [
   './psychic-test.html',
   './manifest.json',
@@ -29,6 +29,28 @@ const PRECACHE = [
   // Animals (~2.8MB)
   './Images/Animals/Dargo.png',
   './Images/Animals/panther.jpg',
+  // Mythical Creatures
+  './Images/Mythical Creatures/centaur.png',
+  './Images/Mythical Creatures/dragon.png',
+  './Images/Mythical Creatures/dryad.png',
+  './Images/Mythical Creatures/fairy.png',
+  './Images/Mythical Creatures/gnome.png',
+  './Images/Mythical Creatures/griffin.png',
+  './Images/Mythical Creatures/jackalope.png',
+  './Images/Mythical Creatures/mermaid.png',
+  './Images/Mythical Creatures/pegasus.png',
+  './Images/Mythical Creatures/phoenix.png',
+  './Images/Mythical Creatures/selkie.png',
+  './Images/Mythical Creatures/unicorn.png',
+  // Places
+  './Images/Places/beach.png',
+  './Images/Places/library.png',
+  './Images/Places/park.png',
+  './Images/Places/policestation.png',
+  './Images/Places/restaurant.png',
+  './Images/Places/school.png',
+  './Images/Places/stores.png',
+  './Images/Places/zoo.png',
 ];
 
 self.addEventListener('install', e => {
