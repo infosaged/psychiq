@@ -239,8 +239,15 @@ body::before {
 #screen-game { padding-bottom: 20px; }
 .game-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 8px; padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
 .strikes-bar { display: flex; justify-content: center; gap: 12px; padding: 0 0 6px; }
-.strike-gem { font-size: 22px; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); }
+.strike-gem { font-size: 22px; }
 .strike-gem.lost { opacity: 0.18; filter: grayscale(1); transform: scale(0.75); }
+@keyframes gemLost {
+  0%   { opacity:1;    filter:grayscale(0)   brightness(1);   transform:scale(1); }
+  18%  { opacity:1;    filter:grayscale(0)   brightness(2.4); transform:scale(1.55); }
+  40%  { opacity:0.85; filter:grayscale(0.2) brightness(1.6); transform:scale(1.25); }
+  100% { opacity:0.18; filter:grayscale(1)   brightness(1);   transform:scale(0.75); }
+}
+.strike-gem.losing { animation: gemLost 0.65s cubic-bezier(0.4,0,0.6,1) forwards; }
 .score-display { text-align: center; }
 .score-number { font-family: 'Cinzel', serif; font-size: 28px; color: var(--gold2); }
 .score-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
@@ -1990,7 +1997,17 @@ function makeChoice(choiceId) {
 function updateStrikesUI() {
   for(let i = 0; i < 3; i++) {
     const el = document.getElementById('strike-'+i);
-    if(el) el.classList.toggle('lost', i < state.game.strikes);
+    if(!el) continue;
+    const shouldBeLost = i < state.game.strikes;
+    if(shouldBeLost && !el.classList.contains('lost') && !el.classList.contains('losing')) {
+      el.classList.add('losing');
+      el.addEventListener('animationend', () => {
+        el.classList.remove('losing');
+        el.classList.add('lost');
+      }, { once: true });
+    } else if(!shouldBeLost) {
+      el.classList.remove('lost', 'losing');
+    }
   }
 }
 function renderCardFront(item) {
