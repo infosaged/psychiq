@@ -2516,6 +2516,33 @@ async function renderAnalytics() {
     return `<div class="an-cal-day an-cal-i${intensity}" title="${d.label}: ${d.count} test${d.count!==1?'s':''}"></div>`;
   }).join('');
 
+  // Moon phase breakdown
+  const MOON_PHASES = [
+    { key:'new',   label:'New Moon',      emoji:'🌑' },
+    { key:'first', label:'First Quarter', emoji:'🌓' },
+    { key:'full',  label:'Full Moon',     emoji:'🌕' },
+    { key:'last',  label:'Last Quarter',  emoji:'🌗' },
+  ];
+  const phaseGroups = { new:[], first:[], full:[], last:[] };
+  rows.forEach(r => { phaseGroups[getMoonPhase(r.played_at)].push(r.score); });
+  const phaseAvgs = MOON_PHASES.map(p => ({
+    ...p,
+    avg: phaseGroups[p.key].length ? Math.round(phaseGroups[p.key].reduce((a,b)=>a+b,0)/phaseGroups[p.key].length) : null,
+    count: phaseGroups[p.key].length,
+  }));
+  const phaseMax = Math.max(...phaseAvgs.map(p=>p.avg||0), 1);
+  const phaseBars = phaseAvgs.map(p => {
+    const pct = p.avg ? ((p.avg/phaseMax)*100).toFixed(1) : '0';
+    return `<div class="an-bar-row">
+      <div class="an-bar-label">${p.emoji} ${p.label}</div>
+      <div class="an-bar-track"><div class="an-bar-fill" style="width:${pct}%"></div></div>
+      <div style="text-align:right;flex-shrink:0;width:52px;">
+        <div class="an-bar-val">${p.avg||'—'}</div>
+        <div style="font-size:9px;color:var(--text3);">${p.count} session${p.count!==1?'s':''}</div>
+      </div>
+    </div>`;
+  }).join('');
+
   // Insights
   const totalSessions = rows.length;
   const bestEver = rows.length ? Math.max(...rows.map(r=>r.score)) : 0;
@@ -2555,6 +2582,13 @@ async function renderAnalytics() {
       </div>
     </div>
     <div class="an-section">
+      <div class="an-section-title">Score by Moon Phase</div>
+      <div class="an-chart-wrap">
+        ${rows.length ? phaseBars : '<div class="an-empty">Play some games to see moon phase data!</div>'}
+        <div style="font-size:10px;color:var(--text3);margin-top:10px;text-align:center;">Average score per session · Algorithmic calculation</div>
+      </div>
+    </div>
+    <div class="an-section">
       <div class="an-section-title">Insights</div>
       <div class="stat-grid">
         <div class="stat-box"><div class="stat-val">${totalSessions}</div><div class="stat-label">Total sessions</div></div>
@@ -2563,6 +2597,17 @@ async function renderAnalytics() {
         <div class="stat-box"><div class="stat-val">${favTopic?favTopic.emoji:'—'}</div><div class="stat-label">${favTopic?favTopic.name:'Favorite topic'}</div></div>
       </div>
     </div>`;
+}
+
+function getMoonPhase(timestamp) {
+  // Days elapsed since a known New Moon (Jan 6 2000 18:14 UTC), modulo lunar cycle
+  const REF = 947182440000; // new Date('2000-01-06T18:14:00Z').getTime()
+  const CYCLE = 29.53058867 * 86400000;
+  const fraction = (((timestamp - REF) % CYCLE) + CYCLE) % CYCLE / CYCLE;
+  if(fraction < 0.125 || fraction >= 0.875) return 'new';
+  if(fraction < 0.375) return 'first';
+  if(fraction < 0.625) return 'full';
+  return 'last';
 }
 
 function setAnalyticsTopic(topicId) {
