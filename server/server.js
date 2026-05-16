@@ -141,6 +141,36 @@ app.put('/api/users/me', requireAuth, (req, res) => {
   res.json({ ...publicUser(updated), certToken: updated.cert_token });
 });
 
+// GET /api/users/me/rank  – real all-time and zodiac rank for the current user
+app.get('/api/users/me/rank', requireAuth, (req, res) => {
+  const userId = req.user.sub;
+  const user = db.prepare('SELECT zodiac FROM users WHERE id=?').get(userId);
+  if (!user) return res.status(404).json({ error: 'Not found' });
+
+  const { rank } = db.prepare(`
+    SELECT COUNT(*) + 1 AS rank
+    FROM (SELECT user_id, MAX(score) AS best FROM scores GROUP BY user_id)
+    WHERE best > (SELECT COALESCE(MAX(score), 0) FROM scores WHERE user_id = ?)
+  `).get(userId);
+
+  let zodiacRank = null;
+  if (user.zodiac) {
+    const { zrank } = db.prepare(`
+      SELECT COUNT(*) + 1 AS zrank
+      FROM (
+        SELECT s.user_id, MAX(s.score) AS best
+        FROM scores s JOIN users u ON u.id = s.user_id
+        WHERE u.zodiac = ?
+        GROUP BY s.user_id
+      )
+      WHERE best > (SELECT COALESCE(MAX(score), 0) FROM scores WHERE user_id = ?)
+    `).get(user.zodiac, userId);
+    zodiacRank = zrank;
+  }
+
+  res.json({ rank, zodiacRank });
+});
+
 // ── Public profile / cert ─────────────────────────────────────────────────────
 
 // GET /api/users/by-token/:token  (used for public cert viewing — token is not guessable)

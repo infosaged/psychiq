@@ -2347,7 +2347,7 @@ function exitGame() { showScreen('topics'); }
 // ============================================================
 // PROFILE
 // ============================================================
-function renderProfile() {
+async function renderProfile() {
   const u = state.user;
   if(!u) { showScreen('home'); return; }
   // Avatar
@@ -2365,12 +2365,17 @@ function renderProfile() {
   const best = bestScore(scores);
   document.getElementById('pstat-best').textContent = best||'—';
   document.getElementById('pstat-topics').textContent = Object.keys(scores).length;
-  // Rank
-  const rank = getPlayerRank(u);
-  document.getElementById('pstat-rank').textContent = rank ? '#'+rank : '#—';
-  // Zodiac rank
-  const zr = getZodiacRank(u);
-  document.getElementById('pstat-zodiac').textContent = zr ? '#'+zr : '—';
+  // Rank — fetch from API for accuracy; fall back to demo estimate while loading
+  document.getElementById('pstat-rank').textContent = '#—';
+  document.getElementById('pstat-zodiac').textContent = '—';
+  if(api.token()) {
+    try {
+      const rd = await api.get('/api/users/me/rank');
+      document.getElementById('pstat-rank').textContent = rd.rank ? '#'+rd.rank : '#—';
+      document.getElementById('pstat-zodiac').textContent = rd.zodiacRank ? '#'+rd.zodiacRank : '—';
+      state._userRank = rd;
+    } catch {}
+  }
 
   // Topic scores
   const list = document.getElementById('profile-topic-scores');
@@ -3063,7 +3068,7 @@ function goToCardBacks() { showScreen('card-backs'); }
 // ============================================================
 // CERT
 // ============================================================
-function renderCert(u) {
+async function renderCert(u) {
   u = u || state.user;
   if(!u) return;
   const url = `https://psychicscore.com/cert/${u.certToken||u.id}`;
@@ -3077,9 +3082,17 @@ function renderCert(u) {
   const scores = u.scores||{};
   const best = bestScore(scores);
   document.getElementById('cert-best').textContent=best||0;
-  document.getElementById('cert-rank').textContent='#'+getPlayerRank(u);
-  const zr=getZodiacRank(u);
-  document.getElementById('cert-zodiac-rank').textContent=zr?'#'+zr:'—';
+  let certRank = getPlayerRank(u), certZr = getZodiacRank(u);
+  if(api.token() && state.user && u.id === state.user.id) {
+    try {
+      const rd = await api.get('/api/users/me/rank');
+      if(rd.rank) certRank = rd.rank;
+      certZr = rd.zodiacRank || null;
+      state._userRank = rd;
+    } catch {}
+  }
+  document.getElementById('cert-rank').textContent='#'+certRank;
+  document.getElementById('cert-zodiac-rank').textContent=certZr?'#'+certZr:'—';
   document.getElementById('cert-topics-count').textContent=Object.keys(scores).length;
   // Topic list
   const entries=TOPICS.map(t=>({topic:t,score:scores[t.id]||0})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
@@ -3092,8 +3105,7 @@ function renderCert(u) {
   // Zodiac pills
   const pillsEl=document.getElementById('cert-zodiac-pills');
   if(u.zodiac) {
-    const zRank=getZodiacRank(u);
-    pillsEl.innerHTML=`<span class="pill pill-gold">${u.zodiac}: #${zRank}</span> <span class="pill pill-purple">Global: #${getPlayerRank(u)}</span>`;
+    pillsEl.innerHTML=`<span class="pill pill-gold">${u.zodiac}: #${certZr||'—'}</span> <span class="pill pill-purple">Global: #${certRank}</span>`;
     document.getElementById('cert-zodiac-section').classList.remove('hidden');
   } else {
     document.getElementById('cert-zodiac-section').classList.add('hidden');
@@ -3154,7 +3166,7 @@ function getCertUrl() {
 function getCertText() {
   const u=state.user; if(!u) return 'Check out my psychic ability certification!';
   const best=bestScore(u.scores);
-  const rank=getPlayerRank(u);
+  const rank = state._userRank?.rank || getPlayerRank(u);
   return `I just proved my psychic ability! Score: ${best}, ranked #${rank} globally. Check my certification:`;
 }
 function shareToX() {
