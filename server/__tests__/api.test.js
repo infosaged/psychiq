@@ -267,7 +267,7 @@ describe('POST /api/scores', () => {
     const res = await request(app)
       .post('/api/scores')
       .set('Authorization', `Bearer ${token}`)
-      .send({ topicId: 'cards', score: 99999 });
+      .send({ topicId: 'cards', score: 1000000 });
     expect(res.status).toBe(400);
   });
 
