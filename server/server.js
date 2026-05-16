@@ -165,7 +165,7 @@ app.post('/api/scores', requireAuth, (req, res) => {
   if (!VALID_TOPICS.includes(topicId)) {
     return res.status(400).json({ error: 'Invalid topicId' });
   }
-  if (typeof score !== 'number' || score < 0 || score > 9999) {
+  if (typeof score !== 'number' || score < 0 || score > 999999) {
     return res.status(400).json({ error: 'Invalid score' });
   }
 
@@ -218,7 +218,7 @@ app.get('/api/leaderboard', (req, res) => {
     timeClause = `AND s.played_at >= ${start} AND s.played_at < ${end}`;
   } else if (time === 'thismonth') {
     const now = new Date();
-    const from = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const from = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1);
     timeClause = `AND s.played_at >= ${from}`;
   } else if (time === '90days') {
     const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
@@ -226,8 +226,8 @@ app.get('/api/leaderboard', (req, res) => {
   } else if (time !== 'alltime') {
     const year = parseInt(time);
     if (!isNaN(year)) {
-      const from = new Date(year, 0, 1).getTime();
-      const to   = new Date(year + 1, 0, 1).getTime();
+      const from = Date.UTC(year, 0, 1);
+      const to   = Date.UTC(year + 1, 0, 1);
       timeClause = `AND s.played_at >= ${from} AND s.played_at < ${to}`;
     }
   }
