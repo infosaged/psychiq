@@ -950,14 +950,7 @@ body::before {
     </div>
     <div class="card">
       <div class="card-title">Share my certification</div>
-      <div style="font-size:12px; color:var(--text3); margin-bottom:12px;">Share your psychic ability proof with the world</div>
-      <div class="share-row">
-        <div class="share-btn-item share-btn-x" onclick="shareToX()">𝕏 Post</div>
-        <div class="share-btn-item share-btn-fb" onclick="shareToFacebook()">f Facebook</div>
-        <div class="share-btn-item share-btn-ig" onclick="shareToInstagram()">◎ Instagram</div>
-        <div class="share-btn-item share-btn-copy" onclick="copyProfileLink()">⎘ Copy link</div>
-      </div>
-      <button class="btn btn-ghost mt-8" onclick="showScreen('cert')" style="font-size:12px; padding:10px;">View my certificate →</button>
+      <div id="profile-cert-share-body"></div>
     </div>
     <div style="text-align:center; padding:8px 0 4px;">
       <button class="btn btn-ghost" onclick="showScreen('credits')" style="font-size:11px; padding:8px 16px; color:var(--text3);">📷 Photo credits &amp; licenses</button>
@@ -2403,6 +2396,24 @@ function renderProfile() {
         <div class="badge-item-sub">${b.categoryEmoji} ${b.categoryName}</div>
       </div>`;
     }).join('')}</div>`;
+  }
+
+  // Certification share
+  const certShare = document.getElementById('profile-cert-share-body');
+  if(best > 0) {
+    certShare.innerHTML = `
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Share your psychic ability proof with the world</div>
+      <div class="share-row">
+        <div class="share-btn-item share-btn-x" onclick="shareToX()">𝕏 Post</div>
+        <div class="share-btn-item share-btn-fb" onclick="shareToFacebook()">f Facebook</div>
+        <div class="share-btn-item share-btn-ig" onclick="shareToInstagram()">◎ Instagram</div>
+        <div class="share-btn-item share-btn-copy" onclick="copyProfileLink()">⎘ Copy link</div>
+      </div>
+      <button class="btn btn-ghost mt-8" onclick="showScreen('cert')" style="font-size:12px;padding:10px;">View my certificate →</button>`;
+  } else {
+    certShare.innerHTML = `
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.6;">Complete your first test to earn your certificate and share your psychic ability with the world.</div>
+      <button class="btn btn-primary" onclick="showScreen('topics')" style="width:100%;">Take your first test →</button>`;
   }
 
   // Card back preview
