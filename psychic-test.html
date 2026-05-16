@@ -2677,7 +2677,7 @@ async function renderAnalytics() {
         <div class="stat-box"><div class="stat-val">${totalSessions}</div><div class="stat-label">Total sessions</div></div>
         <div class="stat-box"><div class="stat-val">${bestEver||'—'}</div><div class="stat-label">All-time best</div></div>
         <div class="stat-box"><div class="stat-val">${thisWeek}</div><div class="stat-label">This week</div></div>
-        <div class="stat-box"><div class="stat-val">${favTopic?favTopic.emoji:'—'}</div><div class="stat-label">${favTopic?favTopic.name:'Favorite topic'}</div></div>
+        <div class="stat-box"><div class="stat-val" style="font-size:15px;">${favTopic?favTopic.emoji+' '+favTopic.name:'—'}</div><div class="stat-label">Favorite Topic</div></div>
       </div>
     </div>`;
 }
