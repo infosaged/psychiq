@@ -363,7 +363,7 @@ body::before {
 /* ===================== BADGES (profile) ===================== */
 .badge-grid { display: flex; flex-wrap: wrap; gap: 10px; }
 .badge-item {
-  display: flex; flex-direction: column; align-items: center;
+  position: relative; display: flex; flex-direction: column; align-items: center;
   padding: 10px 12px; border-radius: var(--radius-sm);
   border: 1px solid rgba(212,168,67,0.3); background: rgba(212,168,67,0.06);
   cursor: pointer; transition: all 0.2s; min-width: 72px;
@@ -372,6 +372,7 @@ body::before {
 .badge-item-orb { font-size: 32px; }
 .badge-item-label { font-size: 9px; color: var(--gold2); margin-top: 5px; text-align: center; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
 .badge-item-sub { font-size: 9px; color: var(--text3); margin-top: 2px; text-align: center; }
+.badge-item-count { position: absolute; top: 4px; right: 4px; background: var(--gold2); color: #1a0a2e; font-size: 9px; font-weight: 700; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; line-height: 1; }
 
 /* ===================== BADGE DETAIL MODAL ===================== */
 .badge-detail-orb { font-size: 72px; display: block; text-align: center; margin-bottom: 10px; animation: pulse 2.5s ease-in-out infinite; }
@@ -2399,21 +2400,7 @@ async function renderProfile() {
   if(badges.length===0) {
     badgeList.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0;">Earn a badge by reaching Intuitive rank or above (10+ correct in a row), or be the daily top scorer!</div>';
   } else {
-    badgeList.innerHTML = `<div class="badge-grid">${badges.map((b,i)=>{
-      if(b.type==='daily_champion') {
-        const TOPIC_NAMES = {cards:'Cards',colors:'Colors',animals:'Animals',zodiac:'Zodiac',planets:'Planets',gems:'Gems & Crystals'};
-        return `<div class="badge-item" onclick="showBadgeDetail(state.user.badges[${i}])">
-          <span class="badge-item-orb">🏆</span>
-          <div class="badge-item-label">Daily #1</div>
-          <div class="badge-item-sub">${b.date}</div>
-        </div>`;
-      }
-      return `<div class="badge-item" onclick="showBadgeDetail(state.user.badges[${i}])">
-        <span class="badge-item-orb">🔮</span>
-        <div class="badge-item-label">${b.type === 'top01pct' ? 'Intuitive' : b.type}</div>
-        <div class="badge-item-sub">${b.categoryEmoji} ${b.categoryName}</div>
-      </div>`;
-    }).join('')}</div>`;
+    badgeList.innerHTML = badgeGridHtml(badges, 'state.user.badges');
   }
 
   // Certification share
@@ -2454,6 +2441,38 @@ async function renderProfile() {
       </div>`;
     }
   }
+}
+
+function badgeGridHtml(badges, stateRef) {
+  if(!badges.length) return '';
+  const tagged = badges.map((b,i) => ({...b, _i:i}));
+  const daily  = tagged.filter(b => b.type === 'daily_champion');
+  const tiers  = tagged.filter(b => b.type !== 'daily_champion');
+  // Group tier badges by display name; keep most recent per group for the detail tap
+  const groups = {};
+  tiers.forEach(b => {
+    const name = b.type === 'top01pct' ? 'Intuitive' : b.type;
+    if(!groups[name]) groups[name] = [];
+    groups[name].push(b);
+  });
+  const dailyHtml = daily.map(b => `
+    <div class="badge-item" onclick="showBadgeDetail(${stateRef}[${b._i}])">
+      <span class="badge-item-orb">🏆</span>
+      <div class="badge-item-label">Daily #1</div>
+      <div class="badge-item-sub">${b.date}</div>
+    </div>`).join('');
+  const tierHtml = Object.entries(groups).map(([name, items]) => {
+    const latest = items[items.length - 1];
+    const count  = items.length;
+    return `
+    <div class="badge-item" onclick="showBadgeDetail(${stateRef}[${latest._i}])">
+      ${count > 1 ? `<div class="badge-item-count">${count}</div>` : ''}
+      <span class="badge-item-orb">🔮</span>
+      <div class="badge-item-label">${name}</div>
+      <div class="badge-item-sub">${latest.categoryEmoji} ${latest.categoryName}</div>
+    </div>`;
+  }).join('');
+  return `<div class="badge-grid">${dailyHtml}${tierHtml}</div>`;
 }
 
 function getPlayerRank(u) {
@@ -3116,20 +3135,7 @@ async function renderCert(u) {
   const certBadgesSection = document.getElementById('cert-badges-section');
   if(badges.length > 0) {
     certBadgesSection.classList.remove('hidden');
-    document.getElementById('cert-badges-list').innerHTML = badges.map((b,i) => {
-      if(b.type==='daily_champion') return `
-        <div class="badge-item" onclick="showBadgeDetail(state._certBadges[${i}])">
-          <div class="badge-item-orb">🏆</div>
-          <div class="badge-item-label">Daily #1</div>
-          <div class="badge-item-sub">${b.date}</div>
-        </div>`;
-      return `
-        <div class="badge-item" onclick="showBadgeDetail(state._certBadges[${i}])">
-          <div class="badge-item-orb">🔮</div>
-          <div class="badge-item-label">${b.type === 'top01pct' ? 'Intuitive' : b.type}</div>
-          <div class="badge-item-sub">${b.categoryEmoji} ${b.categoryName}</div>
-        </div>`;
-    }).join('');
+    document.getElementById('cert-badges-list').innerHTML = badgeGridHtml(badges, 'state._certBadges');
   } else {
     certBadgesSection.classList.add('hidden');
   }
