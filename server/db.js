@@ -93,6 +93,7 @@ function publicUser(u) {
     country:     u.country       || null,
     stateCode:   u.state_code    || null,
     cardBack:    u.card_back_id  || null,
+    avatarData:  u.avatar_data   || null,
     purchases,
     badges,
     scores: getBestScores(u.id),
