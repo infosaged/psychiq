@@ -310,6 +310,7 @@ const VALID_PRODUCT_IDS = [
   'special_celestial_powers',
   'special_mages_knowledge',
   'special_supreme_psychic',
+  'analytics_dashboard',
 ];
 
 app.post('/api/purchases', requireAuth, (req, res) => {

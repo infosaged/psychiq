@@ -597,6 +597,36 @@ body::before {
 .mt-16 { margin-top: 16px; }
 .mb-8 { margin-bottom: 8px; }
 .px-16 { padding-left: 16px; padding-right: 16px; }
+
+/* ===================== SCREEN: ANALYTICS ===================== */
+.an-paywall { display:flex; flex-direction:column; align-items:center; text-align:center; padding:32px 24px; }
+.an-paywall-icon { font-size:48px; margin-bottom:12px; }
+.an-paywall-title { font-family:'Cinzel',serif; font-size:20px; color:var(--text); margin-bottom:8px; }
+.an-paywall-desc { font-size:13px; color:var(--text3); line-height:1.6; margin-bottom:20px; }
+.an-paywall-features { list-style:none; padding:0; margin:0 0 24px; width:100%; text-align:left; }
+.an-paywall-features li { font-size:13px; color:var(--text2); padding:8px 0; border-bottom:1px solid var(--border); }
+.an-paywall-features li:last-child { border-bottom:none; }
+.an-section { margin:0 16px 24px; }
+.an-section-title { font-family:'Cinzel',serif; font-size:12px; color:var(--accent2); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:12px; }
+.an-chart-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
+.an-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.an-bar-row:last-child { margin-bottom:0; }
+.an-bar-label { font-size:12px; color:var(--text2); width:108px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.an-bar-track { flex:1; height:7px; background:var(--surface2); border-radius:4px; overflow:hidden; }
+.an-bar-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:4px; transition:width 0.6s ease; }
+.an-bar-val { font-size:12px; color:var(--text); font-weight:700; width:36px; text-align:right; flex-shrink:0; }
+.an-topic-chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+.an-topic-chip { font-size:11px; padding:4px 10px; border-radius:12px; background:var(--surface2); color:var(--text3); cursor:pointer; border:1px solid var(--border); transition:all 0.2s; }
+.an-topic-chip.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+.an-empty { font-size:12px; color:var(--text3); text-align:center; padding:24px 0; }
+.an-cal-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; }
+.an-cal-day { aspect-ratio:1; border-radius:3px; }
+.an-cal-i0 { background:var(--surface2); }
+.an-cal-i1 { background:rgba(139,111,255,0.25); }
+.an-cal-i2 { background:rgba(139,111,255,0.45); }
+.an-cal-i3 { background:rgba(139,111,255,0.65); }
+.an-cal-i4 { background:var(--accent); }
+.an-cal-legend { display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
 .section-title { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase; padding: 0 16px; margin-bottom: 8px; }
 .divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
 
@@ -1003,6 +1033,16 @@ body::before {
     <div id="leaderboard-list"></div>
   </div>
 
+  <!-- ANALYTICS -->
+  <div id="screen-analytics" class="screen has-nav">
+    <div class="topbar">
+      <div style="width:38px;"></div>
+      <span class="topbar-title">Analytics</span>
+      <div style="width:38px;"></div>
+    </div>
+    <div id="analytics-content" style="padding-bottom:16px;"></div>
+  </div>
+
   <!-- CERT (Public view) -->
   <div id="screen-cert" class="screen">
     <div class="topbar">
@@ -1118,6 +1158,10 @@ body::before {
     <div class="nav-item" id="nav-rankings" onclick="navTo('leaderboard')">
       <div class="nav-icon">🏆</div>
       <div class="nav-label">Rankings</div>
+    </div>
+    <div class="nav-item" id="nav-analytics" onclick="navTo('analytics')">
+      <div class="nav-icon">📊</div>
+      <div class="nav-label">Stats</div>
     </div>
     <div class="nav-item" id="nav-profile" onclick="navTo('profile')">
       <div class="nav-icon">👤</div>
@@ -1412,6 +1456,7 @@ const IAP_PRODUCTS = [
   { id:'special_celestial_powers', name:'Celestial Powers Set', price:'$1.19', cardCount:4 },
   { id:'special_mages_knowledge',  name:'Mages Knowledge Set',  price:'$1.39', cardCount:4 },
   { id:'special_supreme_psychic',  name:'Supreme Psychic Set',  price:'$1.49', cardCount:3 },
+  { id:'analytics_dashboard',      name:'Analytics Dashboard',  price:'$2.99' },
 ];
 
 let state = {
@@ -1488,9 +1533,14 @@ function onPurchaseResult(productId, success) {
   if(!state.user.purchases.includes(productId)) state.user.purchases.push(productId);
   save();
   if(api.token()) api.post('/api/purchases', { productId }).catch(()=>{});
-  const product = IAP_PRODUCTS.find(p => p.id === productId);
-  showToast(`${product?.name || 'Purchase'} unlocked! Check your card designs.`);
-  renderCardBacksScreen();
+  if(productId === 'analytics_dashboard') {
+    showToast('Analytics unlocked!');
+    renderAnalytics();
+  } else {
+    const product = IAP_PRODUCTS.find(p => p.id === productId);
+    showToast(`${product?.name || 'Purchase'} unlocked! Check your card designs.`);
+    renderCardBacksScreen();
+  }
 }
 
 // Called by the native bridge to restore previously purchased products (App Store requirement)
@@ -1540,7 +1590,7 @@ function esc(str) {
 // ============================================================
 // SCREEN NAVIGATION
 // ============================================================
-const NAV_SCREENS = ['topics','leaderboard','profile'];
+const NAV_SCREENS = ['topics','leaderboard','analytics','profile'];
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const s = document.getElementById('screen-'+id);
@@ -1551,6 +1601,7 @@ function showScreen(id) {
   if(showNav) updateNav(id);
   if(id==='topics') renderTopics();
   if(id==='leaderboard') renderLeaderboard();
+  if(id==='analytics') renderAnalytics();
   if(id==='profile') renderProfile();
   if(id==='cert') {
     // Reset share section and back button to defaults (may be overridden by showPublicCert)
@@ -1565,7 +1616,7 @@ function showScreen(id) {
 }
 function updateNav(id) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const map = {topics:'nav-play',leaderboard:'nav-rankings',profile:'nav-profile'};
+  const map = {topics:'nav-play',leaderboard:'nav-rankings',analytics:'nav-analytics',profile:'nav-profile'};
   if(map[id]) document.getElementById(map[id]).classList.add('active');
 }
 function navTo(id) { showScreen(id); }
@@ -2399,6 +2450,170 @@ function getAllPlayersWithBest() {
     fakes.push({...state.user, best:uBest, isYou:true, lastPlayedMs:uLastPlayed});
   }
   return fakes;
+}
+
+// ============================================================
+// ANALYTICS
+// ============================================================
+async function renderAnalytics() {
+  const u = state.user;
+  const el = document.getElementById('analytics-content');
+  if(!u) {
+    el.innerHTML = '<div class="an-empty" style="padding:40px;">Sign in to view your analytics.</div>';
+    return;
+  }
+  const hasPremium = (u.purchases||[]).includes('analytics_dashboard');
+  if(!hasPremium) {
+    el.innerHTML = `
+      <div class="an-paywall">
+        <div class="an-paywall-icon">📊</div>
+        <div class="an-paywall-title">Psychic Analytics</div>
+        <div class="an-paywall-desc">Unlock detailed charts and insights about your psychic performance over time.</div>
+        <ul class="an-paywall-features">
+          <li>✦ Score history charts</li>
+          <li>✦ Best scores by topic</li>
+          <li>✦ 30-day activity calendar</li>
+          <li>✦ Performance insights</li>
+        </ul>
+        <button class="btn btn-primary" onclick="purchaseProduct('analytics_dashboard')" style="width:100%;">$2.99 · Unlock Analytics</button>
+      </div>`;
+    return;
+  }
+  el.innerHTML = '<div class="an-empty" style="padding:40px;">Loading…</div>';
+  let rows = [];
+  try { if(api.token()) rows = await api.get('/api/scores/me'); } catch {}
+  state._analyticsRows = rows;
+
+  // Best scores by topic — horizontal bar chart
+  const scores = u.scores || {};
+  const maxScore = Math.max(...TOPICS.map(t => scores[t.id]||0), 1);
+  const topicBars = TOPICS.map(t => {
+    const s = scores[t.id] || 0;
+    const pct = ((s/maxScore)*100).toFixed(1);
+    return `<div class="an-bar-row">
+      <div class="an-bar-label">${t.emoji} ${t.name}</div>
+      <div class="an-bar-track"><div class="an-bar-fill" style="width:${pct}%"></div></div>
+      <div class="an-bar-val">${s||'—'}</div>
+    </div>`;
+  }).join('');
+
+  // Activity calendar — last 30 days
+  const calCounts = {};
+  rows.forEach(r => {
+    const d = new Date(r.played_at).toISOString().slice(0,10);
+    calCounts[d] = (calCounts[d]||0) + 1;
+  });
+  const calDays = [];
+  for(let i=29; i>=0; i--) {
+    const d = new Date(Date.now() - i*86400000);
+    calDays.push({ key:d.toISOString().slice(0,10), count:0,
+      label:d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) });
+  }
+  calDays.forEach(d => { d.count = calCounts[d.key]||0; });
+  const calMax = Math.max(...calDays.map(d=>d.count), 1);
+  const calCells = calDays.map(d => {
+    const intensity = d.count===0 ? 0 : Math.min(4, Math.ceil((d.count/calMax)*4));
+    return `<div class="an-cal-day an-cal-i${intensity}" title="${d.label}: ${d.count} test${d.count!==1?'s':''}"></div>`;
+  }).join('');
+
+  // Insights
+  const totalSessions = rows.length;
+  const bestEver = rows.length ? Math.max(...rows.map(r=>r.score)) : 0;
+  const thisWeek = rows.filter(r=>r.played_at >= Date.now()-7*86400000).length;
+  const topicCounts = {};
+  rows.forEach(r => { topicCounts[r.topic_id] = (topicCounts[r.topic_id]||0)+1; });
+  const favTopicId = Object.entries(topicCounts).sort((a,b)=>b[1]-a[1])[0]?.[0];
+  const favTopic = TOPICS.find(t=>t.id===favTopicId);
+
+  el.innerHTML = `
+    <div class="an-section" style="margin-top:16px;">
+      <div class="an-section-title">Best Score by Topic</div>
+      <div class="an-chart-wrap">${topicBars||'<div class="an-empty">No scores yet — take a test!</div>'}</div>
+    </div>
+    <div class="an-section">
+      <div class="an-section-title">Score History</div>
+      <div class="an-chart-wrap">
+        <div class="an-topic-chips" id="an-topic-chips">
+          <div class="an-topic-chip active" data-topic="all" onclick="setAnalyticsTopic('all')">All</div>
+          ${TOPICS.map(t=>`<div class="an-topic-chip" data-topic="${t.id}" onclick="setAnalyticsTopic('${t.id}')">${t.emoji} ${t.name}</div>`).join('')}
+        </div>
+        <div id="an-history-chart">${analyticsLineChart(rows)}</div>
+      </div>
+    </div>
+    <div class="an-section">
+      <div class="an-section-title">Activity — Last 30 Days</div>
+      <div class="an-chart-wrap">
+        <div class="an-cal-grid">${calCells}</div>
+        <div class="an-cal-legend">
+          <span style="font-size:10px;color:var(--text3);">Each square = one day</span>
+          <div style="display:flex;gap:3px;align-items:center;">
+            <span style="font-size:10px;color:var(--text3);">Less</span>
+            ${[0,1,2,3,4].map(i=>`<div class="an-cal-day an-cal-i${i}" style="width:10px;height:10px;border-radius:2px;flex-shrink:0;"></div>`).join('')}
+            <span style="font-size:10px;color:var(--text3);">More</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="an-section">
+      <div class="an-section-title">Insights</div>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-val">${totalSessions}</div><div class="stat-label">Total sessions</div></div>
+        <div class="stat-box"><div class="stat-val">${bestEver||'—'}</div><div class="stat-label">All-time best</div></div>
+        <div class="stat-box"><div class="stat-val">${thisWeek}</div><div class="stat-label">This week</div></div>
+        <div class="stat-box"><div class="stat-val">${favTopic?favTopic.emoji:'—'}</div><div class="stat-label">${favTopic?favTopic.name:'Favorite topic'}</div></div>
+      </div>
+    </div>`;
+}
+
+function setAnalyticsTopic(topicId) {
+  document.querySelectorAll('.an-topic-chip').forEach(c=>c.classList.toggle('active', c.dataset.topic===topicId));
+  const filtered = topicId==='all' ? state._analyticsRows : state._analyticsRows.filter(r=>r.topic_id===topicId);
+  document.getElementById('an-history-chart').innerHTML = analyticsLineChart(filtered);
+}
+
+function analyticsLineChart(rows) {
+  if(!rows||rows.length===0) return '<div class="an-empty">Play some games to see your history!</div>';
+  const recent = rows.slice(0,20).reverse();
+  if(recent.length < 2) return '<div class="an-empty">Play more games to see a trend!</div>';
+
+  const W=340, H=130, pad={t:10,r:12,b:28,l:36};
+  const iW=W-pad.l-pad.r, iH=H-pad.t-pad.b;
+  const vals = recent.map(r=>r.score);
+  const maxS=Math.max(...vals), minS=Math.min(...vals);
+  const range=maxS-minS||maxS||1;
+  const px=i=>(pad.l+(i/(recent.length-1))*iW).toFixed(1);
+  const py=s=>(pad.t+iH-((s-minS)/range)*iH).toFixed(1);
+  const polyPts=recent.map((r,i)=>`${px(i)},${py(r.score)}`).join(' ');
+
+  const yTicks=[minS,maxS];
+  if(minS!==maxS) yTicks.splice(1,0,Math.round((minS+maxS)/2));
+  const yLines=yTicks.map(v=>{
+    const y=py(v);
+    return `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+            <text x="${pad.l-4}" y="${(parseFloat(y)+3.5).toFixed(1)}" text-anchor="end" font-size="9" fill="rgba(255,255,255,0.35)">${v}</text>`;
+  }).join('');
+
+  const dots=recent.map((r,i)=>
+    `<circle cx="${px(i)}" cy="${py(r.score)}" r="3.5" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/>`
+  ).join('');
+  const areaBase=(pad.t+iH).toFixed(1);
+  const areaPts=`${pad.l},${areaBase} ${polyPts} ${(W-pad.r).toFixed(1)},${areaBase}`;
+  const fmt=ts=>new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;overflow:visible;">
+    <defs>
+      <linearGradient id="an-grad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    ${yLines}
+    <polygon points="${areaPts}" fill="url(#an-grad)"/>
+    <polyline points="${polyPts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+    <text x="${pad.l}" y="${H-4}" font-size="9" fill="rgba(255,255,255,0.35)">${fmt(recent[0].played_at)}</text>
+    <text x="${W-pad.r}" y="${H-4}" text-anchor="end" font-size="9" fill="rgba(255,255,255,0.35)">${fmt(recent[recent.length-1].played_at)}</text>
+  </svg>`;
 }
 
 // ============================================================
