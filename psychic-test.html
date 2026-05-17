@@ -691,6 +691,31 @@ body::before {
 .cb-buy-btn:active { opacity: 0.8; }
 
 .hidden { display: none !important; }
+
+/* ADMIN DASHBOARD */
+.adm-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 16px; }
+.adm-stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 12px; text-align: center; }
+.adm-stat-val { font-family: 'Cinzel', serif; font-size: 22px; color: var(--accent2); font-weight: 700; }
+.adm-stat-lbl { font-size: 10px; color: var(--text3); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+.adm-section { margin: 0 16px 16px; }
+.adm-section-title { font-family: 'Cinzel', serif; font-size: 12px; color: var(--accent2); letter-spacing: 0.05em; margin-bottom: 10px; }
+.adm-table-wrap { overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.adm-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.adm-table th { background: var(--surface2); color: var(--text3); text-align: left; padding: 7px 10px; font-weight: 600; white-space: nowrap; border-bottom: 1px solid var(--border); }
+.adm-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); white-space: nowrap; vertical-align: middle; }
+.adm-table tr:last-child td { border-bottom: none; }
+.adm-table tr:hover td { background: var(--surface2); }
+.adm-cal { display: grid; grid-template-columns: repeat(15, 1fr); gap: 3px; }
+.adm-cal-day { height: 14px; border-radius: 2px; background: var(--surface2); }
+.adm-cal-i1 { background: rgba(139,111,255,0.3); }
+.adm-cal-i2 { background: rgba(139,111,255,0.55); }
+.adm-cal-i3 { background: rgba(139,111,255,0.78); }
+.adm-cal-i4 { background: rgba(139,111,255,1); }
+.adm-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.adm-bar-label { width: 90px; font-size: 11px; color: var(--text2); flex-shrink: 0; }
+.adm-bar-track { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.adm-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s; }
+.adm-bar-val { font-size: 11px; color: var(--text3); width: 36px; text-align: right; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -963,6 +988,12 @@ body::before {
     <div style="text-align:center; padding:8px 0 4px;">
       <button class="btn btn-ghost" onclick="showScreen('credits')" style="font-size:11px; padding:8px 16px; color:var(--text3);">📷 Photo credits &amp; licenses</button>
     </div>
+    <div id="profile-admin-btn" class="hidden" style="text-align:center; padding:0 0 12px;">
+      <button class="btn btn-ghost" onclick="showScreen('admin')" style="font-size:11px; padding:8px 16px; color:var(--text3); border-color:rgba(255,80,80,0.3);">⚙ Admin Dashboard</button>
+    </div>
+    <div style="text-align:center; padding:0 0 20px;">
+      <button class="btn btn-ghost" onclick="confirmSignOut()" style="font-size:11px; padding:8px 16px; color:var(--error); border-color:rgba(248,113,113,0.3);">Sign out</button>
+    </div>
   </div>
 
   <!-- EDIT PROFILE -->
@@ -1051,6 +1082,16 @@ body::before {
       <div style="width:38px;"></div>
     </div>
     <div id="analytics-content" style="padding-bottom:16px;"></div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="screen-admin" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="showScreen('profile')">←</button>
+      <span class="topbar-title">Admin Dashboard</span>
+      <div style="width:38px;"></div>
+    </div>
+    <div id="admin-content" style="padding-bottom:24px;"></div>
   </div>
 
   <!-- CERT (Public view) -->
@@ -1652,6 +1693,7 @@ function showScreen(id) {
   }
   if(id==='edit-profile') renderEditProfile();
   if(id==='card-backs') renderCardBacksScreen();
+  if(id==='admin') renderAdmin();
 }
 function updateNav(id) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1764,6 +1806,17 @@ async function registerWithBackend() {
   delete state.user._password;
 }
 function afterLogin() { renderTopics(); showScreen('topics'); }
+function confirmSignOut() {
+  if(!confirm('Sign out of your account?')) return;
+  signOut();
+}
+function signOut() {
+  api.setToken(null);
+  localStorage.removeItem('psychic_state');
+  state.user = null;
+  state.guest = false;
+  showScreen('home');
+}
 function getZodiac(dob) {
   if(!dob) return '';
   const d = new Date(dob); const m = d.getMonth()+1; const day = d.getDate();
@@ -2551,6 +2604,10 @@ async function renderProfile() {
       </div>`;
     }
   }
+
+  // Show admin button only for the admin account
+  const adminBtn = document.getElementById('profile-admin-btn');
+  if(adminBtn) adminBtn.classList.toggle('hidden', (u.email||'').toLowerCase() !== 'vbprog@hotmail.com');
 }
 
 function badgeGridHtml(badges, stateRef) {
@@ -2846,6 +2903,140 @@ async function renderAnalytics() {
         <div class="stat-box"><div class="stat-val">${bestEver||'—'}</div><div class="stat-label">All-time best</div></div>
         <div class="stat-box"><div class="stat-val">${thisWeek}</div><div class="stat-label">This week</div></div>
         <div class="stat-box"><div class="stat-val" style="font-size:15px;">${favTopic?favTopic.emoji+' '+favTopic.name:'—'}</div><div class="stat-label">Favorite Topic</div></div>
+      </div>
+    </div>`;
+}
+
+// ============================================================
+// ADMIN DASHBOARD
+// ============================================================
+function isAdmin() {
+  return (state.user?.email || '').toLowerCase() === 'vbprog@hotmail.com';
+}
+
+async function renderAdmin() {
+  const el = document.getElementById('admin-content');
+  if (!isAdmin()) { el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--error);">Access denied.</div>'; return; }
+  el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text3);">Loading…</div>';
+
+  let data;
+  try {
+    data = await api.get('/api/admin/stats');
+  } catch(e) {
+    el.innerHTML = `<div style="padding:40px;text-align:center;color:var(--error);">Failed to load: ${esc(e.message||'error')}</div>`;
+    return;
+  }
+
+  const { summary, byTopic, dailyActivity, users, recentGames } = data;
+
+  // ── Summary cards ──────────────────────────────────────────
+  const summaryHtml = `
+    <div class="adm-summary">
+      <div class="adm-stat"><div class="adm-stat-val">${summary.totalUsers}</div><div class="adm-stat-lbl">Total Users</div></div>
+      <div class="adm-stat"><div class="adm-stat-val">${summary.totalGames}</div><div class="adm-stat-lbl">Games Played</div></div>
+      <div class="adm-stat"><div class="adm-stat-val">${summary.gamesToday}</div><div class="adm-stat-lbl">Games Today</div></div>
+      <div class="adm-stat"><div class="adm-stat-val">${summary.newUsersToday}</div><div class="adm-stat-lbl">New Users Today</div></div>
+      <div class="adm-stat"><div class="adm-stat-val">${summary.countries}</div><div class="adm-stat-lbl">Countries</div></div>
+      <div class="adm-stat"><div class="adm-stat-val">${users.filter(u=>u.games_played>0).length}</div><div class="adm-stat-lbl">Active Players</div></div>
+    </div>`;
+
+  // ── Topic breakdown ────────────────────────────────────────
+  const maxTopicGames = Math.max(...byTopic.map(t => t.games), 1);
+  const topicBarsHtml = byTopic.map(t => {
+    const topic = TOPICS.find(x => x.id === t.topic_id) || { emoji: '?', name: t.topic_id };
+    const pct = ((t.games / maxTopicGames) * 100).toFixed(1);
+    return `<div class="adm-bar-row">
+      <div class="adm-bar-label">${topic.emoji} ${topic.name}</div>
+      <div class="adm-bar-track"><div class="adm-bar-fill" style="width:${pct}%"></div></div>
+      <div class="adm-bar-val">${t.games}</div>
+    </div>`;
+  }).join('');
+
+  // ── 30-day activity calendar ───────────────────────────────
+  const actMap = {};
+  dailyActivity.forEach(d => { actMap[d.date] = d.games; });
+  const calDays = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000);
+    const key = d.toISOString().slice(0, 10);
+    calDays.push({ key, count: actMap[key] || 0, label: d.toLocaleDateString('en-US', { month:'short', day:'numeric' }) });
+  }
+  const calMax = Math.max(...calDays.map(d => d.count), 1);
+  const calHtml = calDays.map(d => {
+    const intensity = d.count === 0 ? 0 : Math.min(4, Math.ceil((d.count / calMax) * 4));
+    return `<div class="adm-cal-day adm-cal-i${intensity}" title="${esc(d.label)}: ${d.count} game${d.count !== 1 ? 's' : ''}"></div>`;
+  }).join('');
+
+  // ── Users table ────────────────────────────────────────────
+  const usersRowsHtml = users.map(u => {
+    const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', { year:'2-digit', month:'short', day:'numeric' }) : '—';
+    const lastPlayed = u.last_played ? new Date(u.last_played).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '—';
+    const loc = [u.country, u.state_code].filter(Boolean).join('/') || '—';
+    return `<tr>
+      <td>${esc(u.display_name)}</td>
+      <td style="color:var(--text3);">${esc(u.email)}</td>
+      <td style="color:var(--text3);">@${esc(u.username||'')}</td>
+      <td>${loc}</td>
+      <td>${u.zodiac||'—'}</td>
+      <td>${u.level||'—'}</td>
+      <td style="text-align:right;">${u.games_played}</td>
+      <td style="text-align:right;">${u.best_score||'—'}</td>
+      <td>${joined}</td>
+      <td>${lastPlayed}</td>
+    </tr>`;
+  }).join('');
+
+  // ── Recent games table ─────────────────────────────────────
+  const recentRowsHtml = recentGames.map(g => {
+    const topic = TOPICS.find(t => t.id === g.topic_id) || { emoji: '?', name: g.topic_id };
+    const when = new Date(g.played_at).toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+    return `<tr>
+      <td>${esc(g.display_name)}</td>
+      <td style="color:var(--text3);">@${esc(g.username||'')}</td>
+      <td>${topic.emoji} ${topic.name}</td>
+      <td style="text-align:right;">${g.score}</td>
+      <td style="color:var(--text3);">${g.country||'—'}</td>
+      <td style="color:var(--text3);">${when}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    ${summaryHtml}
+
+    <div class="adm-section">
+      <div class="adm-section-title">Games by Topic (all time)</div>
+      ${topicBarsHtml}
+    </div>
+
+    <div class="adm-section">
+      <div class="adm-section-title">Activity — last 30 days</div>
+      <div class="adm-cal">${calHtml}</div>
+    </div>
+
+    <div class="adm-section">
+      <div class="adm-section-title">All Users (${users.length})</div>
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead><tr>
+            <th>Name</th><th>Email</th><th>Username</th>
+            <th>Location</th><th>Zodiac</th><th>Level</th>
+            <th>Games</th><th>Best</th><th>Joined</th><th>Last Played</th>
+          </tr></thead>
+          <tbody>${usersRowsHtml || '<tr><td colspan="10" style="text-align:center;color:var(--text3);">No users yet</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="adm-section">
+      <div class="adm-section-title">Recent Games (last 100)</div>
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead><tr>
+            <th>Player</th><th>Username</th><th>Topic</th>
+            <th>Score</th><th>Country</th><th>When</th>
+          </tr></thead>
+          <tbody>${recentRowsHtml || '<tr><td colspan="6" style="text-align:center;color:var(--text3);">No games yet</td></tr>'}</tbody>
+        </table>
       </div>
     </div>`;
 }

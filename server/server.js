@@ -399,6 +399,73 @@ app.post('/api/cron/daily-award', (req, res) => {
   res.json({ ok: true, date, winner: winner.user_id, score: winner.score });
 });
 
+// ── Admin ─────────────────────────────────────────────────────────────────────
+
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'vbprog@hotmail.com').toLowerCase();
+
+function requireAdmin(req, res, next) {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
+  let payload;
+  try { payload = jwt.verify(header.slice(7), JWT_SECRET); } catch { return res.status(401).json({ error: 'Invalid token' }); }
+  const user = db.prepare('SELECT email FROM users WHERE id=?').get(payload.sub);
+  if (!user || user.email.toLowerCase() !== ADMIN_EMAIL) return res.status(403).json({ error: 'Forbidden' });
+  req.user = payload;
+  next();
+}
+
+// GET /api/admin/stats
+app.get('/api/admin/stats', requireAdmin, (_req, res) => {
+  const now = Date.now();
+  const todayStart = (() => {
+    const d = new Date(); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  })();
+  const thirtyDaysAgo = now - 30 * 86400000;
+
+  const summary = {
+    totalUsers:    db.prepare('SELECT COUNT(*) AS n FROM users').get().n,
+    totalGames:    db.prepare('SELECT COUNT(*) AS n FROM scores').get().n,
+    gamesToday:    db.prepare('SELECT COUNT(*) AS n FROM scores WHERE played_at >= ?').get(todayStart).n,
+    countries:     db.prepare("SELECT COUNT(DISTINCT country) AS n FROM users WHERE country IS NOT NULL AND country != ''").get().n,
+    newUsersToday: db.prepare('SELECT COUNT(*) AS n FROM users WHERE created_at >= ?').get(todayStart).n,
+  };
+
+  const byTopic = db.prepare(`
+    SELECT topic_id, COUNT(*) AS games, MAX(score) AS max_score,
+           CAST(AVG(score) AS INTEGER) AS avg_score
+    FROM scores GROUP BY topic_id ORDER BY games DESC
+  `).all();
+
+  const dailyActivity = db.prepare(`
+    SELECT CAST((played_at / 86400000) AS INTEGER) AS day_epoch,
+           COUNT(*) AS games
+    FROM scores WHERE played_at >= ?
+    GROUP BY day_epoch ORDER BY day_epoch
+  `).all(thirtyDaysAgo).map(r => ({
+    date: new Date(r.day_epoch * 86400000).toISOString().slice(0, 10),
+    games: r.games,
+  }));
+
+  const users = db.prepare(`
+    SELECT u.id, u.email, u.display_name, u.username, u.country, u.state_code,
+           u.zodiac, u.level, u.created_at,
+           COUNT(s.id) AS games_played,
+           COALESCE(MAX(s.score), 0) AS best_score,
+           MAX(s.played_at) AS last_played
+    FROM users u LEFT JOIN scores s ON s.user_id = u.id
+    GROUP BY u.id ORDER BY u.created_at DESC
+  `).all();
+
+  const recentGames = db.prepare(`
+    SELECT s.topic_id, s.score, s.played_at,
+           u.display_name, u.username, u.country
+    FROM scores s JOIN users u ON u.id = s.user_id
+    ORDER BY s.played_at DESC LIMIT 100
+  `).all();
+
+  res.json({ summary, byTopic, dailyActivity, users, recentGames });
+});
+
 // ── Health ────────────────────────────────────────────────────────────────────
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
