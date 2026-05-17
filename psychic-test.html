@@ -1584,17 +1584,18 @@ function load() {
 // After restorePurchases(), the native side calls:
 //   onRestorePurchases(productIdsArray)   — array of all owned product IDs
 //
-const AD_TESTS_INTERVAL = 7;
+const AD_TESTS_INTERVAL = 4;
 
 function maybeShowAd() {
-  let count = (parseInt(localStorage.getItem('psychic_ad_counter')) || 0) + 1;
+  const adKey = 'psychic_ad_counter_' + (state.user?.id || 'guest');
+  let count = (parseInt(localStorage.getItem(adKey)) || 0) + 1;
   if (count >= AD_TESTS_INTERVAL) {
     count = 0;
     window.PsychicBridge?.showInterstitialAd?.();
     // Preload the next ad immediately after showing one
     setTimeout(() => window.PsychicBridge?.loadInterstitialAd?.(), 500);
   }
-  localStorage.setItem('psychic_ad_counter', count);
+  localStorage.setItem(adKey, count);
 }
 
 function purchaseProduct(productId) {
