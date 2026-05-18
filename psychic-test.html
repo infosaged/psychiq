@@ -1089,7 +1089,7 @@ body::before {
     <div class="topbar">
       <button class="icon-btn" onclick="showScreen('profile')">←</button>
       <span class="topbar-title">Admin Dashboard</span>
-      <div style="width:38px;"></div>
+      <button class="icon-btn" onclick="renderAdmin()" title="Refresh">↺</button>
     </div>
     <div id="admin-content" style="padding-bottom:24px;"></div>
   </div>
@@ -2923,6 +2923,7 @@ async function renderAdmin() {
   let data;
   try {
     data = await api.get('/api/admin/stats');
+    if (data.error) throw new Error(data.error);
   } catch(e) {
     el.innerHTML = `<div style="padding:40px;text-align:center;color:var(--error);">Failed to load: ${esc(e.message||'error')}</div>`;
     return;
