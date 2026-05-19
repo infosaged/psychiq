@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const path = require('path');
+const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
 const { db, stmtInsertScore, getBestScores, publicUser } = require('./db');
 
@@ -42,6 +43,21 @@ const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 if (!process.env.JWT_SECRET) console.warn('WARNING: JWT_SECRET env var not set — using insecure default. Set it in Railway variables.');
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
+const APP_URL = (process.env.APP_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
+
+// ── Email ─────────────────────────────────────────────────────────────────────
+
+let mailer = null;
+if (process.env.SMTP_HOST) {
+  mailer = nodemailer.createTransport({
+    host:   process.env.SMTP_HOST,
+    port:   parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+  });
+} else {
+  console.warn('SMTP_HOST not set — password reset emails will be logged to console only.');
+}
 
 app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '2mb' })); // allow avatar_data base64
@@ -118,6 +134,64 @@ app.post('/api/auth/login', (req, res) => {
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
     return res.status(401).json({ error: 'Invalid email or password' });
   }
+  res.json({ token: signToken(user.id), user: { ...publicUser(user), certToken: user.cert_token } });
+});
+
+// GET /api/auth/check-email?email=...
+app.get('/api/auth/check-email', (req, res) => {
+  const email = (req.query.email || '').toLowerCase().trim();
+  if (!email) return res.status(400).json({ error: 'email required' });
+  const row = db.prepare('SELECT id FROM users WHERE email=?').get(email);
+  res.json({ available: !row });
+});
+
+// POST /api/auth/forgot-password
+app.post('/api/auth/forgot-password', (req, res) => {
+  const email = (req.body.email || '').toLowerCase().trim();
+  if (!email) return res.status(400).json({ error: 'email required' });
+
+  const user = db.prepare('SELECT id, display_name FROM users WHERE email=?').get(email);
+  // Always return success to avoid leaking whether an email is registered
+  if (!user) return res.json({ ok: true });
+
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = Date.now() + 60 * 60 * 1000; // 1 hour
+  db.prepare('INSERT INTO password_resets (token, user_id, expires_at) VALUES (?,?,?)').run(token, user.id, expiresAt);
+
+  const resetUrl = `${APP_URL}/?reset=${token}`;
+  const from = process.env.SMTP_FROM || 'noreply@psychiciq.app';
+
+  if (mailer) {
+    mailer.sendMail({
+      from,
+      to: email,
+      subject: 'Reset your Psychic IQ password',
+      text: `Hi ${user.display_name},\n\nClick the link below to reset your password. It expires in 1 hour.\n\n${resetUrl}\n\nIf you didn't request this, you can ignore this email.`,
+      html: `<p>Hi ${user.display_name},</p><p>Click the link below to reset your password. It expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you didn't request this, you can ignore this email.</p>`,
+    }).catch(err => console.error('Reset email send failed:', err.message));
+  } else {
+    console.log(`[DEV] Password reset link for ${email}: ${resetUrl}`);
+  }
+
+  res.json({ ok: true });
+});
+
+// POST /api/auth/reset-password
+app.post('/api/auth/reset-password', (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).json({ error: 'token and password required' });
+  if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+  const row = db.prepare('SELECT * FROM password_resets WHERE token=?').get(token);
+  if (!row || row.used || row.expires_at < Date.now()) {
+    return res.status(400).json({ error: 'Reset link is invalid or has expired' });
+  }
+
+  const hash = bcrypt.hashSync(password, 10);
+  db.prepare('UPDATE users SET password_hash=? WHERE id=?').run(hash, row.user_id);
+  db.prepare('UPDATE password_resets SET used=1 WHERE token=?').run(token);
+
+  const user = db.prepare('SELECT * FROM users WHERE id=?').get(row.user_id);
   res.json({ token: signToken(user.id), user: { ...publicUser(user), certToken: user.cert_token } });
 });
 
@@ -525,6 +599,67 @@ app.get('/.well-known/assetlinks.json', (_req, res) => {
       ],
     },
   }]);
+});
+
+app.get('/privacy', (_req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy – Psychic IQ</title>
+  <style>
+    body { font-family: sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; color: #222; line-height: 1.7; }
+    h1 { font-size: 1.6em; } h2 { font-size: 1.1em; margin-top: 2em; }
+    a { color: #5b4fcf; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy</h1>
+  <p><strong>Effective date:</strong> May 19, 2025</p>
+  <p>Psychic IQ ("we", "our", or "us") is a casual ESP guessing game. This policy explains what information we collect, how we use it, and your choices.</p>
+
+  <h2>Information We Collect</h2>
+  <ul>
+    <li><strong>Account information:</strong> email address, display name, and username when you create an account.</li>
+    <li><strong>Profile information:</strong> zodiac sign, country, and state/region if you choose to provide them.</li>
+    <li><strong>Gameplay data:</strong> scores, topics played, and session history to power your stats and the leaderboard.</li>
+    <li><strong>Purchase records:</strong> if you make an in-app purchase, we receive a purchase token from Google Play to verify and fulfill your order. We do not store payment card details.</li>
+  </ul>
+
+  <h2>How We Use Your Information</h2>
+  <ul>
+    <li>To create and manage your account.</li>
+    <li>To display your scores on the global leaderboard (display name and score only).</li>
+    <li>To show ads via Google AdMob. AdMob may collect device identifiers and usage data subject to <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a>.</li>
+    <li>To verify in-app purchases through the Google Play Developer API.</li>
+    <li>To improve the app based on aggregate, anonymized usage patterns.</li>
+  </ul>
+
+  <h2>Data Sharing</h2>
+  <p>We do not sell your personal information. We share data only with:</p>
+  <ul>
+    <li><strong>Google Play</strong> – for in-app purchase verification.</li>
+    <li><strong>Google AdMob</strong> – for serving ads.</li>
+  </ul>
+
+  <h2>Data Retention</h2>
+  <p>Your account and gameplay data are retained while your account is active. You may request deletion by emailing us at the address below.</p>
+
+  <h2>Children</h2>
+  <p>Psychic IQ is rated for general audiences. We do not knowingly collect personal information from children under 13 without parental consent. If you believe a child has provided us information, please contact us and we will delete it.</p>
+
+  <h2>Your Choices</h2>
+  <p>You can update your profile information in the app at any time. To delete your account and associated data, contact us at the email below.</p>
+
+  <h2>Contact</h2>
+  <p>Questions? Email us at <a href="mailto:vbprog@hotmail.com">vbprog@hotmail.com</a></p>
+
+  <h2>Changes to This Policy</h2>
+  <p>We may update this policy from time to time. The effective date at the top will reflect the most recent revision.</p>
+</body>
+</html>`);
 });
 
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, '..', 'psychic-test.html')));
