@@ -5,7 +5,37 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const path = require('path');
+const { google } = require('googleapis');
 const { db, stmtInsertScore, getBestScores, publicUser } = require('./db');
+
+// ── Google Play receipt verification ─────────────────────────────────────────
+const ANDROID_PACKAGE_NAME = process.env.ANDROID_PACKAGE_NAME || 'com.psychicscore.app';
+
+async function verifyPlayPurchase(productId, purchaseToken) {
+  const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  if (!serviceAccountJson) {
+    console.warn('GOOGLE_SERVICE_ACCOUNT_JSON not set — skipping receipt verification (dev mode)');
+    return true;
+  }
+  try {
+    const credentials = JSON.parse(serviceAccountJson);
+    const auth = new google.auth.GoogleAuth({
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/androidpublisher'],
+    });
+    const androidpublisher = google.androidpublisher({ version: 'v3', auth });
+    const result = await androidpublisher.purchases.products.get({
+      packageName: ANDROID_PACKAGE_NAME,
+      productId,
+      token: purchaseToken,
+    });
+    // purchaseState 0 = purchased, 1 = cancelled, 2 = pending
+    return result.data.purchaseState === 0;
+  } catch (err) {
+    console.error('Play receipt verification failed:', err.message);
+    return false;
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -343,11 +373,18 @@ const VALID_PRODUCT_IDS = [
   'analytics_dashboard',
 ];
 
-app.post('/api/purchases', requireAuth, (req, res) => {
-  const { productId } = req.body;
+app.post('/api/purchases', requireAuth, async (req, res) => {
+  const { productId, purchaseToken } = req.body;
   if (!VALID_PRODUCT_IDS.includes(productId)) {
     return res.status(400).json({ error: 'Invalid product ID' });
   }
+
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+    if (!purchaseToken) return res.status(400).json({ error: 'Missing purchase token' });
+    const valid = await verifyPlayPurchase(productId, purchaseToken);
+    if (!valid) return res.status(400).json({ error: 'Purchase could not be verified' });
+  }
+
   const user = db.prepare('SELECT * FROM users WHERE id=?').get(req.user.sub);
   if (!user) return res.status(404).json({ error: 'User not found' });
 

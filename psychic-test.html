@@ -1606,14 +1606,15 @@ function purchaseProduct(productId) {
   }
 }
 
-// Called by the native bridge after a purchase completes or is cancelled
-function onPurchaseResult(productId, success) {
+// Called by the native bridge after a purchase completes or is cancelled.
+// purchaseToken is the Google Play purchase token passed by the TWA wrapper.
+function onPurchaseResult(productId, success, purchaseToken) {
   if(!success) { showToast('Purchase cancelled'); return; }
   if(!state.user) return;
   if(!state.user.purchases) state.user.purchases = [];
   if(!state.user.purchases.includes(productId)) state.user.purchases.push(productId);
   save();
-  if(api.token()) api.post('/api/purchases', { productId }).catch(()=>{});
+  if(api.token()) api.post('/api/purchases', { productId, purchaseToken }).catch(()=>{});
   if(productId === 'analytics_dashboard') {
     showToast('Analytics unlocked!');
     renderAnalytics();
