@@ -485,46 +485,63 @@ body::before {
 .lb-score { font-family: 'Cinzel', serif; font-size: 18px; color: var(--gold2); }
 .lb-score-sub { font-size: 10px; color: var(--text3); }
 
-/* ===================== SCREEN: CERT ===================== */
-#screen-cert { background: var(--bg); }
-.cert-card-outer { margin: 12px 16px 20px; }
-.cert-header-bar {
-  background: linear-gradient(135deg, #1a1040, #2d1a6e);
-  border: 1px solid rgba(139,111,255,0.3);
-  border-radius: var(--radius) var(--radius) 0 0;
-  padding: 20px; display: flex; align-items: center; gap: 14px;
+/* ===================== SCREEN: CERT (DIPLOMA) ===================== */
+#screen-cert { background: #0d0820; justify-content: flex-start; }
+.diploma-wrap { margin: 0 14px 24px; }
+.diploma-border {
+  background: linear-gradient(160deg, #1c1245 0%, #0f0828 60%, #1a0f3a 100%);
+  border: 2px solid #8b6914;
+  border-radius: 6px; padding: 4px;
+  box-shadow: 0 0 40px rgba(139,111,255,0.12), inset 0 0 20px rgba(0,0,0,0.5);
 }
-.cert-av-lg {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: var(--surface2); border: 2px solid var(--accent);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; font-family: 'Cinzel', serif; color: var(--accent2);
-  overflow: hidden; flex-shrink: 0;
+.diploma-card {
+  border: 1px solid rgba(212,175,55,0.35);
+  border-radius: 3px; padding: 26px 20px 20px;
+  text-align: center; position: relative;
 }
-.cert-av-lg img { width: 100%; height: 100%; object-fit: cover; }
-.cert-person-name { font-family: 'Cinzel', serif; font-size: 18px; color: #fff; }
-.cert-person-level { font-size: 11px; color: rgba(179,157,255,0.8); margin-top: 3px; }
-.cert-body-inner {
-  background: var(--surface); border: 1px solid var(--border);
-  border-top: none; border-radius: 0 0 var(--radius) var(--radius);
-  padding: 16px;
+.diploma-corners { position: absolute; inset: 8px; pointer-events: none; }
+.diploma-corner { position: absolute; width: 16px; height: 16px; border-color: rgba(212,175,55,0.5); border-style: solid; }
+.diploma-corner.tl { top:0; left:0; border-width: 2px 0 0 2px; }
+.diploma-corner.tr { top:0; right:0; border-width: 2px 2px 0 0; }
+.diploma-corner.bl { bottom:0; left:0; border-width: 0 0 2px 2px; }
+.diploma-corner.br { bottom:0; right:0; border-width: 0 2px 2px 0; }
+.diploma-institution { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.3em; color: rgba(212,175,55,0.6); text-transform: uppercase; margin-bottom: 4px; }
+.diploma-headline { font-family: 'Cinzel', serif; font-size: 17px; color: #d4af37; line-height: 1.35; }
+.diploma-ornament { color: rgba(212,175,55,0.4); font-size: 11px; letter-spacing: 6px; margin: 12px 0; }
+.diploma-certifies-line { font-size: 10px; color: var(--text3); letter-spacing: 0.08em; margin-bottom: 6px; }
+.diploma-name { font-family: 'Cinzel', serif; font-size: 24px; color: #fff; margin-bottom: 8px; line-height: 1.2; }
+.diploma-body { font-size: 11px; color: rgba(179,157,255,0.75); line-height: 1.65; margin-bottom: 16px; padding: 0 8px; }
+.diploma-level-pill {
+  display: inline-flex; flex-direction: column; align-items: center;
+  background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.04));
+  border: 1px solid rgba(212,175,55,0.5);
+  border-radius: 50px; padding: 9px 28px; margin-bottom: 20px;
 }
-.cert-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 10px; }
-.cert-topic-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
-.cert-topic-row:last-child { border-bottom: none; }
-.cert-topic-name { color: var(--text2); display: flex; align-items: center; gap: 6px; flex: 1; }
-.cert-topic-score { font-family: 'Cinzel', serif; font-size: 15px; color: var(--gold2); width: 60px; text-align: center; }
-.cert-topic-rank { font-size: 10px; color: var(--text3); width: 60px; text-align: right; }
-.cert-footer-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+.diploma-level-pill-lbl { font-size: 8px; letter-spacing: 0.2em; color: rgba(212,175,55,0.55); text-transform: uppercase; }
+.diploma-level-pill-val { font-family: 'Cinzel', serif; font-size: 16px; color: #d4af37; }
+.diploma-top-feat {
+  background: rgba(139,111,255,0.07); border: 1px solid rgba(139,111,255,0.2);
+  border-radius: var(--radius); padding: 16px; margin: 0 auto 20px; max-width: 200px;
 }
-.cert-url { font-size: 9px; color: var(--text3); font-family: monospace; }
-.cert-verified-badge {
-  display: flex; align-items: center; gap: 4px;
-  background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3);
-  border-radius: 20px; padding: 3px 9px; font-size: 10px; color: var(--success);
-}
+.diploma-top-feat-emoji { font-size: 28px; margin-bottom: 4px; }
+.diploma-top-feat-score { font-family: 'Cinzel', serif; font-size: 38px; color: #d4af37; line-height: 1; }
+.diploma-top-feat-topic { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 5px; }
+.diploma-top-feat-sublabel { font-size: 9px; color: rgba(212,175,55,0.4); margin-top: 2px; }
+.diploma-stats { display: flex; margin-bottom: 20px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.diploma-stat { flex: 1; text-align: center; padding: 10px 4px; border-right: 1px solid var(--border); }
+.diploma-stat:last-child { border-right: none; }
+.diploma-stat-val { font-family: 'Cinzel', serif; font-size: 16px; color: #fff; }
+.diploma-stat-lbl { font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-top: 3px; }
+.diploma-topic-section { margin-bottom: 18px; }
+.diploma-topic-section-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: rgba(212,175,55,0.5); margin-bottom: 8px; }
+.diploma-topic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.diploma-topic-item { display: flex; align-items: center; gap: 5px; padding: 5px 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 6px; font-size: 11px; color: var(--text2); }
+.diploma-topic-score { font-family: 'Cinzel', serif; font-size: 13px; color: #d4af37; margin-left: auto; }
+.diploma-bottom { display: flex; align-items: center; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(212,175,55,0.2); }
+.diploma-avatar { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(212,175,55,0.4); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; font-family: 'Cinzel', serif; color: #d4af37; background: rgba(212,175,55,0.08); }
+.diploma-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.diploma-bottom-url { font-size: 8px; color: var(--text3); font-family: monospace; word-break: break-all; text-align: left; flex: 1; }
+.diploma-verified { display: flex; align-items: center; gap: 3px; font-size: 9px; color: var(--success); background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.25); border-radius: 20px; padding: 3px 8px; white-space: nowrap; }
 
 /* ===================== SCREEN: INSTRUCTIONS ===================== */
 #screen-instructions { justify-content: flex-start; }
@@ -767,7 +784,25 @@ body::before {
       </div>
       <div class="field"><label>Email address</label><input type="email" id="auth-email" placeholder="jane@email.com"></div>
       <div class="field"><label>Password</label><input type="password" id="auth-password" placeholder="••••••••"></div>
+      <div id="forgot-link-row" style="display:none; text-align:right; margin-top:-6px; margin-bottom:10px;">
+        <button type="button" style="background:none;border:none;padding:0;color:var(--accent);font-size:13px;cursor:pointer;" onclick="showForgotPassword()">Forgot password?</button>
+      </div>
       <button class="btn btn-primary" onclick="handleAuth()">Continue</button>
+    </div>
+  </div>
+
+  <!-- RESET PASSWORD SCREEN -->
+  <div id="screen-reset" class="screen">
+    <div class="topbar">
+      <div style="width:38px;"></div>
+      <span class="topbar-title">Reset Password</span>
+      <div style="width:38px;"></div>
+    </div>
+    <div class="px-16" style="padding-top:32px;">
+      <p style="color:var(--text2);font-size:14px;margin-bottom:24px;text-align:center;">Enter a new password for your account.</p>
+      <div class="field"><label>New password</label><input type="password" id="reset-password" placeholder="••••••••" minlength="6"></div>
+      <div class="field"><label>Confirm password</label><input type="password" id="reset-confirm" placeholder="••••••••"></div>
+      <button class="btn btn-primary" onclick="handleResetPassword()">Set New Password</button>
     </div>
   </div>
 
@@ -1101,36 +1136,53 @@ body::before {
       <span class="topbar-title">Certificate</span>
       <div style="width:38px;"></div>
     </div>
-    <div style="padding: 0 16px 8px; font-family:monospace; font-size:10px; color:var(--text3);" id="cert-url-display"></div>
-    <div class="cert-card-outer">
-      <div class="cert-header-bar">
-        <div class="cert-av-lg" id="cert-av"></div>
-        <div>
-          <div class="cert-person-name" id="cert-name"></div>
-          <div class="cert-person-level" id="cert-level-line"></div>
-        </div>
-      </div>
-      <div class="cert-body-inner">
-        <div class="cert-section-title">Psychic ability certification</div>
-        <div class="stat-grid" style="margin-top:0; margin-bottom:14px;">
-          <div class="stat-box"><div class="stat-val" id="cert-best">0</div><div class="stat-label">Best streak</div></div>
-          <div class="stat-box"><div class="stat-val" id="cert-rank">#—</div><div class="stat-label">All-time rank</div></div>
-          <div class="stat-box"><div class="stat-val" id="cert-zodiac-rank">—</div><div class="stat-label">Zodiac rank</div></div>
-          <div class="stat-box"><div class="stat-val" id="cert-topics-count">0</div><div class="stat-label">Topics tested</div></div>
-        </div>
-        <div class="cert-section-title">Best score by topic</div>
-        <div id="cert-topic-list"></div>
-        <div id="cert-zodiac-section" style="margin-top:14px;">
-          <div class="cert-section-title">Zodiac standings</div>
-          <div id="cert-zodiac-pills" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;"></div>
-        </div>
-        <div id="cert-badges-section" style="margin-top:14px;" class="hidden">
-          <div class="cert-section-title">Achievements</div>
-          <div id="cert-badges-list" class="badge-grid" style="margin-top:6px;"></div>
-        </div>
-        <div class="cert-footer-bar">
-          <div class="cert-url" id="cert-footer-url"></div>
-          <div class="cert-verified-badge">✓ Verified</div>
+    <div style="padding: 0 14px 8px; font-family:monospace; font-size:9px; color:var(--text3);" id="cert-url-display"></div>
+    <div class="diploma-wrap">
+      <div class="diploma-border">
+        <div class="diploma-card">
+          <div class="diploma-corners">
+            <div class="diploma-corner tl"></div>
+            <div class="diploma-corner tr"></div>
+            <div class="diploma-corner bl"></div>
+            <div class="diploma-corner br"></div>
+          </div>
+          <div class="diploma-institution">Psychic IQ &middot; Est. 2025</div>
+          <div class="diploma-headline">Certificate of<br>Psychic Ability</div>
+          <div class="diploma-ornament">— ✦ —</div>
+          <div class="diploma-certifies-line">This certifies that</div>
+          <div class="diploma-name" id="cert-name"></div>
+          <div class="diploma-body" id="cert-level-line"></div>
+          <div class="diploma-level-pill">
+            <div class="diploma-level-pill-lbl">Psychic Level</div>
+            <div class="diploma-level-pill-val" id="cert-level-badge">—</div>
+          </div>
+          <div class="diploma-top-feat" id="cert-top-feat">
+            <div class="diploma-top-feat-emoji" id="cert-top-feat-emoji">✦</div>
+            <div class="diploma-top-feat-score" id="cert-top-feat-score">—</div>
+            <div class="diploma-top-feat-topic" id="cert-top-feat-topic"></div>
+            <div class="diploma-top-feat-sublabel">Top Score</div>
+          </div>
+          <div class="diploma-stats">
+            <div class="diploma-stat"><div class="diploma-stat-val" id="cert-rank">#—</div><div class="diploma-stat-lbl">Global Rank</div></div>
+            <div class="diploma-stat"><div class="diploma-stat-val" id="cert-best">—</div><div class="diploma-stat-lbl">Best Streak</div></div>
+            <div class="diploma-stat"><div class="diploma-stat-val" id="cert-zodiac-rank">—</div><div class="diploma-stat-lbl">Zodiac Rank</div></div>
+            <div class="diploma-stat"><div class="diploma-stat-val" id="cert-topics-count">0</div><div class="diploma-stat-lbl">Topics</div></div>
+          </div>
+          <div class="diploma-ornament">— ✦ —</div>
+          <div class="diploma-topic-section">
+            <div class="diploma-topic-section-lbl">Scores by topic</div>
+            <div class="diploma-topic-grid" id="cert-topic-list"></div>
+          </div>
+          <div id="cert-zodiac-section" class="hidden"></div>
+          <div id="cert-badges-section" class="hidden" style="margin-bottom:16px;">
+            <div class="diploma-topic-section-lbl">Achievements</div>
+            <div id="cert-badges-list" class="badge-grid" style="margin-top:6px;"></div>
+          </div>
+          <div class="diploma-bottom">
+            <div class="diploma-avatar" id="cert-av"></div>
+            <div class="diploma-bottom-url" id="cert-footer-url"></div>
+            <div class="diploma-verified">✓ Verified</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1222,6 +1274,18 @@ body::before {
 
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
+
+  <!-- FORGOT PASSWORD MODAL -->
+  <div class="modal-overlay" id="forgot-modal" onclick="if(event.target===this)closeForgotModal()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Reset Password</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Enter your email and we'll send you a reset link.</p>
+      <div class="field"><label>Email address</label><input type="email" id="forgot-email" placeholder="jane@email.com"></div>
+      <button class="btn btn-primary" onclick="handleForgotPassword()">Send Reset Link</button>
+      <button class="btn btn-secondary" style="margin-top:8px;" onclick="closeForgotModal()">Cancel</button>
+    </div>
+  </div>
 
   <!-- BADGE DETAIL MODAL -->
   <div class="modal-overlay" id="badge-modal" onclick="if(event.target===this)closeBadgeModal()">
@@ -1721,6 +1785,7 @@ function switchAuthTab(tab) {
   document.getElementById('tab-signup').classList.toggle('active', tab==='signup');
   document.getElementById('tab-login').classList.toggle('active', tab==='login');
   document.getElementById('signup-fields').classList.toggle('hidden', tab!=='signup');
+  document.getElementById('forgot-link-row').style.display = tab==='login' ? 'block' : 'none';
 }
 async function handleAuth() {
   const isSignup = document.getElementById('tab-signup').classList.contains('active');
@@ -1730,6 +1795,16 @@ async function handleAuth() {
   if(!password) { showToast('Please enter a password'); return; }
 
   if(isSignup) {
+    // Check email availability before making user go through setup screens
+    try {
+      const chk = await api.get('/api/auth/check-email?email=' + encodeURIComponent(email));
+      if(chk && chk.available === false) {
+        showToast('That email is already registered. Try signing in instead.');
+        switchAuthTab('login');
+        return;
+      }
+    } catch(e) { /* backend unavailable — let registration attempt handle it */ }
+
     const name = document.getElementById('auth-name').value.trim() || 'Psychic';
     const dob = getDob('auth');
     const country = document.getElementById('auth-country').value || null;
@@ -1803,11 +1878,68 @@ async function registerWithBackend() {
     if(data.token) {
       api.setToken(data.token);
       if(data.user.id) state.user.id = data.user.id;
+    } else if(data.error) {
+      state.user = null;
+      showToast(data.error);
+      showAuth('login');
+      return;
     }
   } catch(e) { /* backend unavailable, continue local-only */ }
-  delete state.user._password;
+  if(state.user) delete state.user._password;
 }
 function afterLogin() { renderTopics(); showScreen('topics'); }
+
+function showForgotPassword() {
+  document.getElementById('forgot-email').value = document.getElementById('auth-email').value;
+  document.getElementById('forgot-modal').classList.add('open');
+}
+function closeForgotModal() {
+  document.getElementById('forgot-modal').classList.remove('open');
+}
+async function handleForgotPassword() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if(!email) { showToast('Please enter your email'); return; }
+  try {
+    await api.post('/api/auth/forgot-password', { email });
+  } catch(e) {}
+  closeForgotModal();
+  showToast('If that email is registered, a reset link is on its way.');
+}
+
+async function handleResetPassword() {
+  const password = document.getElementById('reset-password').value;
+  const confirm  = document.getElementById('reset-confirm').value;
+  if(password.length < 6) { showToast('Password must be at least 6 characters'); return; }
+  if(password !== confirm)  { showToast('Passwords do not match'); return; }
+  const token = new URLSearchParams(window.location.search).get('reset');
+  try {
+    const data = await api.post('/api/auth/reset-password', { token, password });
+    if(data.error) { showToast(data.error); return; }
+    if(data.token) {
+      api.setToken(data.token);
+      state.user = {
+        id:          data.user.id,
+        email:       data.user.email || '',
+        displayName: data.user.displayName,
+        username:    data.user.username,
+        dob: '', zodiac: data.user.zodiac || '',
+        level:       data.user.level || 'believer',
+        country:     data.user.country   || null,
+        stateCode:   data.user.stateCode || null,
+        cardBack:    data.user.cardBack  || null,
+        purchases:   data.user.purchases || [],
+        badges:      data.user.badges    || [],
+        avatarData:  data.user.avatarData || null,
+        scores:      data.user.scores    || {},
+        joinYear:    data.user.joinYear  || new Date().getFullYear(),
+      };
+      window.history.replaceState({}, '', window.location.pathname);
+      save();
+      showToast('Password updated! Welcome back.');
+      afterLogin();
+    }
+  } catch(e) { showToast('Something went wrong. Please try again.'); }
+}
 function confirmSignOut() {
   if(!confirm('Sign out of your account?')) return;
   signOut();
@@ -3397,14 +3529,43 @@ async function renderCert(u) {
   const url = `https://psychicscore.com/cert/${u.certToken||u.id}`;
   document.getElementById('cert-url-display').textContent = url;
   document.getElementById('cert-footer-url').textContent = url;
-  // Avatar
+
+  // Avatar & name
   document.getElementById('cert-av').innerHTML = avatarHtml(u);
-  document.getElementById('cert-name').textContent = u.displayName||'Psychic';
-  document.getElementById('cert-level-line').textContent = [levelName(u.level), u.zodiac].filter(Boolean).join(' · ');
-  // Stats
-  const scores = u.scores||{};
-  const best = bestScore(scores);
-  document.getElementById('cert-best').textContent=best||0;
+  document.getElementById('cert-name').textContent = u.displayName || 'Psychic';
+
+  // Level badge
+  const lvl = levelName(u.level) || 'Initiate';
+  document.getElementById('cert-level-badge').textContent = lvl;
+
+  // Scores & entries sorted by score desc
+  const scores = u.scores || {};
+  const entries = TOPICS.map(t => ({ topic: t, score: scores[t.id] || 0 })).filter(x => x.score > 0).sort((a,b) => b.score - a.score);
+  const topicCount = entries.length;
+
+  // Body text
+  const zodiacClause = u.zodiac ? `, with resonance in the ${u.zodiac} tradition` : '';
+  document.getElementById('cert-level-line').textContent = topicCount > 0
+    ? `has demonstrated ${lvl.toLowerCase()} psychic ability across ${topicCount} domain${topicCount !== 1 ? 's' : ''} of extrasensory testing${zodiacClause}.`
+    : `has begun the journey of extrasensory exploration with Psychic IQ.`;
+
+  // Best streak
+  document.getElementById('cert-best').textContent = bestScore(scores) || '—';
+  document.getElementById('cert-topics-count').textContent = topicCount;
+
+  // Top achievement spotlight
+  const topFeat = document.getElementById('cert-top-feat');
+  if (entries.length > 0) {
+    const top = entries[0];
+    document.getElementById('cert-top-feat-emoji').textContent = top.topic.emoji;
+    document.getElementById('cert-top-feat-score').textContent = top.score;
+    document.getElementById('cert-top-feat-topic').textContent = top.topic.name;
+    topFeat.style.display = '';
+  } else {
+    topFeat.style.display = 'none';
+  }
+
+  // Rank (fetch live for own cert)
   let certRank = getPlayerRank(u), certZr = getZodiacRank(u);
   if(api.token() && state.user && u.id === state.user.id) {
     try {
@@ -3414,27 +3575,21 @@ async function renderCert(u) {
       state._userRank = rd;
     } catch {}
   }
-  document.getElementById('cert-rank').textContent='#'+certRank;
-  document.getElementById('cert-zodiac-rank').textContent=certZr?'#'+certZr:'—';
-  document.getElementById('cert-topics-count').textContent=Object.keys(scores).length;
-  // Topic list
-  const entries=TOPICS.map(t=>({topic:t,score:scores[t.id]||0})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
-  document.getElementById('cert-topic-list').innerHTML=entries.length?entries.map(e=>`
-    <div class="cert-topic-row">
-      <span class="cert-topic-name">${e.topic.emoji} ${e.topic.name}</span>
-      <span class="cert-topic-score">${e.score}</span>
-      <span class="cert-topic-rank">${getTopicPercentile(e.topic.id,e.score)}</span>
-    </div>`).join(''):'<div style="color:var(--text3);font-size:12px;padding:8px 0;">No scores yet — take a test first!</div>';
-  // Zodiac pills
-  const pillsEl=document.getElementById('cert-zodiac-pills');
-  if(u.zodiac) {
-    pillsEl.innerHTML=`<span class="pill pill-gold">${u.zodiac}: #${certZr||'—'}</span> <span class="pill pill-purple">Global: #${certRank}</span>`;
-    document.getElementById('cert-zodiac-section').classList.remove('hidden');
-  } else {
-    document.getElementById('cert-zodiac-section').classList.add('hidden');
-  }
+  document.getElementById('cert-rank').textContent = '#' + certRank;
+  document.getElementById('cert-zodiac-rank').textContent = certZr ? '#' + certZr : '—';
+
+  // Topic grid
+  document.getElementById('cert-topic-list').innerHTML = entries.length
+    ? entries.map(e => `
+        <div class="diploma-topic-item">
+          <span>${e.topic.emoji}</span>
+          <span>${e.topic.name}</span>
+          <span class="diploma-topic-score">${e.score}</span>
+        </div>`).join('')
+    : '<div style="color:var(--text3);font-size:12px;padding:8px 0;grid-column:span 2;">No scores yet — take a test first!</div>';
+
   // Badges
-  const badges = u.badges||[];
+  const badges = u.badges || [];
   state._certBadges = badges;
   const certBadgesSection = document.getElementById('cert-badges-section');
   if(badges.length > 0) {
@@ -3612,6 +3767,11 @@ function setDob(prefix, iso) {
   if(certMatch) {
     load(); // restore session if available (so the back button goes to topics, not auth)
     showPublicCert(certMatch[1]);
+    return;
+  }
+  const resetToken = new URLSearchParams(window.location.search).get('reset');
+  if(resetToken) {
+    showScreen('reset');
     return;
   }
   if(load() && state.user && state.user.level) {
