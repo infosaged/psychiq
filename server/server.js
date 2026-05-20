@@ -662,6 +662,52 @@ app.get('/privacy', (_req, res) => {
 </html>`);
 });
 
+app.get('/delete-account', (_req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Delete Account – Psychic IQ</title>
+  <style>
+    body { font-family: sans-serif; max-width: 680px; margin: 40px auto; padding: 0 20px; color: #222; line-height: 1.7; }
+    h1 { font-size: 1.6em; } h2 { font-size: 1.1em; margin-top: 2em; }
+    .steps { background: #f9f9f9; border-left: 4px solid #5b4fcf; padding: 16px 20px; border-radius: 4px; margin: 20px 0; }
+    a { color: #5b4fcf; }
+  </style>
+</head>
+<body>
+  <h1>Delete Your Psychic IQ Account</h1>
+  <p>You can request deletion of your Psychic IQ account and all associated data at any time. We will process your request within 30 days.</p>
+
+  <h2>How to request deletion</h2>
+  <div class="steps">
+    <p><strong>Send an email to: <a href="mailto:vbprog@hotmail.com">vbprog@hotmail.com</a></strong></p>
+    <p>Subject: <em>Account Deletion Request</em><br>
+    Include the email address associated with your Psychic IQ account so we can locate and remove it.</p>
+  </div>
+
+  <h2>What gets deleted</h2>
+  <ul>
+    <li>Your account (email, display name, username, password)</li>
+    <li>Your profile information (zodiac, country, date of birth)</li>
+    <li>Your game scores and psychic level history</li>
+    <li>Your purchase records</li>
+    <li>Your avatar and card back preferences</li>
+  </ul>
+
+  <h2>What may be retained</h2>
+  <ul>
+    <li>Anonymized, aggregated gameplay statistics that cannot be linked back to you</li>
+    <li>Records required for legal or financial compliance (e.g. purchase receipts), retained for up to 7 years as required by law</li>
+  </ul>
+
+  <p>Questions? Email us at <a href="mailto:vbprog@hotmail.com">vbprog@hotmail.com</a></p>
+</body>
+</html>`);
+});
+
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, '..', 'psychic-test.html')));
 
 // ── Start ─────────────────────────────────────────────────────────────────────
