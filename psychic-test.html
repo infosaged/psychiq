@@ -1183,19 +1183,19 @@ body::before {
             <div class="diploma-top-feat-topic" id="cert-top-feat-topic"></div>
             <div class="diploma-top-feat-sublabel">Top Score</div>
           </div>
+          <div id="cert-badges-section" class="hidden" style="margin-bottom:20px;">
+            <div class="diploma-topic-section-lbl">Achievements</div>
+            <div id="cert-badges-list" class="badge-grid" style="margin-top:8px; justify-content:center;"></div>
+          </div>
           <div class="diploma-stats">
             <div class="diploma-stat"><div class="diploma-stat-val" id="cert-rank">#—</div><div class="diploma-stat-lbl">Global Rank</div></div>
             <div class="diploma-stat"><div class="diploma-stat-val" id="cert-best">—</div><div class="diploma-stat-lbl">Best Streak</div></div>
             <div class="diploma-stat"><div class="diploma-stat-val" id="cert-zodiac-rank">—</div><div class="diploma-stat-lbl">Zodiac Rank</div></div>
-            <div class="diploma-stat"><div class="diploma-stat-val" id="cert-topics-count">0</div><div class="diploma-stat-lbl">Topics</div></div>
+            <div class="diploma-stat"><div class="diploma-stat-val" id="cert-topics-count">0</div><div class="diploma-stat-lbl">Best Topic</div></div>
           </div>
           <div class="diploma-ornament">— ✦ —</div>
           <div id="cert-topic-list" class="hidden"></div>
           <div id="cert-zodiac-section" class="hidden"></div>
-          <div id="cert-badges-section" class="hidden" style="margin-bottom:16px;">
-            <div class="diploma-topic-section-lbl">Achievements</div>
-            <div id="cert-badges-list" class="badge-grid" style="margin-top:6px;"></div>
-          </div>
           <div class="diploma-bottom">
             <div class="diploma-avatar" id="cert-av"></div>
             <div class="diploma-bottom-url" id="cert-footer-url"></div>
@@ -3569,17 +3569,18 @@ async function renderCert(u) {
 
   // Best streak
   document.getElementById('cert-best').textContent = bestScore(scores) || '—';
-  document.getElementById('cert-topics-count').textContent = topicCount;
 
   // Top achievement spotlight
   const topFeat = document.getElementById('cert-top-feat');
   if (entries.length > 0) {
     const top = entries[0];
+    document.getElementById('cert-topics-count').textContent = top.topic.emoji + ' ' + top.topic.name;
     document.getElementById('cert-top-feat-emoji').textContent = top.topic.emoji;
     document.getElementById('cert-top-feat-score').textContent = top.score;
     document.getElementById('cert-top-feat-topic').textContent = top.topic.name;
     topFeat.style.display = '';
   } else {
+    document.getElementById('cert-topics-count').textContent = '—';
     topFeat.style.display = 'none';
   }
 
