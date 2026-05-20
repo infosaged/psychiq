@@ -1,4 +1,4 @@
-const CACHE = 'psychic-1747440000001';
+const CACHE = 'psychic-1747440000002';
 const PRECACHE = [
   './psychic-test.html',
   './manifest.json',
@@ -80,8 +80,8 @@ self.addEventListener('fetch', e => {
 
   if (!isSameOrigin && !isFont) return;
 
-  // API calls must always hit the network — never serve stale cached responses
-  if (isSameOrigin && url.pathname.startsWith('/api/')) return;
+  // These must always hit the network — never serve from cache
+  if (isSameOrigin && (url.pathname.startsWith('/api/') || url.pathname === '/privacy')) return;
 
   e.respondWith(
     caches.match(e.request).then(cached => {
