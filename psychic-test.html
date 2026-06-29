@@ -33,7 +33,7 @@
   --radius-sm: 8px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: 'Raleway', sans-serif; color: var(--text); }
+html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: 'Raleway', sans-serif; color: var(--text); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 /* Stars background */
 body::before {
@@ -804,7 +804,12 @@ body::before {
         </div>
       </div>
       <div class="field"><label>Email address</label><input type="email" id="auth-email" placeholder="jane@email.com"></div>
-      <div class="field"><label>Password</label><input type="password" id="auth-password" placeholder="••••••••"></div>
+      <div class="field"><label>Password</label>
+        <div style="position:relative;">
+          <input type="password" id="auth-password" placeholder="••••••••" style="padding-right:44px;">
+          <button type="button" onclick="togglePwd('auth-password',this)" aria-label="Show password" style="position:absolute;right:0;top:0;bottom:0;padding:0 13px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:17px;line-height:1;">👁</button>
+        </div>
+      </div>
       <div id="forgot-link-row" style="display:none; text-align:right; margin-top:-6px; margin-bottom:10px;">
         <button type="button" style="background:none;border:none;padding:0;color:var(--accent);font-size:13px;cursor:pointer;" onclick="showForgotPassword()">Forgot password?</button>
       </div>
@@ -821,8 +826,18 @@ body::before {
     </div>
     <div class="px-16" style="padding-top:32px;">
       <p style="color:var(--text2);font-size:14px;margin-bottom:24px;text-align:center;">Enter a new password for your account.</p>
-      <div class="field"><label>New password</label><input type="password" id="reset-password" placeholder="••••••••" minlength="6"></div>
-      <div class="field"><label>Confirm password</label><input type="password" id="reset-confirm" placeholder="••••••••"></div>
+      <div class="field"><label>New password</label>
+        <div style="position:relative;">
+          <input type="password" id="reset-password" placeholder="••••••••" minlength="6" style="padding-right:44px;">
+          <button type="button" onclick="togglePwd('reset-password',this)" aria-label="Show password" style="position:absolute;right:0;top:0;bottom:0;padding:0 13px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:17px;line-height:1;">👁</button>
+        </div>
+      </div>
+      <div class="field"><label>Confirm password</label>
+        <div style="position:relative;">
+          <input type="password" id="reset-confirm" placeholder="••••••••" style="padding-right:44px;">
+          <button type="button" onclick="togglePwd('reset-confirm',this)" aria-label="Show password" style="position:absolute;right:0;top:0;bottom:0;padding:0 13px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:17px;line-height:1;">👁</button>
+        </div>
+      </div>
       <button class="btn btn-primary" onclick="handleResetPassword()">Set New Password</button>
     </div>
   </div>
@@ -1755,11 +1770,19 @@ function esc(str) {
 // SCREEN NAVIGATION
 // ============================================================
 const NAV_SCREENS = ['topics','leaderboard','analytics','profile'];
-function showScreen(id) {
+let _historyNav = false;
+function showScreen(id, replace = false) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const s = document.getElementById('screen-'+id);
   if(s) s.classList.add('active');
   state.currentScreen = id;
+  if (!_historyNav) {
+    if (replace) {
+      history.replaceState({ screen: id }, '');
+    } else {
+      history.pushState({ screen: id }, '');
+    }
+  }
   const showNav = NAV_SCREENS.includes(id) && (state.user || state.guest);
   document.getElementById('bottom-nav').classList.toggle('hidden', !showNav);
   if(showNav) updateNav(id);
@@ -1779,6 +1802,11 @@ function showScreen(id) {
   if(id==='card-backs') renderCardBacksScreen();
   if(id==='admin') renderAdmin();
 }
+window.addEventListener('popstate', function(e) {
+  _historyNav = true;
+  showScreen(e.state && e.state.screen ? e.state.screen : 'home');
+  _historyNav = false;
+});
 function updateNav(id) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const map = {topics:'nav-play',leaderboard:'nav-rankings',analytics:'nav-analytics',profile:'nav-profile'};
@@ -1789,6 +1817,11 @@ function navTo(id) { showScreen(id); }
 // ============================================================
 // AUTH
 // ============================================================
+function togglePwd(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.style.color = inp.type === 'text' ? 'var(--accent2)' : 'var(--text3)';
+}
 function showAuth(tab) {
   showScreen('auth');
   switchAuthTab(tab);
@@ -1905,7 +1938,7 @@ async function registerWithBackend() {
   } catch(e) { /* backend unavailable, continue local-only */ }
   if(state.user) delete state.user._password;
 }
-function afterLogin() { renderTopics(); showScreen('topics'); }
+function afterLogin() { renderTopics(); showScreen('topics', true); }
 
 function showForgotPassword() {
   document.getElementById('forgot-email').value = document.getElementById('auth-email').value;
@@ -1967,7 +2000,7 @@ function signOut() {
   localStorage.removeItem('psychic_state');
   state.user = null;
   state.guest = false;
-  showScreen('home');
+  showScreen('home', true);
 }
 function getZodiac(dob) {
   if(!dob) return '';
@@ -3790,11 +3823,13 @@ function setDob(prefix, iso) {
   }
   const resetToken = new URLSearchParams(window.location.search).get('reset');
   if(resetToken) {
-    showScreen('reset');
+    showScreen('reset', true);
     return;
   }
   if(load() && state.user && state.user.level) {
     afterLogin();
+  } else {
+    history.replaceState({ screen: 'home' }, '');
   }
 })();
 </script>
