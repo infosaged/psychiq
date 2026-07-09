@@ -3,6 +3,7 @@ process.env.JWT_SECRET = 'test-secret';
 
 const request = require('supertest');
 const { app } = require('../server');
+const { db } = require('../db');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -410,5 +411,168 @@ describe('POST /api/purchases', () => {
       .post('/api/purchases')
       .send({ productId: 'special_vibrant_mystics' });
     expect(res.status).toBe(401);
+  });
+});
+
+// ── GET /api/auth/check-email ─────────────────────────────────────────────────
+
+describe('GET /api/auth/check-email', () => {
+  it('returns available:true for an unused email', async () => {
+    const res = await request(app).get('/api/auth/check-email?email=unused99@example.com');
+    expect(res.status).toBe(200);
+    expect(res.body.available).toBe(true);
+  });
+
+  it('returns available:false for a registered email', async () => {
+    const u = nextUser();
+    await request(app).post('/api/auth/register').send(u);
+    const res = await request(app).get(`/api/auth/check-email?email=${u.email}`);
+    expect(res.status).toBe(200);
+    expect(res.body.available).toBe(false);
+  });
+
+  it('is case-insensitive', async () => {
+    const u = nextUser();
+    await request(app).post('/api/auth/register').send(u);
+    const res = await request(app).get(`/api/auth/check-email?email=${u.email.toUpperCase()}`);
+    expect(res.status).toBe(200);
+    expect(res.body.available).toBe(false);
+  });
+
+  it('returns 400 when email param is missing', async () => {
+    const res = await request(app).get('/api/auth/check-email');
+    expect(res.status).toBe(400);
+  });
+});
+
+// ── POST /api/auth/forgot-password ────────────────────────────────────────────
+
+describe('POST /api/auth/forgot-password', () => {
+  it('returns ok:true for a registered email', async () => {
+    const u = nextUser();
+    await request(app).post('/api/auth/register').send(u);
+    const res = await request(app)
+      .post('/api/auth/forgot-password')
+      .send({ email: u.email });
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+  });
+
+  it('returns ok:true for an unknown email — no info leak', async () => {
+    const res = await request(app)
+      .post('/api/auth/forgot-password')
+      .send({ email: 'nobody_here@example.com' });
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+  });
+
+  it('returns 400 when email is missing', async () => {
+    const res = await request(app)
+      .post('/api/auth/forgot-password')
+      .send({});
+    expect(res.status).toBe(400);
+  });
+
+  it('creates a valid reset token in the database', async () => {
+    const u = nextUser();
+    await request(app).post('/api/auth/register').send(u);
+    await request(app).post('/api/auth/forgot-password').send({ email: u.email });
+    const row = db.prepare(
+      'SELECT * FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email=?)'
+    ).get(u.email);
+    expect(row).toBeTruthy();
+    expect(row.used).toBe(0);
+    expect(row.expires_at).toBeGreaterThan(Date.now());
+  });
+});
+
+// ── POST /api/auth/reset-password ─────────────────────────────────────────────
+
+function getResetToken(email) {
+  return db.prepare(
+    'SELECT token FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email=?) AND used=0'
+  ).get(email)?.token;
+}
+
+describe('POST /api/auth/reset-password', () => {
+  let resetToken;
+  let resetEmail;
+
+  beforeEach(async () => {
+    const u = nextUser();
+    resetEmail = u.email;
+    await request(app).post('/api/auth/register').send(u);
+    await request(app).post('/api/auth/forgot-password').send({ email: u.email });
+    resetToken = getResetToken(u.email);
+  });
+
+  it('returns a JWT and user on success', async () => {
+    const res = await request(app)
+      .post('/api/auth/reset-password')
+      .send({ token: resetToken, password: 'newpassword123' });
+    expect(res.status).toBe(200);
+    expect(res.body.token).toBeTruthy();
+    expect(res.body.user.displayName).toBeTruthy();
+  });
+
+  it('new password works for login', async () => {
+    await request(app)
+      .post('/api/auth/reset-password')
+      .send({ token: resetToken, password: 'newpassword123' });
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({ email: resetEmail, password: 'newpassword123' });
+    expect(res.status).toBe(200);
+    expect(res.body.token).toBeTruthy();
+  });
+
+  it('old password no longer works after reset', async () => {
+    await request(app)
+      .post('/api/auth/reset-password')
+      .send({ token: resetToken, password: 'newpassword123' });
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({ email: resetEmail, password: 'password123' });
+    expect(res.status).toBe(401);
+  });
+
+  it('marks the token as used — cannot reuse it', async () => {
+    await request(app)
+      .post('/api/auth/reset-password')
+      .send({ token: resetToken, password: 'newpassword123' });
+    const res = await request(app)
+      .post('/api/auth/reset-password')
+      .send({ token: resetToken, password: 'anotherpassword' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects an invalid token', async () => {
+    const res = await request(app)
+      .post('/api/auth/reset-password')
+      .send({ token: 'not-a-real-token', password: 'newpassword123' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects an expired token', async () => {
+    db.prepare('UPDATE password_resets SET expires_at=? WHERE token=?')
+      .run(Date.now() - 1000, resetToken);
+    const res = await request(app)
+      .post('/api/auth/reset-password')
+      .send({ token: resetToken, password: 'newpassword123' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a password shorter than 6 characters', async () => {
+    const res = await request(app)
+      .post('/api/auth/reset-password')
+      .send({ token: resetToken, password: '123' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects missing fields', async () => {
+    const res = await request(app)
+      .post('/api/auth/reset-password')
+      .send({ token: resetToken });
+    expect(res.status).toBe(400);
   });
 });

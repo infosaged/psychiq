@@ -54,6 +54,15 @@ try { db.exec(`ALTER TABLE users ADD COLUMN card_back_id TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN badges      TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN cert_token  TEXT`); } catch {}
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS password_resets (
+    token      TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires_at INTEGER NOT NULL,
+    used       INTEGER NOT NULL DEFAULT 0
+  )
+`);
+
 // Backfill cert_token for any existing users that don't have one
 const { randomBytes } = require('crypto');
 const missingTokens = db.prepare(`SELECT id FROM users WHERE cert_token IS NULL`).all();
