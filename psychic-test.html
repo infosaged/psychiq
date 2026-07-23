@@ -543,7 +543,7 @@ body::before {
 .diploma-bottom-url { font-size: 8px; color: rgba(200,190,230,0.75); font-family: monospace; word-break: break-all; text-align: left; flex: 1; }
 .diploma-verified { display: flex; align-items: center; gap: 3px; font-size: 9px; color: #4ade80; background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.4); border-radius: 20px; padding: 3px 8px; white-space: nowrap; }
 @media print {
-  .topbar, #cert-url-display, #cert-share-section { display: none !important; }
+  .topbar, #cert-share-section { display: none !important; }
   #screen-cert, .diploma-border { background: #fff !important; box-shadow: none !important; }
   .diploma-border { border-color: #8b6914 !important; }
   .diploma-card { border-color: rgba(139,105,20,0.5) !important; }
@@ -1172,7 +1172,6 @@ body::before {
       <span class="topbar-title">Certificate</span>
       <div style="width:38px;"></div>
     </div>
-    <div style="padding: 0 14px 8px; font-family:monospace; font-size:9px; color:var(--text3);" id="cert-url-display"></div>
     <div class="diploma-wrap">
       <div class="diploma-border">
         <div class="diploma-card">
@@ -1213,8 +1212,7 @@ body::before {
           <div id="cert-zodiac-section" class="hidden"></div>
           <div class="diploma-bottom">
             <div class="diploma-avatar" id="cert-av"></div>
-            <div class="diploma-bottom-url" id="cert-footer-url"></div>
-            <div class="diploma-verified">✓ Verified</div>
+            <div class="diploma-verified" style="margin-left:auto;">✓ Verified</div>
           </div>
         </div>
       </div>
@@ -3590,10 +3588,6 @@ function goToCardBacks() { showScreen('card-backs'); }
 async function renderCert(u) {
   u = u || state.user;
   if(!u) return;
-  const url = `https://psychicscore.com/cert/${u.certToken||u.id}`;
-  document.getElementById('cert-url-display').textContent = url;
-  document.getElementById('cert-footer-url').textContent = url;
-
   // Avatar & name
   document.getElementById('cert-av').innerHTML = avatarHtml(u);
   document.getElementById('cert-name').textContent = u.displayName || 'Psychic';
