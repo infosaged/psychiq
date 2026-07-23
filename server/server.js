@@ -171,7 +171,8 @@ app.post('/api/auth/forgot-password', (req, res) => {
       subject: 'Reset your Psychic IQ password',
       text: `Hi ${user.display_name},\n\nClick the link below to reset your password. It expires in 1 hour.\n\n${resetUrl}\n\nIf you didn't request this, you can ignore this email.`,
       html: `<p>Hi ${user.display_name},</p><p>Click the link below to reset your password. It expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you didn't request this, you can ignore this email.</p>`,
-    }).catch(err => console.error('Reset email send failed:', err.message));
+    }).then(info => console.log('Reset email accepted:', JSON.stringify({ response: info.response, accepted: info.accepted, rejected: info.rejected })))
+      .catch(err => console.error('Reset email send failed:', err.message));
   } else {
     console.log(`[DEV] Password reset link for ${email}: ${resetUrl}`);
   }
