@@ -1,4 +1,7 @@
 require('dotenv').config();
+// Railway's network resolves smtp.gmail.com to an IPv6 address but has no IPv6 route,
+// causing ENETUNREACH on outbound SMTP — force IPv4 resolution.
+require('dns').setDefaultResultOrder('ipv4first');
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
