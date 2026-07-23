@@ -1,14 +1,10 @@
 require('dotenv').config();
-// Railway's network resolves smtp.gmail.com to an IPv6 address but has no IPv6 route,
-// causing ENETUNREACH on outbound SMTP — force IPv4 resolution.
-require('dns').setDefaultResultOrder('ipv4first');
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const path = require('path');
-const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
 const { db, stmtInsertScore, getBestScores, publicUser } = require('./db');
 
@@ -49,17 +45,25 @@ const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
 const APP_URL = (process.env.APP_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
 
 // ── Email ─────────────────────────────────────────────────────────────────────
+// Railway blocks outbound SMTP ports, so email is sent via Resend's HTTP API instead.
 
-let mailer = null;
-if (process.env.SMTP_HOST) {
-  mailer = nodemailer.createTransport({
-    host:   process.env.SMTP_HOST,
-    port:   parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+if (!RESEND_API_KEY) {
+  console.warn('RESEND_API_KEY not set — password reset emails will be logged to console only.');
+}
+
+async function sendEmail({ to, subject, text, html }) {
+  const from = process.env.SMTP_FROM || 'Psychic IQ <noreply@perseitylabs.com>';
+  const r = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ from, to, subject, text, html }),
   });
-} else {
-  console.warn('SMTP_HOST not set — password reset emails will be logged to console only.');
+  if (!r.ok) throw new Error(`Resend API error ${r.status}: ${await r.text()}`);
+  return r.json();
 }
 
 app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
@@ -162,16 +166,14 @@ app.post('/api/auth/forgot-password', (req, res) => {
   db.prepare('INSERT INTO password_resets (token, user_id, expires_at) VALUES (?,?,?)').run(token, user.id, expiresAt);
 
   const resetUrl = `${APP_URL}/?reset=${token}`;
-  const from = process.env.SMTP_FROM || 'noreply@psychiciq.app';
 
-  if (mailer) {
-    mailer.sendMail({
-      from,
+  if (RESEND_API_KEY) {
+    sendEmail({
       to: email,
       subject: 'Reset your Psychic IQ password',
       text: `Hi ${user.display_name},\n\nClick the link below to reset your password. It expires in 1 hour.\n\n${resetUrl}\n\nIf you didn't request this, you can ignore this email.`,
       html: `<p>Hi ${user.display_name},</p><p>Click the link below to reset your password. It expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you didn't request this, you can ignore this email.</p>`,
-    }).then(info => console.log('Reset email accepted:', JSON.stringify({ response: info.response, accepted: info.accepted, rejected: info.rejected })))
+    }).then(info => console.log('Reset email sent:', JSON.stringify(info)))
       .catch(err => console.error('Reset email send failed:', err.message));
   } else {
     console.log(`[DEV] Password reset link for ${email}: ${resetUrl}`);
