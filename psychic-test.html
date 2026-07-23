@@ -1342,6 +1342,17 @@ body::before {
       </div>
     </div>
   </div>
+
+  <!-- SIGN OUT MODAL -->
+  <div class="modal-overlay" id="signout-modal" onclick="if(event.target===this)closeSignOutModal()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Sign Out</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Sign out of your account?</p>
+      <button class="btn btn-primary" onclick="closeSignOutModal(); signOut();">Sign Out</button>
+      <button class="btn btn-secondary" style="margin-top:8px;" onclick="closeSignOutModal()">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1992,8 +2003,10 @@ async function handleResetPassword() {
   } catch(e) { showToast('Something went wrong. Please try again.'); }
 }
 function confirmSignOut() {
-  if(!confirm('Sign out of your account?')) return;
-  signOut();
+  document.getElementById('signout-modal').classList.add('open');
+}
+function closeSignOutModal() {
+  document.getElementById('signout-modal').classList.remove('open');
 }
 function signOut() {
   api.setToken(null);
