@@ -2711,6 +2711,8 @@ function endGame() {
         api.put('/api/users/me', { badges: state.user.badges }).catch(()=>{});
       }
     }
+  } else if(state.guest) {
+    api.post('/api/guest-plays', { topicId:topic, score }).catch(()=>{});
   }
 
   document.getElementById('gameover-daily-leader').classList.add('hidden');
@@ -3175,6 +3177,8 @@ async function renderAdmin() {
       <div class="adm-stat"><div class="adm-stat-val">${summary.newUsersToday}</div><div class="adm-stat-lbl">New Users Today</div></div>
       <div class="adm-stat"><div class="adm-stat-val">${summary.countries}</div><div class="adm-stat-lbl">Countries</div></div>
       <div class="adm-stat"><div class="adm-stat-val">${users.filter(u=>u.games_played>0).length}</div><div class="adm-stat-lbl">Active Players</div></div>
+      <div class="adm-stat"><div class="adm-stat-val">${summary.guestGames}</div><div class="adm-stat-lbl">Guest Games (no sign-in)</div></div>
+      <div class="adm-stat"><div class="adm-stat-val">${summary.guestGamesToday}</div><div class="adm-stat-lbl">Guest Games Today</div></div>
     </div>`;
 
   // ── Topic breakdown ────────────────────────────────────────

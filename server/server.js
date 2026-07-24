@@ -331,6 +331,20 @@ app.get('/api/scores/me', requireAuth, (req, res) => {
   res.json(rows);
 });
 
+// POST /api/guest-plays  { topicId, score } – no auth: logs games finished without signing in
+app.post('/api/guest-plays', (req, res) => {
+  const { topicId, score } = req.body;
+  if (!VALID_TOPICS.includes(topicId)) {
+    return res.status(400).json({ error: 'Invalid topicId' });
+  }
+  if (typeof score !== 'number' || score < 0 || score > 999999) {
+    return res.status(400).json({ error: 'Invalid score' });
+  }
+  db.prepare('INSERT INTO guest_plays (topic_id, score, played_at) VALUES (?,?,?)')
+    .run(topicId, Math.floor(score), Date.now());
+  res.json({ ok: true });
+});
+
 // ── Leaderboard ───────────────────────────────────────────────────────────────
 
 /*
@@ -545,6 +559,8 @@ app.get('/api/admin/stats', requireAdmin, (_req, res) => {
     gamesToday:    db.prepare('SELECT COUNT(*) AS n FROM scores WHERE played_at >= ?').get(todayStart).n,
     countries:     db.prepare("SELECT COUNT(DISTINCT country) AS n FROM users WHERE country IS NOT NULL AND country != ''").get().n,
     newUsersToday: db.prepare('SELECT COUNT(*) AS n FROM users WHERE created_at >= ?').get(todayStart).n,
+    guestGames:      db.prepare('SELECT COUNT(*) AS n FROM guest_plays').get().n,
+    guestGamesToday: db.prepare('SELECT COUNT(*) AS n FROM guest_plays WHERE played_at >= ?').get(todayStart).n,
   };
 
   const byTopic = db.prepare(`

@@ -37,6 +37,17 @@ db.exec(`
 `);
 
 db.exec(`
+  CREATE TABLE IF NOT EXISTS guest_plays (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    topic_id   TEXT NOT NULL,
+    score      INTEGER NOT NULL,
+    played_at  INTEGER NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_guest_plays_played ON guest_plays(played_at);
+`);
+
+db.exec(`
   CREATE TABLE IF NOT EXISTS daily_champions (
     date    TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
