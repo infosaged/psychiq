@@ -220,6 +220,25 @@ describe('PUT /api/users/me', () => {
       .send({ username: taken.username });
     expect(res.status).toBe(409);
   });
+
+  it('accepts a valid image data URI as avatarData', async () => {
+    const token = await registerAndToken();
+    const res = await request(app)
+      .put('/api/users/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ avatarData: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==' });
+    expect(res.status).toBe(200);
+    expect(res.body.avatarData).toBe('data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==');
+  });
+
+  it('rejects avatarData that is not an image data URI (XSS attempt)', async () => {
+    const token = await registerAndToken();
+    const res = await request(app)
+      .put('/api/users/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ avatarData: '"><script>alert(1)</script>' });
+    expect(res.status).toBe(400);
+  });
 });
 
 // ── GET /api/users/:username ──────────────────────────────────────────────────

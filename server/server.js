@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -39,8 +40,12 @@ async function verifyPlayPurchase(productId, purchaseToken) {
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
-if (!process.env.JWT_SECRET) console.warn('WARNING: JWT_SECRET env var not set — using insecure default. Set it in Railway variables.');
+// No hardcoded fallback: a fixed default secret would let anyone forge admin
+// tokens if this ever ran in production without JWT_SECRET set. Falling back
+// to a per-process random secret means unset-secret deployments fail closed
+// (all existing tokens rejected, forcing re-login) instead of failing open.
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+if (!process.env.JWT_SECRET) console.warn('WARNING: JWT_SECRET env var not set — using a random secret for this process only; all sessions will be invalidated on restart. Set JWT_SECRET in Railway variables.');
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
 const APP_URL = (process.env.APP_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
 
@@ -89,7 +94,22 @@ function signToken(userId) {
   return jwt.sign({ sub: userId }, JWT_SECRET, { expiresIn: '90d' });
 }
 
+// Throttles brute-force login/signup/reset attempts. Skipped under Jest
+// (NODE_ENV=test is set automatically) so the test suite isn't rate-limited.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
+  message: { error: 'Too many attempts — please try again later.' },
+});
+
 const VALID_TOPICS = ['cards', 'colors', 'animals', 'zodiac', 'planets', 'gems', 'mythical', 'places'];
+
+// Avatars are rendered elsewhere as `<img src="${avatarData}">` — must be a real
+// image data URI, never arbitrary text, or that becomes a stored-XSS vector.
+const AVATAR_DATA_RE = /^data:image\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+/]+=*$/;
 
 function todayUTCRange() {
   const now = new Date();
@@ -100,7 +120,7 @@ function todayUTCRange() {
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 // POST /api/auth/register
-app.post('/api/auth/register', (req, res) => {
+app.post('/api/auth/register', authLimiter, (req, res) => {
   const { email, password, displayName, username, dob, zodiac, level } = req.body;
 
   if (!email || !password || !displayName || !username) {
@@ -108,6 +128,9 @@ app.post('/api/auth/register', (req, res) => {
   }
   if (password.length < 6) {
     return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+  if (displayName.length > 40) {
+    return res.status(400).json({ error: 'Display name must be 40 characters or fewer' });
   }
   if (!/^[a-z0-9_]{2,30}$/.test(username)) {
     return res.status(400).json({ error: 'Username must be 2-30 lowercase letters, numbers, or underscores' });
@@ -133,7 +156,7 @@ app.post('/api/auth/register', (req, res) => {
 });
 
 // POST /api/auth/login
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', authLimiter, (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'email and password required' });
 
@@ -153,7 +176,7 @@ app.get('/api/auth/check-email', (req, res) => {
 });
 
 // POST /api/auth/forgot-password
-app.post('/api/auth/forgot-password', (req, res) => {
+app.post('/api/auth/forgot-password', authLimiter, (req, res) => {
   const email = (req.body.email || '').toLowerCase().trim();
   if (!email) return res.status(400).json({ error: 'email required' });
 
@@ -222,6 +245,14 @@ app.put('/api/users/me', requireAuth, (req, res) => {
     }
     const clash = db.prepare('SELECT id FROM users WHERE username=? AND id!=?').get(username, user.id);
     if (clash) return res.status(409).json({ error: 'Username already taken' });
+  }
+
+  if (avatarData && !AVATAR_DATA_RE.test(avatarData)) {
+    return res.status(400).json({ error: 'Invalid avatar image data' });
+  }
+
+  if (displayName && displayName.length > 40) {
+    return res.status(400).json({ error: 'Display name must be 40 characters or fewer' });
   }
 
   const badgesJson = Array.isArray(badges) ? JSON.stringify(badges) : null;

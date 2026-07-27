@@ -1782,9 +1782,9 @@ function onRestorePurchases(productIds, purchaseTokens) {
 // HELPERS
 // ============================================================
 function avatarHtml(u) {
-  return u?.avatarData
-    ? `<img src="${u.avatarData}" alt="av">`
-    : (u?.displayName||'P').charAt(0).toUpperCase();
+  return u?.avatarData && /^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/]+=*$/.test(u.avatarData)
+    ? `<img src="${esc(u.avatarData)}" alt="av">`
+    : esc((u?.displayName||'P').charAt(0).toUpperCase());
 }
 function locationStr(country, stateCode) {
   if(!country) return '';
