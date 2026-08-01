@@ -31,6 +31,11 @@
   --error: #f87171;
   --radius: 14px;
   --radius-sm: 8px;
+  /* Overridden by the native Android wrapper (LauncherActivity) via injected JS —
+     a bare WebView doesn't reliably populate env(safe-area-inset-*) itself, so this
+     is the source of truth there. In a real browser/PWA, the env() fallback applies. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: 'Raleway', sans-serif; color: var(--text); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -60,7 +65,7 @@ body::before {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   overflow-y: auto; overflow-x: hidden;
-  padding: 0 0 env(safe-area-inset-bottom, 16px);
+  padding: 0 0 var(--safe-bottom);
   opacity: 0; pointer-events: none;
   transition: opacity 0.3s ease;
 }
@@ -73,7 +78,7 @@ body::before {
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px 20px 8px;
-  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding-top: calc(16px + var(--safe-top));
 }
 .topbar-title { font-family: 'Cinzel', serif; font-size: 18px; color: var(--accent2); letter-spacing: 0.05em; }
 .icon-btn {
@@ -237,7 +242,7 @@ body::before {
 
 /* ===================== SCREEN: GAME ===================== */
 #screen-game { padding-bottom: 20px; }
-.game-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 8px; padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
+.game-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 8px; padding-top: calc(16px + var(--safe-top)); }
 .strikes-bar { display: flex; justify-content: center; gap: 12px; padding: 0 0 6px; }
 .strike-gem { font-size: 22px; }
 .strike-gem.lost { opacity: 0.18; filter: grayscale(1); transform: scale(0.75); }
@@ -598,7 +603,7 @@ body::before {
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
   background: var(--bg2); border-top: 1px solid var(--border);
-  display: flex; padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  display: flex; padding: 8px 0 calc(8px + var(--safe-bottom));
   z-index: 100;
 }
 .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; transition: color 0.2s; color: var(--text3); }
@@ -626,7 +631,7 @@ body::before {
 .modal-sheet {
   background: var(--bg2); border: 1px solid var(--border2);
   border-radius: var(--radius) var(--radius) 0 0; width: 100%; max-width: 480px;
-  padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  padding: 20px 20px calc(20px + var(--safe-bottom));
   transform: translateY(100%); transition: transform 0.3s;
 }
 .modal-overlay.open .modal-sheet { transform: translateY(0); }
@@ -634,7 +639,7 @@ body::before {
 .modal-title { font-family: 'Cinzel', serif; font-size: 16px; color: var(--text); margin-bottom: 16px; text-align: center; }
 
 /* Scrollable content padding for nav */
-.has-nav { padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+.has-nav { padding-bottom: calc(70px + var(--safe-bottom)); }
 
 /* Utils */
 .text-center { text-align: center; }
