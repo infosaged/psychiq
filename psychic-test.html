@@ -3872,7 +3872,15 @@ function setDob(prefix, iso) {
 // ============================================================
 (function init() {
   if('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // TWA/PWA re-opens are often a resumed activity, not a fresh navigation,
+      // so the browser's automatic update check may never fire. Nudge it
+      // ourselves whenever the app comes back to the foreground.
+      reg.update().catch(()=>{});
+      document.addEventListener('visibilitychange', () => {
+        if(document.visibilityState === 'visible') reg.update().catch(()=>{});
+      });
+    }).catch(()=>{});
   }
   buildDobSelects();
   window.PsychicBridge?.loadInterstitialAd?.();
