@@ -1010,6 +1010,11 @@ body::before {
       <div class="gameover-rank-title" id="gameover-rank-title">Novice</div>
       <div class="gameover-rank-sub" id="gameover-rank-sub"></div>
     </div>
+    <div class="gameover-badge-earned hidden" id="gameover-guest-cta" onclick="showAuth('signup')">
+      <span class="gameover-badge-orb">🔓</span>
+      <div class="gameover-badge-title">Create account so you can see your ranking</div>
+      <div class="gameover-badge-sub">It's free</div>
+    </div>
     <div class="gameover-btns">
       <button class="btn btn-primary" onclick="playAgain()">Test again</button>
       <button class="btn btn-gold" onclick="showScreen('topics')">Try another topic</button>
@@ -2721,6 +2726,7 @@ function endGame() {
   }
 
   document.getElementById('gameover-daily-leader').classList.add('hidden');
+  document.getElementById('gameover-guest-cta').classList.toggle('hidden', !state.guest);
   document.getElementById('gameover-score').textContent = score;
   const tier = RANK_TIERS.find(r=>score>=r.min)||RANK_TIERS[RANK_TIERS.length-1];
   document.getElementById('gameover-rank-title').textContent = tier.title;
