@@ -163,6 +163,7 @@ body::before {
 
 /* ===================== SCREEN: HOME ===================== */
 #screen-home { justify-content: center; align-items: center; text-align: center; padding: 40px 24px; }
+.home-version { position: absolute; left: 0; right: 0; bottom: calc(8px + var(--safe-bottom)); text-align: center; font-size: 10px; color: var(--text3); letter-spacing: 0.05em; }
 .home-logo { font-family: 'Cinzel', serif; font-size: 36px; font-weight: 700; color: var(--accent2); letter-spacing: 0.08em; margin-bottom: 8px; }
 .home-sub { font-size: 13px; color: var(--text3); letter-spacing: 0.06em; margin-bottom: 40px; }
 .home-orb {
@@ -774,6 +775,7 @@ body::before {
       <button class="btn btn-secondary" onclick="showAuth('login')">Sign in</button>
       <button class="btn btn-ghost" onclick="playAsGuest()">Try without account</button>
     </div>
+    <div class="home-version" id="home-version"></div>
   </div>
 
   <!-- AUTH -->
@@ -3875,7 +3877,15 @@ function setDob(prefix, iso) {
 // ============================================================
 // INIT
 // ============================================================
+function renderHomeVersion() {
+  const el = document.getElementById('home-version');
+  if(!el) return;
+  el.textContent = window.__nativeAppVersion ? `v${window.__nativeAppVersion}` : '';
+}
+window.addEventListener('nativeappversion', renderHomeVersion);
+
 (function init() {
+  renderHomeVersion();
   if('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
       // TWA/PWA re-opens are often a resumed activity, not a fresh navigation,
