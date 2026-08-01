@@ -1,4 +1,4 @@
-const CACHE = 'psychic-1784767838213';
+const CACHE = 'psychic-1785600536233';
 const PRECACHE = [
   './psychic-test.html',
   './manifest.json',
